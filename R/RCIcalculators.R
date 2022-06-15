@@ -8,33 +8,71 @@
 #' @param t1 Numeric.  Value or vector of values at time 1.  
 #' @param t2 Numeric.  Value or vector of values at time 2.  
 #' @param rxx Numeric.  Reliability coefficient to use in calculation
-#' @param diff 
-#' @param sdiff 
-#' @param sem 
-#' @param sd1 
-#' @param sd2 
-#' @param prob Numeric 0-1. Defaults to .95 to provide 95% two-sided confidence.  
+#' @param diff Numeric.  Difference score. Calculated from \code{t1} and \code{t2} if not provided.
+#' @param sdiff Numeric.  Standard error of the difference score. Calculated if not provided.
+#' @param sem Numeric. Standard error of measurement. Calculated if not provided.
+#' @param sd1 Numeric. Standard deviation 1. Should be a group representative of the target group. Calculated if not provided. 
+#' @param sd2 Numeric. Standard deviation 2. Not required for J&T. 
+#' @param prob Numeric 0-1. Defaults to .975 to provide 95% two-sided confidence.  
 #' @param verbose Logical. If TRUE, will display additional information about the calculation.
 #'
-#' @return Numeric. The value of the 
+#' @return Numeric. The value of the RCI for the scale, meaning how large a change is required to be observed to be considered reliable.
 #' @export
 #'
-#' @examples
-rci_calc_jt <- function(t1 = NULL, 
-                     t2 = NULL, 
+#' @examples RCI1 <- rci_calc_jt(42, 30, .8, 15)
+rci_calc_jt <- function(t1, 
+                     t2, 
                      rxx = NULL, 
                      sd1 = NULL, 
                      diff = NULL, 
                      sdiff = NULL, 
                      sem = NULL, 
                      sd2 = NULL,
-                     prob = .95,
+                     prob = .975,
                      verbose = FALSE){
   # check for the correct type of data presented
   # if there is t1, there needs to be t2 and can set diff
+  # if rxx is null, can't do anything
+  if(is.null(rxx) & is.null(sem) & is.null(sdiff)){
+    print(simpleError("No reliability values provided"))
+  }
+  # if there is no sd1 provided, need to compute it and give warning
+  if(is.null(sd1) & is.null(sem) & is.null(sdiff)){
+    sd1 <- sd(t1)
+    if(is.na(sd1)){
+      simpleError("No SD provided and cannot be inferred.")
+    } else if(!is.null(sd1) & is.null(sem) & is.null(sdiff)){
+    warning(paste("No SD provided, calculating from t1 values\n", 
+                  "The computed SD is", sd1))
+    }
+  }
+  # now should have sd1
   # if there is diff, don't need t1 or t2
-  # if there is sdiff and diff, don't need anything  else
+  if(!is.null(diff)){
+    if(!is.null(t1) | !is.null(t2)){
+      warning("t1 and t2 provided but so was diff. Disregarding t1 and t2.")
+    }
+  }
+  if(is.null(diff) & !is.null(t1) & !is.null(t2)){
+    diff <- t2 - t1
+  }
+  # now should have diff.
+  # if don't have sem yet, compute it
+  if(is.null(sem)){
+    sem <- sd1 * sqrt(1 - rxx)
+  }
+  # if don't have sdiff, compute it. 
+  if(is.null(sdiff)){
+    sdiff <- sqrt(2 * sem^2)
+  }
+  # should have sdiff
+  RCI <- prob * sdiff
+  RCI
 }
+rci_calc_jt(15, 10)
+rci_calc_jt()
+rci_calc_jt(15, 10, .8)
+rci_calc_jt(15, 10, .8, 10)
 
 # temporary storage: 
 # calc_rci() takes minimally two vectors of data and computes the RCI for them. 
