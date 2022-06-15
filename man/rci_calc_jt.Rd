@@ -5,15 +5,15 @@
 \title{Calculate the Reliable Change Index according to Jacobson & Truax (1991).}
 \usage{
 rci_calc_jt(
-  t1 = NULL,
-  t2 = NULL,
+  t1,
+  t2,
   rxx = NULL,
   sd1 = NULL,
   diff = NULL,
   sdiff = NULL,
   sem = NULL,
   sd2 = NULL,
-  prob = 0.95,
+  prob = 0.975,
   verbose = FALSE
 )
 }
@@ -34,7 +34,7 @@ rci_calc_jt(
 
 \item{sd2}{Numeric. Standard deviation 2. Not required for J&T.}
 
-\item{prob}{Numeric 0-1. Defaults to .95 to provide 95\% two-sided confidence.}
+\item{prob}{Numeric 0-1. Defaults to .975 to provide 95\% two-sided confidence.}
 
 \item{verbose}{Logical. If TRUE, will display additional information about the calculation.}
 }

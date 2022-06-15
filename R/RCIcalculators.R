@@ -69,10 +69,10 @@ rci_calc_jt <- function(t1,
   RCI <- prob * sdiff
   RCI
 }
-rci_calc_jt(15, 10)
-rci_calc_jt()
-rci_calc_jt(15, 10, .8)
-rci_calc_jt(15, 10, .8, 10)
+# rci_calc_jt(15, 10)
+# rci_calc_jt()
+# rci_calc_jt(15, 10, .8)
+# rci_calc_jt(15, 10, .8, 10)
 
 # temporary storage: 
 # calc_rci() takes minimally two vectors of data and computes the RCI for them. 
