@@ -4,16 +4,19 @@
 \alias{rci_classifier}
 \title{Classify scores using Reliable Change Index values}
 \usage{
-rci_classifier(difference = NULL, scale_rci = NULL)
+rci_classifier(difference, scale_rci, descriptors = NULL)
 }
 \arguments{
 \item{difference}{Difference score(s)}
 
-\item{scale_rci}{Scale RCI value}
+\item{scale_rci}{Scale RCI value. Likely a single value, may also be same length as \code{difference}.}
+
+\item{descriptors}{Character. Descriptors used for high, low and medium groups. If \code{NULL} (the default), the descriptors are "Reliably Increased", "Reliably Decreased", and "No Reliable Difference".
+If \code{"compact"}, "RelInc", "RelDec", and "NotRel" are used instead.}
 }
 \value{
-A character vector with the standard values of "Reliably Increased", "Reliably Decreased", or "No Reliable Difference".
-Also prints a warning to screen indicating that this is probably a terrible idea
+A character vector with the standard values of "Reliably Increased", "Reliably Decreased", or "No Reliable Difference". Could be used inside a mutate() call.
+Also prints a warning to screen indicating that this is probably a terrible idea.
 }
 \description{
 This function assumes you only want categories of reliable change based on
@@ -21,4 +24,5 @@ Jacobson & Truax (1991). You probably don't want this.
 }
 \examples{
 rci_classifier(difference = c(5, 3, -10), scale_rci = 4)
+rci_classifier(difference = c(5, 3, -10), scale_rci = 4, descriptors = "compact")
 }

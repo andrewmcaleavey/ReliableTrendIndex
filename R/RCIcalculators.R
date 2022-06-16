@@ -165,23 +165,77 @@ jt_rci_calc <- function(difference = NULL,
 #' Jacobson & Truax (1991). You probably don't want this.
 #' 
 #' @param difference Difference score(s)
-#' @param scale_rci Scale RCI value
+#' @param scale_rci Scale RCI value. Likely a single value, may also be same length as \code{difference}.
+#' @param descriptors Character. Descriptors used for high, low and medium groups. If \code{NULL} (the default), the descriptors are "Reliably Increased", "Reliably Decreased", and "No Reliable Difference".
+#' If \code{"compact"}, "RelInc", "RelDec", and "NotRel" are used instead.
 #'
-#' @return A character vector with the standard values of "Reliably Increased", "Reliably Decreased", or "No Reliable Difference".
-#' Also prints a warning to screen indicating that this is probably a terrible idea
+#' @return A character vector with the standard values of "Reliably Increased", "Reliably Decreased", or "No Reliable Difference". Could be used inside a mutate() call.
+#' Also prints a warning to screen indicating that this is probably a terrible idea. 
 #' @export
 #'
 #' @examples rci_classifier(difference = c(5, 3, -10), scale_rci = 4)
-rci_classifier <- function(difference = NULL,
-                           scale_rci = NULL){
+#' rci_classifier(difference = c(5, 3, -10), scale_rci = 4, descriptors = "compact")
+rci_classifier <- function(difference,
+                           scale_rci, 
+                           descriptors = NULL){
+  if(length(difference) != length(scale_rci) & length(scale_rci) > 1){
+    warning("Length of difference and scale_rci vectors are not the same.
+Variables will be recycled. Check your inputs.")
+  }
+  
   # the final real step is this: 
-  outcome <- dplyr::case_when(difference > scale_rci ~ "Reliably Increased", 
-                              difference < -scale_rci ~ "Reliably Decreased", 
-                              TRUE ~ "No Reliable Difference")
+  if(is.null(descriptors)){
+    outcome <- dplyr::case_when(difference > scale_rci ~ "Reliably Increased", 
+                                difference < -scale_rci ~ "Reliably Decreased", 
+                                TRUE ~ "No Reliable Difference")
+  } else if(descriptors == "compact"){
+    outcome <- dplyr::case_when(difference > scale_rci ~ "RelInc", 
+                                difference < -scale_rci ~ "RelDec", 
+                                TRUE ~ "NotRel")
+  }
   warning("Categorizing continuous data is almost always a mistake and using the RCI
-to do so is particularly problematic in many cases. Are you sure you want to use this function?
-(The function worked fine but it's not a good idea.)")
+to do so is particularly problematic in many cases. 
+
+Are you sure you want to do this?
+
+(The function worked fine but that doesn't make it a good idea.)")
   outcome
 }
 # rci_classifier(difference = c(5, 3, -10), 
 #                scale_rci = 4)
+
+# rci_classifier(c(5, 2, 5), c(1, 2, 3))
+# rci_classifier(c(5, 5, 5, 5), c(1, 6))
+
+
+
+#' Calculate J&T's RCI on standardized scale
+#' 
+#' This is just a simpler version of scale_rci_calc without the annoying parts and a slightly different order of events.
+#'
+#' @param rxx The reliability coefficient
+#' @param s1 The standard deviation, Defaults to 1 for this example
+#' @param cut The cutpoint, defaults to 1.96 to represent alpha = .05 two-sided, following J&T.
+#'
+#' @return The instrument-based RCI
+#' @export
+#'
+#' @examples
+#' RCIfunc(.9)
+RCIfunc <- function(rxx, s1 = 1, cut = 1.96){
+  cut * sqrt(2 * (s1 * sqrt(1 - rxx))^2)
+}
+
+#' Compute the standard error of the difference score
+#'
+#' Only takes reliability and SD value per J&T (1991).
+#' @param rxx Reliability coefficient. 
+#' @param s1 Standard deviation.
+#'
+#' @return Numeric value. 
+#' @export
+#'
+#' @examples sdiff_calc(.8, 7.5)
+sdiff_calc <- function(rxx, s1){
+  sqrt(2 * (s1 * sqrt(1 - rxx))^2)
+}
