@@ -5,34 +5,22 @@
 \title{Calculate the Reliable Change Index according to Jacobson & Truax (1991).}
 \usage{
 rci_calc_jt(
-  t1,
-  t2,
   rxx = NULL,
   sd1 = NULL,
-  diff = NULL,
   sdiff = NULL,
   sem = NULL,
-  sd2 = NULL,
   prob = 0.975,
   verbose = FALSE
 )
 }
 \arguments{
-\item{t1}{Numeric.  Value or vector of values at time 1.}
-
-\item{t2}{Numeric.  Value or vector of values at time 2.}
-
 \item{rxx}{Numeric.  Reliability coefficient to use in calculation}
 
 \item{sd1}{Numeric. Standard deviation 1. Should be a group representative of the target group. Calculated if not provided.}
 
-\item{diff}{Numeric.  Difference score. Calculated from \code{t1} and \code{t2} if not provided.}
-
-\item{sdiff}{Numeric.  Standard error of the difference score. Calculated if not provided.}
+\item{sdiff}{Numeric.  Standard error of the difference score. If provided, sem, rxx, sd1 are all ignored. Calculated if not provided.}
 
 \item{sem}{Numeric. Standard error of measurement. Calculated if not provided.}
-
-\item{sd2}{Numeric. Standard deviation 2. Not required for J&T.}
 
 \item{prob}{Numeric 0-1. Defaults to .975 to provide 95\% two-sided confidence.}
 

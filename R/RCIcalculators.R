@@ -36,18 +36,34 @@ rci_calc_jt <- function(rxx = NULL,
   # now should have sd1
   
   # if don't have sem yet, compute it
-  if(is.null(sem)){
+  if(is.null(sem) & !is.null(sd1) & !is.null(rxx)){
     sem <- sd1 * sqrt(1 - rxx)
   }
   # if don't have sdiff, compute it. 
   if(is.null(sdiff)){
     sdiff <- sqrt(2 * sem^2)
   }
+  # there should never be a way to get here without sdiff, but if we do, break.
+  if(is.null(sdiff)){
+    return(errorCondition("broken"))
+  }
   # should have sdiff
-  RCI <- prob * sdiff
-  RCI
+  RCI <- qnorm(prob) * sdiff
+  if(verbose == FALSE){
+    return(RCI)
+  }
+  if(verbose){
+    # print(RCI)
+    return(list(RCI = RCI, 
+                sdiff = sdiff, 
+                sem = sem, 
+                rxx = rxx, 
+                sd1 = sd1, 
+                prob = prob))
+  }
 }
 # simple tests
+# rci_calc_jt(sdiff = 4.74)  # minimum is sdiff
 # rci_calc_jt(.8, 10) # minimum needed is reliability and SD
 # rci_calc_jt() # error
 # rci_calc_jt(.8, 10, .2) # uses sdiff, reliability ignored
