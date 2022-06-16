@@ -18,25 +18,28 @@ jt_rci_calc(
 )
 }
 \arguments{
-\item{difference}{}
+\item{difference}{Numeric. Difference score(s). Computed from \code{t1} and \code{t2} if not provided.}
 
-\item{t1}{}
+\item{t1}{Numeric. Time 1 value(s). Ignored if \code{difference} is provided.}
 
-\item{t2}{}
+\item{t2}{Numeric. Time 2 value(s). Ignored if \code{difference} is provided.}
 
-\item{scale_rci}{}
+\item{scale_rci}{Numeric. RCI for the scale, meaning the smallest change considered reliable.}
 
-\item{rxx}{}
+\item{rxx}{Numeric.  Reliability coefficient to use in calculation}
 
-\item{sd1}{}
+\item{sd1}{Numeric. Standard deviation 1. Should be a group representative of the target group. Calculated if not provided.}
 
-\item{sdiff}{}
+\item{sdiff}{Numeric.  Standard error of the difference score. If provided, sem, rxx, sd1 are all ignored. Calculated if not provided.}
 
-\item{sem}{}
+\item{sem}{Numeric. Standard error of measurement. Calculated if not provided.}
 
-\item{prob}{}
+\item{prob}{Numeric 0-1. Defaults to .975 to provide 95\% two-sided confidence.}
 
-\item{verbose}{}
+\item{verbose}{Logical. If TRUE, will return additional information about the calculation.}
+}
+\value{
+Individual RCI value per difference score provided.
 }
 \description{
 This provides one RCI value for every observed difference score,
