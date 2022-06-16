@@ -21,4 +21,4 @@ I repeat, however, that none of these functions should be used for any clinicall
 
 ## License
 
-This package is licensed under the MIT license.  
+This package is licensed under the GNU Affero General Public License (AGPL) 3.  
