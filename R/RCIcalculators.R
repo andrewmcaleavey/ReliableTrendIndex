@@ -11,7 +11,7 @@
 #' @param sdiff Numeric.  Standard error of the difference score. If provided, sem, rxx, sd1 are all ignored. Calculated if not provided.
 #' @param sem Numeric. Standard error of measurement. Calculated if not provided.
 #' @param prob Numeric 0-1. Defaults to .975 to provide 95% two-sided confidence.  
-#' @param verbose Logical. If TRUE, will display additional information about the calculation.
+#' @param verbose Logical. If TRUE, will return additional information about the calculation.
 #'
 #' @return Numeric. The value of the RCI for the scale, meaning how large a change is required to be observed to be considered reliable.
 #' @export
@@ -81,18 +81,18 @@ scale_rci_calc <- function(rxx = NULL,
 #' This provides one RCI value for every observed difference score, 
 #' essentially intended to be interpreted as Z-scores.
 #'
-#' @param difference 
-#' @param t1 
-#' @param t2 
-#' @param scale_rci 
-#' @param rxx 
-#' @param sd1 
-#' @param sdiff 
-#' @param sem 
-#' @param prob 
-#' @param verbose 
+#' @param difference Numeric. Difference score(s). Computed from \code{t1} and \code{t2} if not provided.
+#' @param t1 Numeric. Time 1 value(s). Ignored if \code{difference} is provided.
+#' @param t2 Numeric. Time 2 value(s). Ignored if \code{difference} is provided.
+#' @param scale_rci Numeric. RCI for the scale, meaning the smallest change considered reliable.
+#' @param rxx Numeric.  Reliability coefficient to use in calculation
+#' @param sd1 Numeric. Standard deviation 1. Should be a group representative of the target group. Calculated if not provided. 
+#' @param sdiff Numeric.  Standard error of the difference score. If provided, sem, rxx, sd1 are all ignored. Calculated if not provided.
+#' @param sem Numeric. Standard error of measurement. Calculated if not provided.
+#' @param prob Numeric 0-1. Defaults to .975 to provide 95% two-sided confidence.  
+#' @param verbose Logical. If TRUE, will return additional information about the calculation. 
 #'
-#' @return 
+#' @return Individual RCI value per difference score provided.
 #' @export
 #'
 #' @examples jt_rci_calc(difference = 15, sdiff = 4.74)

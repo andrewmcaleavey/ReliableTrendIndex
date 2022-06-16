@@ -24,7 +24,7 @@ scale_rci_calc(
 
 \item{prob}{Numeric 0-1. Defaults to .975 to provide 95\% two-sided confidence.}
 
-\item{verbose}{Logical. If TRUE, will display additional information about the calculation.}
+\item{verbose}{Logical. If TRUE, will return additional information about the calculation.}
 }
 \value{
 Numeric. The value of the RCI for the scale, meaning how large a change is required to be observed to be considered reliable.
