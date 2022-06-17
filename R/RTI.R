@@ -110,3 +110,12 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
 
 # now would like a way to do it for a lot of people in a long-format dataset. 
 # need a data set on which to do it. 
+
+rti_on_data <- function(data, 
+                        id, 
+                        time_var = NULL, 
+                        values, 
+                        variance, 
+                        ...){
+  
+}
