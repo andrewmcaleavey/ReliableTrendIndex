@@ -107,3 +107,6 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
 # summary(output2$rmaObj)
 # forest_to_reg_plot(output2$rmaObj, StError = output2$variance)
 # 
+
+# now would like a way to do it for a lot of people in a long-format dataset. 
+# need a data set on which to do it. 

@@ -4,13 +4,13 @@
 \alias{forest_to_reg_plot}
 \title{Turning metafor's forest plots into regression plots with {ggplot2}}
 \usage{
-forest_to_reg_plot(x, StError = SEm, compare_lm_model = NULL)
+forest_to_reg_plot(x, StError, compare_lm_model = NULL)
 }
 \arguments{
 \item{x}{A model from the {metafor} package. Designed only to work with univariate models.}
 
 \item{StError}{Numeric. Standard error of the difference score to use.
-Defaults to \code{SEm} which WILL cause problems.  Within the package should be available as the output of a call to rti_calulator()$variance}
+Within the package should be available as the output of a call to rti_calulator()$variance}
 
 \item{compare_lm_model}{Either NULL (default) or an object from lm().}
 }
@@ -21,5 +21,6 @@ a ggplot2 object
 Turning metafor's forest plots into regression plots with {ggplot2}
 }
 \examples{
-forest_to_reg_plot(MacMeta)
+test <- rti_calc_simple(c(47.5, 32.5), 4.74^2)
+forest_to_reg_plot(test$rmaObj, StError = sqrt(test$variance))
 }
