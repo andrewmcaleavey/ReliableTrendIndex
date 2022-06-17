@@ -5,7 +5,7 @@ Authors@R:
     person("Andrew", "McAleavey", , "andrew.mcaleavey@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-5986-2033"))
 Description: You should not use this package because it makes RCI easy. The package enables simple calculations in a safe and consistent format, with the intent to encourage users to opt for increasingly reliable change analysis.
-License: AGPL (>= 3)
+License: AGPL (>= 3) + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.0
@@ -14,4 +14,9 @@ Imports:
     metafor
 Depends: 
     dplyr,
-    magrittr
+    magrittr,
+    R (>= 2.10)
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+LazyData: true
