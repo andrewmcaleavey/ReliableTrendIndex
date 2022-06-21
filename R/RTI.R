@@ -111,11 +111,86 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
 # now would like a way to do it for a lot of people in a long-format dataset. 
 # need a data set on which to do it. 
 
-rti_on_data <- function(data, 
-                        id, 
-                        time_var = NULL, 
-                        values, 
-                        variance, 
-                        ...){
-  
+# compute_rma <- function(data, 
+#                         id_var, 
+#                         obs_var,
+#                         time_var, 
+#                         sterror){
+#   
+#   pval.data <- data %>% 
+#     split( {{id_var}} ) %>% 
+#     purrr::map(~ metafor::rma.uni({{obs_var}} ~ {{time_var}}, 
+#                            {{sterror}}^2, 
+#                            method = "FE",
+#                            data = ., 
+#                            digits = 2)) %>% 
+#     purrr::map(broom::tidy) %>% 
+#     purrr::map_dfr("p.value") %>% 
+#     .[2, ] %>% 
+#     tidyr::pivot_longer(cols = everything(), 
+#                  names_to = "id", 
+#                  values_to = "rma.p.value") %>% 
+#     dplyr::mutate(rma.Rel = dplyr::case_when(rma.p.value < .05 ~ "rmaRel", 
+#                                TRUE ~ "rmaNoRel"),
+#            id = as.integer(id))
+#   
+#   slp.data <- data %>% 
+#     split(.$id) %>% 
+#     purrr::map(~ metafor::rma.uni(obs ~ time, 
+#                            SEm^2, 
+#                            method = "FE",
+#                            data = ., 
+#                            digits = 4)) %>% 
+#     purrr::map(broom::tidy) %>% 
+#     purrr::map_dfr("estimate") %>% 
+#     .[2, ] %>% 
+#     tidyr::pivot_longer(cols = everything(), 
+#                  names_to = "id", 
+#                  values_to = "rma.est") %>% 
+#     dplyr::mutate(rmaDir = case_when(rma.est < 0 ~ "rmaImp",
+#                               rma.est > 0 ~ "rmaDet",
+#                               TRUE ~ "rmaNoChange"), 
+#            id = as.integer(id))
+#   
+#   dplyr::full_join(data, pval.data, 
+#             by = "id") %>% 
+#     dplyr::full_join(slp.data, by = "id") %>% 
+#     dplyr::mutate(rma.95.rel = dplyr::case_when(rma.Rel == "rmaRel" & rmaDir == "rmaImp" ~ "rmaRelImp", 
+#                                   rma.Rel == "rmaRel" & rmaDir == "rmaDet" ~ "rmaRelDet",
+#                                   TRUE ~ "rmaNoRel"))
+# }
+# compute_rma(data = simulated_data, id_var = "id", obs_var = "obs_score", time_var = "index", sterror = .2)
+
+
+# this is horrible coding, is brittle as hell, but works. 
+compute_rti_data <- function(data, 
+                             id_var, 
+                             obs_var, 
+                             error_value){
+  ppl <- unique(data[[id_var]])
+  # print(ppl)
+  output <- list(rep(NA, length(ppl)))
+  for(i in 1:length(ppl)){
+    data_use <- data %>% 
+      filter(id == ppl[i])
+    output[[i]] <- rti_calc_simple(values = data_use$obs_score, variance = .2)
+  }
+  return(output)
 }
+# compute_rti_data(data = simdata1, id_var = "id", obs_var = value, error_value = .2)
+
+
+# could write a function that does that and then instead of returning everything, 
+# just returns a new data set with the key values, could be added to the existing data
+
+add_rti <- function(data, id_var, obs_var, error_value, ...){
+  temp <- compute_rti_data(data = data, 
+                           id_var = id_var, 
+                           obs_var = obs_var, 
+                           error_value = error_value)
+  
+  outdata <- tibble(id = unique(data[[id_var]]), 
+                    RTI = temp[])
+  outdata
+}
+# add_rti(data = simdata1, id_var = "id", obs_var = value, error_value = .2)
