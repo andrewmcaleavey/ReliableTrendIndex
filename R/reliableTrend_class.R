@@ -21,7 +21,7 @@ new_reliableTrend <- function(RCI = double(),
                               category = "No reliable change", 
                               rmaObj = list(), 
                               values = vector(mode = "numeric"), 
-                              values.prepost = vector(mode = "numeric", length = 2), 
+                              values.prepost = vector(mode = "numeric"), 
                               error_var = double(),
                               cutpoint = double(),
                               scale_RCI = double() 
@@ -89,13 +89,27 @@ reliableTrend <- function(x = NULL,
                           category = "No reliable change", 
                           rmaObj = list(), 
                           values = vector(mode = "numeric"), 
-                          values.prepost = vector(mode = "numeric", 
-                                                  length = 2), 
+                          values.prepost = vector(mode = "numeric"), 
                           error_var = double(),
-                          cutpoint = double(),
+                          cutpoint = 1.96,
                           scale_RCI = double()) {
-  # if x exists, use those values, otherwise use the parameters
-  if(!is.null(x)) {
+  # convert type for some of the parameters
+  RCI <- as.double(RCI)
+  RTI <- as.double(RTI)
+  pd.RCI <- as.double(pd.RCI)
+  pd.RTI <- as.double(pd.RTI)
+  category <- as.character(category)
+  values <- as.numeric(values)
+  values.prepost <- c(values[1], values[length(values)])
+  
+  
+  # if x exists, check if is rma or just a list. 
+  # use the rma object to do computations, 
+  # or use the list values, otherwise use the parameters from the function
+  if(!is.null(x) & !"rma" %in% class(x)) {
+    # if x exists but is not an rma object
+    # need to check for missing inputs and make them appropriately 
+    
     return(validate_reliableTrend(new_reliableTrend(RCI = x$RCI, 
                                                     RTI = x$RTI, 
                                                     pd.RCI = x$pd.RCI, 
@@ -107,12 +121,31 @@ reliableTrend <- function(x = NULL,
                                                     error_var = x$error_var, 
                                                     cutpoint = x$cutpoint, 
                                                     scale_RCI = x$scale_RCI)))
+  } else if(!is.null(x) & "rma" %in% class(x)){
+    # in this case x is an rma object. So need to extract the values from it.
+    new_reliableTrend(RTI = x$zval, 
+                      # RCI = NA_real_,
+                      pd.RCI = NA_real_, 
+                      pd.RTI = NA_real_,
+                      rmaObj = x, 
+                      values = as.numeric(x$yi), 
+                      values.prepost <- c(as.numeric(x$yi)[1], as.numeric(x$yi)[length(as.numeric(x$yi))]),
+                      error_var = unique(x$vi), 
+                      category = ifelse(x$zval > cutpoint, 
+                                         "Reliable Increase", 
+                                         ifelse(x$zval < -cutpoint, 
+                                                "Reliable Decrease", 
+                                                "No Reliable Change")), 
+                      scale_RCI = sqrt(unique(x$vi)) * cutpoint, 
+                      RCI = (as.numeric(x$yi)[length(as.numeric(x$yi))] - as.numeric(x$yi)[1]) / sqrt(unique(x$vi)))
   } else {
-    return(validate_reliableTrend(new_reliableTrend(RCI = RCI, 
-                                                    RTI = RTI, 
-                                                    pd.RCI = pd.RCI, 
-                                                    pd.RTI = pd.RTI, 
-                                                    category = category, 
+    # if the arguments are passed directly without a list, 
+    # should be able to take them in. 
+    return(validate_reliableTrend(new_reliableTrend(RCI = as.double(RCI), 
+                                                    RTI = as.double(RTI), 
+                                                    pd.RCI = as.double(pd.RCI), 
+                                                    pd.RTI = as.double(pd.RTI), 
+                                                    category = as.character(category), 
                                                     rmaObj = rmaObj, 
                                                     values = values, 
                                                     values.prepost = values.prepost, 
@@ -121,3 +154,9 @@ reliableTrend <- function(x = NULL,
                                                     scale_RCI = scale_RCI)))
   }
 }
+# tests
+# output2 <- rti_calc_simple(c(98,98,98,99,99,99), .7071068^2)
+# output2
+# reliableTrend(output2$rmaObj)
+# reliableTrend()
+# reliableTrend(list())# runs into the problem that all of the parameters need to be provided. 

@@ -40,7 +40,7 @@ forest_to_reg_plot <- function(x,
                           ymin = x$yi - 1.96*StError, 
                           ymax = x$yi + 1.96*StError), 
                       linetype = "dashed") +
-      labs(x = "time", 
+      ggplot2::labs(x = "time", 
            y = "outcome", 
            caption = "Error bar represents the single-timepoint RCI CI.
            For more than two time points, the shaded area represents the RTI CI.")
@@ -65,10 +65,9 @@ forest_to_reg_plot <- function(x,
                   fill = "blue",
                   alpha = .2, 
                   linetype = "dotted") +
-      labs(x = "time", 
+      ggplot2::labs(x = "time", 
            y = "outcome", 
            caption = "Error bar represents the single-timepoint RCI CI.
            For more than two time points, the shaded area represents the RTI CI.")
   }
 }
-

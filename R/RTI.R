@@ -48,7 +48,7 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
                 values = values, 
                 variance = variance, 
                 cutpoint = cutpoint))
-  } else if(length(values == 2)) {
+  } else if(length(values) == 2) {
     difs <- values[-1] - values[1]
     time_linear <- seq(from = 1, 
                        to = length(values) - 1, 
@@ -86,12 +86,12 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
                                 ifelse(RTI < -cutpoint, 
                                        "Reliable Decrease", 
                                        "No Reliable Change"))
-    return(list(JT_rci = NA,
+    return(reliableTrend(RCI = NA_real_,
                 RTI = RTI, 
                 category = RTI_classification,
                 rmaObj = rmaobj,
                 values = values, 
-                variance = variance, 
+                error_var = variance, 
                 cutpoint = cutpoint))
   }
 }
