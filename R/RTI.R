@@ -43,7 +43,7 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
                                           "No Reliable Change"))
     return(list(JT_rci = JT_rci, 
                 RTI = NA, 
-                category = JT_rci_classification,
+                category.RCI = JT_rci_classification,
                 rmaObj = rmaobj,
                 values = values, 
                 variance = variance, 
@@ -65,7 +65,7 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
                                        "No Reliable Change"))
     return(list(JT_rci = RTI, 
                 RTI = RTI,
-                category = RTI_classification,
+                category.RTI = RTI_classification,
                 rmaObj = rmaobj,
                 values = values, 
                 variance = variance, 
@@ -88,7 +88,7 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
                                        "No Reliable Change"))
     return(reliableTrend(RCI = NA_real_,
                 RTI = RTI, 
-                category = RTI_classification,
+                category.RTI = RTI_classification,
                 rmaObj = rmaobj,
                 values = values, 
                 error_var = variance, 
