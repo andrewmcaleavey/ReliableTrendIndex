@@ -41,6 +41,7 @@
 #'
 #' @return An object of type `reliableTrend`. 
 #' This object is a glorified list with the above-defined parameters as values. 
+#' @seealso \code{\link{reliableTrend}}
 #' 
 #' @examples 
 #' new_reliableTrend()
@@ -57,6 +58,7 @@ new_reliableTrend <- function(RCI = double(),
                               values.prepost = vector(mode = "numeric"), 
                               error_var = double(),
                               cutpoint = double(),
+                              observed = "obs_score",
                               scale_RCI = double() 
                               ){
   
@@ -88,6 +90,7 @@ new_reliableTrend <- function(RCI = double(),
   stopifnot(is.double(error_var))
   stopifnot(is.double(cutpoint))
   stopifnot(is.double(scale_RCI))
+  stopifnot(is.character(observed))
   
   structure(list(RCI = RCI, 
                  RTI = RTI, 
@@ -101,6 +104,7 @@ new_reliableTrend <- function(RCI = double(),
                  values.prepost = values.prepost, 
                  error_var = error_var, 
                  cutpoint = cutpoint, 
+                 observed = observed,
                  scale_RCI = scale_RCI,
                  rmaObj = rmaObj), 
             class = "reliableTrend")
@@ -117,6 +121,7 @@ new_reliableTrend <- function(RCI = double(),
 #' @param x reliableTrend object.
 #'
 #' @return The same reliable trend object or errors.
+#' @seealso \code{\link{reliableTrend}}
 #'
 #' @examples 
 #' validate_reliableTrend(new_reliableTrend())
@@ -150,8 +155,6 @@ validate_reliableTrend <- function(x) {
 #'
 #' @param x An object, likely with class `list` or `rma` (or `rma.uni`). If `x` is 
 #' provided, several other arguments are overwritten even if they are provided. 
-#' The function will print a message to screen (NOT a warning or error) if this 
-#' may happen. 
 #' @param RCI Numeric. Jacobson & Truax RCI, a transformed difference score.
 #' @param RTI Numeric. Reliable Trend Index, the z-value of a linear trend considering a
 #' fixed measurement error at each observation. 
@@ -178,6 +181,7 @@ validate_reliableTrend <- function(x) {
 #' @param scale_RCI Numeric. The "RCI for a scale," meaning how many scale points
 #' need to be observed in a difference score for that difference to be considered
 #' "reliable" under J&T.
+#' @param observed Character. Name of the variable of data frame `x` with the observed scores.
 #'
 #' @return an object of class `reliableTrend`, which is a glorified list. 
 #' 
@@ -205,7 +209,8 @@ reliableTrend <- function(x = NULL,
                           values.prepost = vector(mode = "numeric"), 
                           error_var = double(),
                           cutpoint = 1.96,
-                          scale_RCI = double() 
+                          scale_RCI = double(), 
+                          observed = "obs_score"
 ) {
   # if x exists but is not an rma object
   # then take the provided variables in x and make them environment
@@ -232,6 +237,21 @@ reliableTrend <- function(x = NULL,
   # as long as x is not "rma" class.
   
 
+  # what if x is a data frome?
+  # if(missing(rmaObj) & is.null(x$rmaObj)) {
+  #   # determine if x or x[1] or x[[1]] is a data.frame.
+  #   if(is.data.frame(x[1])){
+  #     x <- x[1]
+  #   } else if(is.data.frame(x[[1]])){
+  #     x <- x[[1]]
+  #   }
+  #   # function to compute rma object required.
+  #   # STILL NEED THIS TO WORK. 
+  #   rmaObj <- metafor::rma(data = x, 
+  #                            yi = x[[observed]], 
+  #                            vi = error_var, 
+  #                            method = "FE")
+  # }
   
   # what if x is an rma object, and other arguments also provided?
   # what if x is an rma object, but no other arguments are provided?
@@ -242,9 +262,11 @@ reliableTrend <- function(x = NULL,
     # the environtment variables have taken the entered values
     # there could still be missing values. 
   
-  
-  if(!is.null(x) & "rma" %in% class(x)){
-    print("Inferring reliableTrend values from rma object.")
+  # if x is an rma object
+  if(!is.null(x) & any("rma" %in% class(x),
+                       "rma" %in% class(x[1]), 
+                       "rma" %in% class(x[[1]]))){
+    # print("Inferring reliableTrend values from rma object.")
     # in this case x is an rma object. So need to extract the values from it.
     #if they are not provided by the arguments, for some of them
     RTI = x$zval 
@@ -312,6 +334,7 @@ reliableTrend <- function(x = NULL,
                                            values.prepost = values.prepost,
                                            error_var = error_var,
                                            cutpoint = cutpoint,
+                                           observed = observed, 
                                            scale_RCI = scale_RCI))
   
 }
@@ -324,7 +347,7 @@ reliableTrend <- function(x = NULL,
 
 # print function
 
-print.reliableTrend <- function(x){
+summary.reliableTrend <- function(x){
   cat("\nReliable Trend Analysis:\n\n")
   cat(paste0("This sequence of ", length(x$values), " values has a ", 
              x$category.RTI), "using the RTI.\n")
@@ -333,6 +356,62 @@ print.reliableTrend <- function(x){
   cat("\n")
   invisible(x)
 }
-summary.reliableTrend <- function(x){
+print.reliableTrend <- function(x){
   print.default(unclass(x))
+  invisible(x)
+}
+
+# method to strip the non-atomic values from the object and return a list
+# not a reliableTrend object
+
+#' Strip a `reliableTrend` object of non-atomic entries
+#' 
+#' Takes an object of type `reliableTrend` and returns a list of atomic values.
+#'
+#' @param x An object of class `reliableTrend`.
+#'
+#' @return A list. 
+#' @export
+#'
+#' @examples
+#' rti_to_stripped_list(reliableTrend())
+rti_to_stripped_list <- function(x) {
+  # x is a reliableTrend
+  list(RCI = x$RCI ,
+       RTI = x$RTI ,
+       pd.RCI = x$pd.RCI ,
+       pd.RTI = x$pd.RTI ,
+       category.RCI = x$category.RCI,
+       category.RTI = x$category.RTI ,
+       sign.RTI = x$sign.RTI,
+       sign.difference = x$sign.difference,
+       error_var = x$error_var ,
+       cutpoint = x$cutpoint ,
+       scale_RCI = x$scale_RCI)
+}
+
+# same but to a data.frame
+
+#' Convert a `reliableTrend` object to a data.frame via rci_to_stripped_list().
+#' 
+#' Given an object of class `reliableTrend`, returns a single-row data.frame.
+#' Loses all non-atomic values of the `reliableTrend` object.
+#'
+#' @param x An object of class `reliableTrend`.
+#'
+#' @return A `data.frame` with 1 row and 12 columns.
+#' @export
+#'
+#' @examples
+#' output <- rti_calc_simple(c(98,98,98,99,99,99), .7071068^2)
+#' output
+#' output2 <- reliableTrend(output$rmaObj)
+#' output2
+#' rti_to_df(output2)
+rti_to_df <- function(x){
+  # ensure all values are real before conversion to df, it won't like missings
+  data.frame(rti_to_stripped_list(x))
+}
+is.reliableTrend <- function(x){
+  "reliableTrend" %in% class(x)
 }

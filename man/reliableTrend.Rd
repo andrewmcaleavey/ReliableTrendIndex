@@ -19,14 +19,13 @@ reliableTrend(
   values.prepost = vector(mode = "numeric"),
   error_var = double(),
   cutpoint = 1.96,
-  scale_RCI = double()
+  scale_RCI = double(),
+  observed = "obs_score"
 )
 }
 \arguments{
 \item{x}{An object, likely with class \code{list} or \code{rma} (or \code{rma.uni}). If \code{x} is
-provided, several other arguments are overwritten even if they are provided.
-The function will print a message to screen (NOT a warning or error) if this
-may happen.}
+provided, several other arguments are overwritten even if they are provided.}
 
 \item{RCI}{Numeric. Jacobson & Truax RCI, a transformed difference score.}
 
@@ -67,6 +66,8 @@ Default is 1.96.}
 \item{scale_RCI}{Numeric. The "RCI for a scale," meaning how many scale points
 need to be observed in a difference score for that difference to be considered
 "reliable" under J&T.}
+
+\item{observed}{Character. Name of the variable of data frame \code{x} with the observed scores.}
 }
 \value{
 an object of class \code{reliableTrend}, which is a glorified list.

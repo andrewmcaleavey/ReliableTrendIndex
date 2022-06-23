@@ -18,3 +18,6 @@ An internal function
 \examples{
 validate_reliableTrend(new_reliableTrend())
 }
+\seealso{
+\code{\link{reliableTrend}}
+}

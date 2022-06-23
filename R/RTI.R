@@ -40,7 +40,7 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
                                    "Reliable Increase", 
                                    ifelse(JT_rci < -cutpoint, 
                                           "Reliable Decrease", 
-                                          "No Reliable Change"))
+                                          "Unspecified"))
     return(list(JT_rci = JT_rci, 
                 RTI = NA, 
                 category.RCI = JT_rci_classification,
@@ -62,7 +62,7 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
                                 "Reliable Increase", 
                                 ifelse(RTI < -cutpoint, 
                                        "Reliable Decrease", 
-                                       "No Reliable Change"))
+                                       "Unspecified"))
     return(list(JT_rci = RTI, 
                 RTI = RTI,
                 category.RTI = RTI_classification,
@@ -85,7 +85,7 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
                                 "Reliable Increase", 
                                 ifelse(RTI < -cutpoint, 
                                        "Reliable Decrease", 
-                                       "No Reliable Change"))
+                                       "Unspecified"))
     return(reliableTrend(RCI = NA_real_,
                 RTI = RTI, 
                 category.RTI = RTI_classification,
@@ -173,12 +173,35 @@ compute_rti_data <- function(data,
   for(i in 1:length(ppl)){
     data_use <- data %>% 
       filter(id == ppl[i])
-    output[[i]] <- rti_calc_simple(values = data_use$obs_score, variance = .2)
+    # output[[i]] <- rti_calc_simple(values = data_use$obs_score, variance = .2)
+    output[[i]] <- reliableTrend(metafor::rma(yi = data_use$obs_score, 
+                                              vi = error_value, 
+                                              method = "FE", 
+                                              data = data_use))
   }
   return(output)
 }
-# compute_rti_data(data = simdata1, id_var = "id", obs_var = value, error_value = .2)
+# compute_rti_data(data = simdata1, id_var = "id", obs_var = value, error_value = .5)
+simple_rma <- function(x, error_var = .5, 
+                       observed = "obs_score"){
+  metafor::rma(yi = x[[ observed ]], 
+               vi = error_var, 
+               method = "FE")
+}
+# simple_rma(simdata1)
 
+# this works, sort of.
+# test4 <- simdata1 %>% 
+#   split(.$id) %>% 
+#   purrr::map(simple_rma) %>% 
+#   purrr::map(reliableTrend) %>% 
+#   purrr::map_dfr(rti_to_df)
+
+
+# how about a function that takes a dataset and outputs another dataset with the 
+# reliableTrend objects as required?
+# rti_data <- function(df, error_var, 
+#                      yi = obs_score)
 
 # could write a function that does that and then instead of returning everything, 
 # just returns a new data set with the key values, could be added to the existing data

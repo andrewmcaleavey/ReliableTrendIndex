@@ -19,6 +19,7 @@ new_reliableTrend(
   values.prepost = vector(mode = "numeric"),
   error_var = double(),
   cutpoint = double(),
+  observed = "obs_score",
   scale_RCI = double()
 )
 }
@@ -74,4 +75,7 @@ Following \href{https://adv-r.hadley.nz/s3.html#s3-classes}{Advanced R}.
 }
 \examples{
 new_reliableTrend()
+}
+\seealso{
+\code{\link{reliableTrend}}
 }
