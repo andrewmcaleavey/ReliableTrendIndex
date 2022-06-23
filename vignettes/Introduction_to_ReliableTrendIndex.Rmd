@@ -1,0 +1,58 @@
+---
+title: "Introduction_to_ReliableTrendIndex"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction_to_ReliableTrendIndex}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(ReliableTrendIndex)
+```
+
+I hope no one ever reads this. Except me, probably, when I want to do revisions to some paper later on. 
+
+The package `{ReliableTrendIndex}` is a way to contain a large group of disorganized analysis functions related to the malformed concept of reliable change. There are a few key functions. 
+
+### `reliableTrend()` and the `reliableTrend` class  
+
+The function `reliableTrend()` creates objects of class `reliableTrend`. This class is just a list with fixed, named entries. You can read about it in `?reliableTrend()`.  
+
+### Meta-analysis backbone  
+
+The functions are mostly wrappers around functions from the `{metafor}` package, available on CRAN. The chief of these is `metafor::rma()`, which conducts simple univariate meta-analyses. Read about it at `?metafor::rma()`. It was worth developing wrapper functions for me because **A)** those functions are much more complex than the RCI/RTI I am working with here, and **B)** the variables in that package are named appropriately nonspecific things for meta-analysis, but overly complex things for me. 
+
+## Workflows  
+
+Some basic usage examples are provided in `?reliableTrend`, `?simple_rma`, `?rti_to_df` and others. 
+The two essential use cases are when you have one person, and when you have more than one person. 
+
+### One person workflows  
+
+Obviously, this is the simple case. 
+
+### Multi-person workflows  
+
+In the case of analyzing a lot of data simultaneously (e.g., in a research project or simulation study), the simplest way to think about it is doing the previous case iteratively. However, you might have one, two, or five hundred observations for a given person - it would be ideal to have an analysis system that could handle all of those cases. 
+
+```{r example of multiple ppl}
+test4 <- simulated_data %>%
+  split(.$id) %>%
+  purrr::map(~ simple_rma(., error_var = .2^2)) %>%
+  purrr::map(reliableTrend) %>%
+  purrr::map_dfr(rti_to_df) %>% 
+  mutate(id = simulated_data %>% group_by(id) %>% slice(1) %>% pull(id)) %>% 
+  right_join(simulated_data)
+
+table(test4$category.RCI, test4$true_change)
+table(test4$category.RTI, test4$true_change)
+```
+
