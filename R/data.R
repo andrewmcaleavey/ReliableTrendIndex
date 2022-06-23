@@ -19,3 +19,17 @@
 #' }
 #' @source \code{data-raw/simulated_data.R}
 "simulated_data"
+
+#' Jacobson & Truax (1991) data for a single case example
+#' 
+#' A `data.frame` containing the sample data for one patient provided in Jacobson & Truax (1991). 
+#' 
+#' @format A data.frame with 2 rows and 2 variables:  
+#' \describe{
+#'   \item{obs}{Observed score.}
+#'   \item{time}{Indicator for time.}
+#' }
+#' @source Jacobson, N. S. and Truax, P. (1991). Clinical significance: A statistical 
+#' approach to defining meaningful change in psychotherapy research. Journal of Consulting 
+#' and Clinical Psychology, 59, p. 12 - 19. 
+"jt_example_data_1"

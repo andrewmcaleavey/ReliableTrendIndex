@@ -87,12 +87,12 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
                                        "Reliable Decrease", 
                                        "Unspecified"))
     return(reliableTrend(RCI = NA_real_,
-                RTI = RTI, 
-                category.RTI = RTI_classification,
-                rmaObj = rmaobj,
-                values = values, 
-                error_var = variance, 
-                cutpoint = cutpoint))
+                         RTI = RTI, 
+                         category.RTI = RTI_classification,
+                         rmaObj = rmaobj,
+                         values = values, 
+                         error_var = variance, 
+                         cutpoint = cutpoint))
   }
 }
 
@@ -182,11 +182,53 @@ compute_rti_data <- function(data,
   return(output)
 }
 # compute_rti_data(data = simdata1, id_var = "id", obs_var = value, error_value = .5)
+
+#' A wrapper for `metafor::rma()` with some convenient defaults for my personal use
+#' 
+#' Not for external use.
+#'
+#' @param x A data.frame, vector, or single value. If not a single value, will be
+#' converted into difference scores!
+#' @param error_var Variance of the error, not SD or Sdiff
+#' @param observed Name of the variable used for observations in `x`. Must be a character. 
+#' @param time_var Name of the variable use for time in `x`. Must be a character.
+#'
+#' @return A single object of class `rma`.
+#' @export
+#'
+#' @examples 
+#' # simple entry: 
+#' simple_rma(15, 4.74^2)
+#' simple_rma(c(47.5, 32.5), 4.74^2)
+#' # Data.frame entry: 
+#' simple_rma(jt_data, error_var = 4.74^2, observed = "obs", time_var = "time")
 simple_rma <- function(x, error_var = .5, 
-                       observed = "obs_score"){
-  metafor::rma(yi = x[[ observed ]], 
-               vi = error_var, 
-               method = "FE")
+                       observed = "obs_score", 
+                       time_var = NULL){
+  if(is.data.frame(x)){
+    difs <- x[[ observed ]][-1] - x[[ observed ]][1]
+    if(!is.null(time_var)){
+      time_difs <- x[[ time_var ]][-1] - x[[ time_var ]][1]
+    } else {
+      time_var <- seq(1, length(difs), by = 1)
+    }
+    output <- metafor::rma(yi = difs, 
+                           vi = error_var, 
+                           mods = time_var, 
+                           method = "FE", 
+                           intercept = FALSE)
+  } else if(length(x) > 1) {
+    difs <- x[-1] - x[1]
+    output <- metafor::rma(yi = difs, 
+                           vi = error_var, 
+                           method = "FE")
+  } else if(length(x == 1)){
+    difs <- x
+    output <- metafor::rma(yi = difs, 
+                           vi = error_var, 
+                           method = "FE")
+  }
+  return(output)
 }
 # simple_rma(simdata1)
 

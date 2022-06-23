@@ -39,6 +39,7 @@
 #' need to be observed in a difference score for that difference to be considered
 #' "reliable" under J&T.
 #'
+#' @export
 #' @return An object of type `reliableTrend`. 
 #' This object is a glorified list with the above-defined parameters as values. 
 #' @seealso \code{\link{reliableTrend}}
@@ -67,23 +68,23 @@ new_reliableTrend <- function(RCI = double(),
   stopifnot(is.double(pd.RCI))
   stopifnot(is.double(pd.RTI))
   category.RTI <- match.arg(category.RTI, 
-                        c("Unspecified", 
-                          "Reliable Increase", 
-                          "Reliable Decrease"))
+                            c("Unspecified", 
+                              "Reliable Increase", 
+                              "Reliable Decrease"))
   category.RCI <- match.arg(category.RCI, 
                             c("Unspecified", 
                               "Reliable Increase", 
                               "Reliable Decrease"))
   sign.RTI <- match.arg(sign.RTI, 
-                            c("Not calculated", 
-                              "Flat", 
-                              "Increase", 
-                              "Decrease"))
-  sign.difference <- match.arg(sign.difference, 
                         c("Not calculated", 
                           "Flat", 
                           "Increase", 
                           "Decrease"))
+  sign.difference <- match.arg(sign.difference, 
+                               c("Not calculated", 
+                                 "Flat", 
+                                 "Increase", 
+                                 "Decrease"))
   stopifnot(is.list(rmaObj))
   stopifnot(is.vector(values))
   stopifnot(is.vector(values.prepost))
@@ -122,6 +123,7 @@ new_reliableTrend <- function(RCI = double(),
 #'
 #' @return The same reliable trend object or errors.
 #' @seealso \code{\link{reliableTrend}}
+#' @export
 #'
 #' @examples 
 #' validate_reliableTrend(new_reliableTrend())
@@ -218,20 +220,20 @@ reliableTrend <- function(x = NULL,
   if(!is.null(x) & !"rma" %in% class(x)) {
     # if x exists but is NOT an rma object
     # need to check for missing inputs and assign the values in x if they exist
-    if(!missing(x$RCI))                    RCI <- x$RCI 
-    if(!missing(x$RTI))                    RTI <- x$RTI 
-    if(!missing(x$pd.RCI))                 pd.RCI <- x$pd.RCI 
-    if(!missing(x$pd.RTI))                 pd.RTI <- x$pd.RTI 
-    if(!missing(x$category.RCI))           category.RCI <- x$category.RCI
-    if(!missing(x$category.RTI))           category.RTI <- x$category.RTI 
-    if(!missing(x$sign.RTI))               sign.RTI <- x$sign.RTI
-    if(!missing(x$sign.difference))        sign.difference <- x$sign.difference
-    if(!missing(x$rmaObj))                 rmaObj <- x$rmaObj 
-    if(!missing(x$values))                 values <- x$values 
-    if(!missing(x$values.prepost))         values.prepost <- x$values.prepost 
-    if(!missing(x$error_var))              error_var <- x$error_var 
-    if(!missing(x$cutpoint))               cutpoint <- x$cutpoint 
-    if(!missing(x$scale_RCI))              scale_RCI <- x$scale_RCI
+    if(exists("RCI", x))                    RCI <- x$RCI 
+    if(exists("RTI", x))                    RTI <- x$RTI 
+    if(exists("pd.RCI", x))                 pd.RCI <- x$pd.RCI 
+    if(exists("pd.RTI", x))                 pd.RTI <- x$pd.RTI 
+    if(exists("category.RCI", x))           category.RCI <- x$category.RCI
+    if(exists("category.RTI", x))           category.RTI <- x$category.RTI 
+    if(exists("sign.RTI", x))               sign.RTI <- x$sign.RTI
+    if(exists("sign.difference", x))        sign.difference <- x$sign.difference
+    if(exists("rmaObj", x))                 rmaObj <- x$rmaObj 
+    if(exists("values", x))                 values <- x$values 
+    if(exists("values.prepost", x))         values.prepost <- x$values.prepost 
+    if(exists("error_var", x))              error_var <- x$error_var 
+    if(exists("cutpoint", x))               cutpoint <- x$cutpoint 
+    if(exists("scale_RCI", x))              scale_RCI <- x$scale_RCI
   }
   # Now all PROVIDED arguments are available as environment variables
   # as long as x is not "rma" class.
@@ -285,7 +287,8 @@ reliableTrend <- function(x = NULL,
                                  "Reliable Decrease", 
                                  "Unspecified")) 
     scale_RCI <- sqrt(error_var) * cutpoint 
-    RCI <- (values[length(values)] - values[1]) / sqrt(error_var) 
+    RCI <- jt_rci_calc(difference = values[length(values)] - values[1], 
+                           sdiff = sqrt(error_var))
     pd.RCI <- pnorm(RCI) 
     category.RCI <- ifelse(RCI > cutpoint, 
                            "Reliable Increase", 
@@ -344,7 +347,8 @@ reliableTrend <- function(x = NULL,
 # reliableTrend(output2$rmaObj)
 # reliableTrend()
 # reliableTrend(list())# runs into the problem that all of the parameters need to be provided. 
-
+# tester <- rti_calc_simple(values = c(5, 3, 2, 3, 1, 1, 1), .5)
+# reliableTrend(tester$rmaObj)
 # print function
 
 summary.reliableTrend <- function(x){
