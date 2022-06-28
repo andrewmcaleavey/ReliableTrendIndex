@@ -1,6 +1,6 @@
 ## Simulating data to have as a test object
 
-ids <- 1:100  
+ids <- 1:500  
 id_variable <- unlist(lapply(ids, function(x) rep(x, each = sample(2:20, length(ids), replace = TRUE))))
 id_data <- id_variable %>% 
   tibble() %>% 
@@ -10,7 +10,9 @@ id_data <- id_variable %>%
 num_obs <- id_data %>% 
   summarise(num_obs = n()) 
 
+# True scores
 BL_true = rnorm(length(ids))
+# final score has a mean of .5, so most people will be increasing
 Final_true = rnorm(length(ids), mean = .5)
 diff_true = Final_true - BL_true
 
@@ -28,6 +30,8 @@ simulated_data <- left_join(id_data, pre_post,
          true_change = case_when(diff_true > 0 ~ "True Increase", 
                                  diff_true < 0 ~ "True Decrease", 
                                  TRUE ~ "True No Change"), 
+         # adding measurement error to each observation
+         # SD of error is .2
          obs_score = true_score + rnorm(nrow(.), 
                                         mean = 0, 
                                         sd = .2))

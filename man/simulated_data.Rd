@@ -5,7 +5,7 @@
 \alias{simulated_data}
 \title{Synthetic change data.}
 \format{
-A data frame with 1081 rows and 10 variables:
+A data frame with 5534 rows and 10 variables:
 \describe{
 \item{id}{Identifier}
 \item{num_obs}{Number of observations of this individual in the data}

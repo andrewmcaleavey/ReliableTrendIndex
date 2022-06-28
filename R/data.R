@@ -4,7 +4,7 @@
 #'
 #' A long-format (tidy) dataset of simulated generic scores from an imaginary scale score
 #'
-#' @format A data frame with 1081 rows and 10 variables:
+#' @format A data frame with 5534 rows and 10 variables:
 #' \describe{
 #'   \item{id}{Identifier}
 #'   \item{num_obs}{Number of observations of this individual in the data}

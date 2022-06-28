@@ -302,11 +302,11 @@ reliableTrend <- function(x = NULL,
                                   ifelse(RTI == 0, 
                                          "Flat", 
                                          "Not calculated")))
-    sign.difference <- ifelse(RCI > 0, 
+    sign.difference <- ifelse(values[length(values)] - values[1] > 0, 
                        "Increase", 
-                       ifelse(RCI < 0, 
+                       ifelse(values[length(values)] - values[1] < 0, 
                               "Decrease", 
-                              ifelse(RCI == 0, 
+                              ifelse(values[length(values)] - values[1] == 0, 
                                      "Flat", 
                                      "Not calculated")))
   } 
@@ -425,6 +425,7 @@ print.reliableTrend <- function(x){
 #' @examples
 #' rti_to_stripped_list(reliableTrend())
 rti_to_stripped_list <- function(x) {
+  stopifnot(is.reliableTrend(x))
   # x is a reliableTrend
   list(RCI = x$RCI ,
        RTI = x$RTI ,
@@ -461,6 +462,17 @@ rti_to_df <- function(x){
   # ensure all values are real before conversion to df, it won't like missings
   data.frame(rti_to_stripped_list(x))
 }
+
+#' Verify object claims to be `reliableTrend` class
+#'
+#' @param x An object to check
+#'
+#' @return Logical.
+#' @export
+#'
+#' @examples
+#' is.reliableTrend(reliableTrend())
+#' is.reliableTrend("NOPE")
 is.reliableTrend <- function(x){
   "reliableTrend" %in% class(x)
 }
