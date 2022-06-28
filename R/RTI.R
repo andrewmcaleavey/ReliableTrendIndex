@@ -243,13 +243,16 @@ simple_rma <- function(x, error_var = .5,
 # could write a function that does that and then instead of returning everything, 
 # just returns a new data set with the key values, could be added to the existing data
 # this works, sort of.
-test4 <- simulated_data %>%
-  split(.$id) %>%
-  purrr::map(simple_rma) %>%
-  purrr::map(reliableTrend) %>%
-  purrr::map_dfr(rti_to_df) %>% 
-  mutate(id = simulated_data %>% group_by(id) %>% slice(1) %>% pull(id)) %>% 
-  right_join(simulated_data)
+# test4 <- simulated_data %>%
+#   split(.$id) %>%
+#   purrr::map(~ simple_rma(., error_var = .2^2)) %>%
+#   purrr::map(reliableTrend) %>%
+#   purrr::map_dfr(rti_to_df) %>% 
+#   mutate(id = simulated_data %>% group_by(id) %>% slice(1) %>% pull(id)) %>% 
+#   right_join(simulated_data)
+# 
+# table(test4$category.RCI, test4$true_change)
+# table(test4$category.RTI, test4$true_change)
 
 add_rti <- function(data, id_var, obs_var, error_value, ...){
   temp <- compute_rti_data(data = data, 
