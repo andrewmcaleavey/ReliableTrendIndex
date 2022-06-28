@@ -79,6 +79,9 @@ This exported function creates \code{reliableTrend} objects using either direct 
 list input, or a standard \code{rma} object from \code{{metafor}}.
 }
 \examples{
+output <- rti_calc_simple(c(47.5, 32.5), 4.74^2)
+output
+reliableTrend(output$rmaObj)
 output2 <- rti_calc_simple(c(98,98,98,99,99,99), .7071068^2)
 reliableTrend(output2$rmaObj)
 reliableTrend()

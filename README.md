@@ -68,8 +68,8 @@ library(ReliableTrendIndex)
 #> Warning: package 'magrittr' was built under R version 4.0.5
 #> 
 #> You loaded ReliableTrendIndex
-#> Think about your choices: would you rather develop a meaningful clinical test?
-#> Or is reliability really the best possible idea?
+#> Did you know that change scores are potentially misleading and 
+#> end-state functioning is generally preferable as an evaluation of any treatment course?
 ```
 
 ### One person RCI
@@ -320,11 +320,10 @@ print(mac_rti)
 ```
 
 That will give the full information. However, note that the re-analysis
-changed `mac_rti$values` from a six-observation vector to a difference
-score vector of 5 observations. This should not have dire consequences
-but must be carefully examined, and if the observed scores are
-important, altering this behavior is possible. The summary reflects this
-as well.
+changed `mac_rti$values` to deviation-from-first-observation scores
+rather than raw scores. This should not have dire consequences but must
+be carefully examined, and if the observed scores are important,
+altering this behavior is possible.
 
 ## Analysis of complete data sets
 

@@ -127,7 +127,7 @@ To see the details:
 print(mac_rti)
 ```
 
-That will give the full information. However, note that the re-analysis changed `mac_rti$values` from a six-observation vector to a difference score vector of 5 observations. This should not have dire consequences but must be carefully examined, and if the observed scores are important, altering this behavior is possible. The summary reflects this as well.   
+That will give the full information. However, note that the re-analysis changed `mac_rti$values` to deviation-from-first-observation scores rather than raw scores. This should not have dire consequences but must be carefully examined, and if the observed scores are important, altering this behavior is possible.   
 
 ## Analysis of complete data sets  
 

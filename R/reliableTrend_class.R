@@ -193,6 +193,9 @@ validate_reliableTrend <- function(x) {
 #' 
 #'
 #' @examples 
+#' output <- rti_calc_simple(c(47.5, 32.5), 4.74^2)
+#' output
+#' reliableTrend(output$rmaObj)
 #' output2 <- rti_calc_simple(c(98,98,98,99,99,99), .7071068^2)
 #' reliableTrend(output2$rmaObj)
 #' reliableTrend()
@@ -278,7 +281,9 @@ reliableTrend <- function(x = NULL,
     rmaObj = x 
     # for values, if they are provided, check that they are the same
     # as the rma version, then 
-    if(missing(values)) values <- as.numeric(x$yi) 
+    if(missing(values)) {
+      values <- c(0, as.numeric(x$yi))
+    } 
     values.prepost <- c(values[1], values[length(values)])
     if(missing(error_var)) error_var <-  unique(x$vi) 
     category.RTI <- ifelse(RTI > cutpoint, 
@@ -288,7 +293,8 @@ reliableTrend <- function(x = NULL,
                                  "Unspecified")) 
     scale_RCI <- sqrt(error_var) * cutpoint 
     RCI <- jt_rci_calc(difference = values[length(values)] - values[1], 
-                           sdiff = sqrt(error_var))
+                           # sdiff = sqrt(error_var))
+                       sdiff = sqrt(error_var))
     pd.RCI <- pnorm(RCI) 
     category.RCI <- ifelse(RCI > cutpoint, 
                            "Reliable Increase", 

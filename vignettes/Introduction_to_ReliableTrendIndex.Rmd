@@ -85,7 +85,7 @@ The top table is people whose true scores truly decreased, the bottom are the pe
 
 We can see that:   
 
-* `r sum(sim_data_1$true_change == "True Decrease" & sim_data_1$category.RTI == "Reliable Decrease" & sim_data_1$category.RCI == "Unspecified")` people who truly decreased were identified correctly by the RTI but 'Unspecified' by the RCI. In contrast, the RCI identified `r sum(sim_data_1$true_change == "True Decrease" & sim_data_1$category.RCI == "Reliable Decrease" & sim_data_1$category.RTI == "Unspecified")` person who truly decreased while the RTI said they were 'Unspecified.'   
+* `r sum(sim_data_1$true_change == "True Decrease" & sim_data_1$category.RTI == "Reliable Decrease" & sim_data_1$category.RCI == "Unspecified")` people who truly decreased were identified correctly by the RTI but 'Unspecified' by the RCI. In contrast, the RCI only identified `r sum(sim_data_1$true_change == "True Decrease" & sim_data_1$category.RCI == "Reliable Decrease" & sim_data_1$category.RTI == "Unspecified")` people who truly decreased while the RTI said they were 'Unspecified.'   
 
 Overall, other comparisons are in favor of the RTI in most cases.  
 
