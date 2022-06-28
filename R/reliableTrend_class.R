@@ -351,15 +351,56 @@ reliableTrend <- function(x = NULL,
 # reliableTrend(tester$rmaObj)
 # print function
 
+#' Text summary of a `reliableTrend` object
+#'
+#' @param x A `reliableTrend` object
+#'
+#' @return (invisibly) `x`.
+#' @export
+#'
+#' @examples output <- rti_calc_simple(c(98,98,98,99,99,99), .7071068^2)
+#' # gives a warning:
+#' summary(output)
+#' # compute the missing values using this:
+#' output2 <- reliableTrend(output$rmaObj)
+#' # no warning:
+#' summary(output2)
 summary.reliableTrend <- function(x){
+  if(is.na(x$RCI)) {
+    warning("Only parts of this reliableTrend object are valid. Do not trust the summary.")
+  }
+  
+  article.RTI <- ifelse(x$category.RTI == "Unspecified", 
+                        " an ", 
+                        " a ")
+  article.RCI <- ifelse(x$category.RCI == "Unspecified", 
+                        " an ", 
+                        " a ")
   cat("\nReliable Trend Analysis:\n\n")
-  cat(paste0("This sequence of ", length(x$values), " values has a ", 
-             x$category.RTI), "using the RTI.\n")
-  cat(paste0("A pre-post analysis would have a(n) ", x$category.RCI), 
+  cat(paste0("This sequence of ", 
+             length(x$values), 
+             " values has",
+             article.RTI,
+             x$category.RTI), 
+      "using the RTI.\n")
+  cat(paste0("A pre-post analysis would have", 
+             article.RCI,
+             x$category.RCI), 
       "difference using the RCI.\n")
   cat("\n")
   invisible(x)
 }
+
+
+#' Print a `reliableTrend` object
+#'
+#' @param x An object of class `reliableTrend`.
+#'
+#' @return (invisibly) `x`.
+#' @export 
+#'
+#' @examples output <- rti_calc_simple(c(98,98,98,99,99,99), .7071068^2)
+#' print(output)
 print.reliableTrend <- function(x){
   print.default(unclass(x))
   invisible(x)

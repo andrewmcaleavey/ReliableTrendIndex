@@ -1,0 +1,125 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# ReliableTrendIndex
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+An R package for analysis of "reliable" changes.
+
+PLEASE DO NOT USE RELIABLE CHANGE OR THIS PACKAGE FOR ANYTHING WITH MEANINGFUL CONSEQUENCES. 
+
+The idea of reliable change is extremely questionable, and there are almost certainly better ways to investigate the questions in which you are interested. 
+
+The goal of this package is to provide a simple interface for computing the RCI and RTI given a data set. I intend it for my own personal use and as an educational/demonstration tool in this ongoing research endeavor. 
+
+## Installation
+
+I don't recommend installing this package. I am providing it publicly because it should be available to everyone who is interested in these issues, to discover strengths and weaknesses of this framework. 
+
+You can install the development version of ReliableTrendIndex from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("andrewmcaleavey/ReliableTrendIndex")
+```
+
+## Usage
+
+You could use this package just to have a standard way to access RCI and RTI-like functions. They're not complex, other packages exist that compute them, but it is easier to have them in one standard format than bother with always having to re-write these functions with varying levels of stability on a per-project basis.  
+
+I repeat, however, that *I don't really think these functions should be used for any clinically-meaningful application* except with extreme caution. The idea of "reliable" change is questionably justified and has a strong tendency to confuse or mislead users.  
+
+Bugs and issues can be reported at [the GitHub repo](https://github.com/andrewmcaleavey/ReliableTrendIndex). If anyone would like to contribute, please be in touch!  
+
+## Example
+
+### One person RCI  
+
+To calculate the RCI for an individual, we can do the following:  
+
+```{r example with one person}
+library(ReliableTrendIndex)
+## here is the example case provided by Jacobson & Truax (1991): 
+knitr::kable(jt_example_data_1)
+```
+
+We will use that data to compute a simple RCI.  
+
+The difference score for this person is `47.5 - 32.5`, or `15`. 
+
+The scale's standard error of the difference score, as computed by the authors, is `4.74`. 
+
+```{r}
+jt_rci_calc(difference = 15, sdiff = 4.74)
+```
+
+That value, 3.16, is the person's RCI, according to Jacobson & Truax. Since it is greater than their suggested cutpoint of 1.96 (which conveys 5% chance of Type I error under the assumptions of the RCI), we would conclude that this change is "reliable."
+
+### One person RTI  
+
+If we had assess a person more than twice, it would be nice to incorporate all of the information we have about them, rather than just the first and last (or any two observations in isolation). For the purpose of an example, we will use the fabricated height data from McAleavey (2022).  
+
+```{r}
+knitr::kable(mac_height)
+```
+
+That data shows a difference score of `1` cm. From the example text, we know that the standard error of the difference is `.7071068`. 
+
+We could simply compute the RCI for this individual:  
+```{r}
+jt_rci_calc(difference = 1, sdiff = .7071068)
+```
+
+That value, 1.414, is not greater than 1.96, so we would conclude that the change from pre-post is not reliable. 
+
+However, the RTI would incorporate all six measurements. 
+
+To use `rti_calc_simple()` we need the observations as a vector and the *squared* standard error of the difference. 
+
+```{r}
+mac_rti <- rti_calc_simple(mac_height$obs, .7071068^2)
+```
+
+The object `mac_rti` contains a lot of information and can be viewed with `print.reliableTrend()` (which is also called by just the object name):
+
+```{r}
+print(mac_rti)
+```
+
+However, notice that several values there are missing or retained the default values. This would be caught by the `summary()` method for `reliableTrend` objects: 
+
+```{r}
+summary(mac_rti)
+```
+
+To fill in the missing values (and properly calculate the RTI and RCI comparison), call `reliableTrend()` on the `rmaObj` variable of `mac_rti`: 
+
+```{r}
+mac_rti <- reliableTrend(mac_rti$rmaObj)
+summary(mac_rti)
+print(mac_rti)
+```
+
+That will give the full information. 
+
+## Analysis of complete data sets  
+
+More complete functions to analyze a complete data set are also provided in other vignetts and functions. Complete documentation to come!
+
+## License
+
+This package is licensed under the GNU Affero General Public License (AGPL) 3.  

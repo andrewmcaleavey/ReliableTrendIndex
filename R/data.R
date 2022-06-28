@@ -33,3 +33,17 @@
 #' approach to defining meaningful change in psychotherapy research. Journal of Consulting 
 #' and Clinical Psychology, 59, p. 12 - 19. 
 "jt_example_data_1"
+
+#' Mac height data
+#' 
+#' Example data for a single case
+#' 
+#' A `data.frame` containing the sample data for one individual measured at six times. 
+#' 
+#' @format A data.frame with 2 rows and 2 variables:  
+#' \describe{
+#'   \item{obs}{Observed score.}
+#'   \item{time}{Indicator for time.}
+#' }
+#' @source McAleavey 2022 
+"mac_height"
