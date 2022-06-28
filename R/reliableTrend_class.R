@@ -299,12 +299,16 @@ reliableTrend <- function(x = NULL,
                            "Increase", 
                            ifelse(RTI < 0, 
                                   "Decrease", 
-                                  "Flat"))
+                                  ifelse(RTI == 0, 
+                                         "Flat", 
+                                         "Not calculated")))
     sign.difference <- ifelse(RCI > 0, 
                        "Increase", 
                        ifelse(RCI < 0, 
                               "Decrease", 
-                              "Flat"))
+                              ifelse(RCI == 0, 
+                                     "Flat", 
+                                     "Not calculated")))
   } 
   
   ## FINAL STEPS

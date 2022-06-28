@@ -53,10 +53,6 @@ would like to contribute, please be in touch!
 
 ## Example
 
-### One person RCI
-
-To calculate the RCI for an individual, we can do the following:
-
 ``` r
 library(ReliableTrendIndex)
 #> Loading required package: dplyr
@@ -72,8 +68,15 @@ library(ReliableTrendIndex)
 #> Warning: package 'magrittr' was built under R version 4.0.5
 #> 
 #> You loaded ReliableTrendIndex
-#> Did you know that change scores are potentially misleading and 
-#> end-state functioning is generally preferable as an evaluation of any treatment course?
+#> Loading the ReliableTrendIndex package is not recommended, because you're probably not 
+#> going to find a situation in which the reliability of change scores matters.
+```
+
+### One person RCI
+
+To calculate the RCI for an individual, we can do the following:
+
+``` r
 ## here is the example case provided by Jacobson & Truax (1991): 
 knitr::kable(jt_example_data_1)
 ```
@@ -102,7 +105,7 @@ conclude that this change is “reliable.”
 
 ### One person RTI
 
-If we had assess a person more than twice, it would be nice to
+If we had assessed a person more than twice, it would be nice to
 incorporate all of the information we have about them, rather than just
 the first and last (or any two observations in isolation). For the
 purpose of an example, we will use the fabricated height data from
@@ -124,7 +127,9 @@ knitr::kable(mac_height)
 That data shows a difference score of `1` cm. From the example text, we
 know that the standard error of the difference is `.7071068`.
 
-We could simply compute the RCI for this individual:
+We could simply compute the RCI for this individual by using their first
+and last observations, which is commonly done in routine care and
+clinical trials analysis of clinically significant change:
 
 ``` r
 jt_rci_calc(difference = 1, sdiff = .7071068)
@@ -132,9 +137,12 @@ jt_rci_calc(difference = 1, sdiff = .7071068)
 ```
 
 That value, 1.414, is not greater than 1.96, so we would conclude that
-the change from pre-post is not reliable.
+the change from pre-post is not reliable. The `ReliableTrendIndex` term
+for this is `Unspecified` as opposed to `No Change` in order to indicate
+that the method could not specifically identify the change score.
 
-However, the RTI would incorporate all six measurements.
+However, the RTI would incorporate all six measurements. It is a waste
+to ignore two-thirds of our information here.
 
 To use `rti_calc_simple()` we need the observations as a vector and the
 *squared* standard error of the difference.
@@ -144,9 +152,9 @@ mac_rti <- rti_calc_simple(mac_height$obs, .7071068^2)
 #> [1] "More than two values provided, assuming they are evenly spaced in time."
 ```
 
-The object `mac_rti` contains a lot of information and can be viewed
-with `print.reliableTrend()` (which is also called by just the object
-name):
+The object `mac_rti` is of the class `reliableTrend`. It contains a lot
+of information and can be viewed with `print.reliableTrend()` (which is
+also called by just the object name):
 
 ``` r
 print(mac_rti)
@@ -226,6 +234,9 @@ summary(mac_rti)
 #> A pre-post analysis would have an Unspecified difference using the RCI.
 ```
 
+Because of this, I recommend using the `summary()` function when
+possible.
+
 To fill in the missing values (and properly calculate the RTI and RCI
 comparison), call `reliableTrend()` on the `rmaObj` variable of
 `mac_rti`:
@@ -238,6 +249,14 @@ summary(mac_rti)
 #> 
 #> This sequence of 5 values has a Reliable Increase using the RTI.
 #> A pre-post analysis would have an Unspecified difference using the RCI.
+```
+
+So now we can clearly see that the RCI, if ignoring the interim
+measurements, would not detect a reliable change, but the RTI would.
+
+To see the details:
+
+``` r
 print(mac_rti)
 #> $RCI
 #> [1] 1.414214
@@ -300,12 +319,17 @@ print(mac_rti)
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
 
-That will give the full information.
+That will give the full information. However, note that the re-analysis
+changed `mac_rti$values` from a six-observation vector to a difference
+score vector of 5 observations. This should not have dire consequences
+but must be carefully examined, and if the observed scores are
+important, altering this behavior is possible. The summary reflects this
+as well.
 
 ## Analysis of complete data sets
 
 More complete functions to analyze a complete data set are also provided
-in other vignetts and functions. Complete documentation to come!
+in other vignettes and functions. Complete documentation to come!
 
 ## License
 

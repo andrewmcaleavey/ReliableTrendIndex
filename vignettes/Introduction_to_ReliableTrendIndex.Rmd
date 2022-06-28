@@ -37,22 +37,84 @@ The two essential use cases are when you have one person, and when you have more
 
 ### One person workflows  
 
-Obviously, this is the simple case. 
+Obviously, this is the simple case. See the README for a couple of simple examples.  
 
 ### Multi-person workflows  
 
 In the case of analyzing a lot of data simultaneously (e.g., in a research project or simulation study), the simplest way to think about it is doing the previous case iteratively. However, you might have one, two, or five hundred observations for a given person - it would be ideal to have an analysis system that could handle all of those cases. 
 
 ```{r example of multiple ppl}
-test4 <- simulated_data %>%
+sim_data_1 <- simulated_data %>%
   split(.$id) %>%
   purrr::map(~ simple_rma(., error_var = .2^2)) %>%
   purrr::map(reliableTrend) %>%
   purrr::map_dfr(rti_to_df) %>% 
   mutate(id = simulated_data %>% group_by(id) %>% slice(1) %>% pull(id)) %>% 
-  right_join(simulated_data)
-
-table(test4$category.RCI, test4$true_change)
-table(test4$category.RTI, test4$true_change)
+  right_join(simulated_data) %>% 
+  group_by(id) %>% 
+  slice(1)
 ```
+
+if we want to compare the RCI to RTI we could see how similar they are: 
+
+```{r}
+knitr::kable(table(sim_data_1$category.RCI))
+knitr::kable(table(sim_data_1$category.RTI))
+```
+
+In this data, the RTI identifies about twice as many people as "reliably" changed than the RCI on its own did. Most of those are in the Increased category. 
+
+```{r}
+table(sim_data_1$category.RCI, 
+      sim_data_1$category.RTI, 
+      sim_data_1$true_change)
+```
+
+The top table is people whose true scores truly decreased, the bottom are the people whose true scores truly increased.  
+
+The rows are the RCI and the columns are the RTI. We can see that:   
+
+* All of the people the RCI identifies as Decreased are identified as reliably decreased by the RTI.  
+* 7 people who truly decreased were identified correctly by the RTI but 'Unspecified' by the RCI.  
+* While the RTI does not think anyone reliably increased, the RCI thinks 1 person reliably Increased when they actually truly decreased (sign error).  
+* The RTI categorized a total of 6 people as 'Unspecified' while the RCI categorized 12 people as such (100% more signal loss)  
+* Neither the RCI nor RTI think anyone reliably decreased when they truly increased (those will tend to be smaller observed changes in this data).  
+* The RTI correctly identifies 16 people as reliably increased while the RCI thinks they are 'Unspecified.'  
+* There are 2 people that the RCI correctly identifies as reliably increased that the RTI thinks are 'Unspecified,' about 88% fewer detection failures.  
+* The RTI categorizes 9 people as 'Unspecified' compared to the RCI's 23, a 59% reduction.  
+
+RCI versus truth: 
+```{r example of multiple ppl2}
+table(sim_data_1$category.RCI, sim_data_1$true_change)
+```
+
+RTI versus truth: 
+```{r example of multiple ppl3}
+table(sim_data_1$category.RTI, sim_data_1$true_change)
+```
+
+While the RCI categorizes 35 out of 100 people as "Unspecified," It is very accurate with the other 65%, only making one sign error in this data. 
+
+However, the RTI leaves only 15 people "Unspecified" (less than half the RCI) and makes no sign errors at all in this data.  
+
+Who are the people who are Unspecified according to the RTI?
+
+```{r}
+unspec <- simulated_data %>%
+  split(.$id) %>%
+  purrr::map(~ simple_rma(., 
+                          error_var = .2^2)) %>%
+  purrr::map(reliableTrend) %>%
+  purrr::map_dfr(rti_to_df) %>% 
+  mutate(id = simulated_data %>% 
+           group_by(id) %>% 
+           slice(1) %>% 
+           pull(id)) %>% 
+  right_join(simulated_data) %>% 
+  filter(category.RTI == "Unspecified")
+```
+
+
+It is not clear when you would want to use the RCI over the RTI, if there are more than two data points for any individuals
+
 

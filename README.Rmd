@@ -47,12 +47,15 @@ Bugs and issues can be reported at [the GitHub repo](https://github.com/andrewmc
 
 ## Example
 
+```{r load package}
+library(ReliableTrendIndex)
+```
+
 ### One person RCI  
 
 To calculate the RCI for an individual, we can do the following:  
 
 ```{r example with one person}
-library(ReliableTrendIndex)
 ## here is the example case provided by Jacobson & Truax (1991): 
 knitr::kable(jt_example_data_1)
 ```
@@ -71,7 +74,7 @@ That value, 3.16, is the person's RCI, according to Jacobson & Truax. Since it i
 
 ### One person RTI  
 
-If we had assess a person more than twice, it would be nice to incorporate all of the information we have about them, rather than just the first and last (or any two observations in isolation). For the purpose of an example, we will use the fabricated height data from McAleavey (2022).  
+If we had assessed a person more than twice, it would be nice to incorporate all of the information we have about them, rather than just the first and last (or any two observations in isolation). For the purpose of an example, we will use the fabricated height data from McAleavey (2022).  
 
 ```{r}
 knitr::kable(mac_height)
@@ -79,14 +82,15 @@ knitr::kable(mac_height)
 
 That data shows a difference score of `1` cm. From the example text, we know that the standard error of the difference is `.7071068`. 
 
-We could simply compute the RCI for this individual:  
+We could simply compute the RCI for this individual by using their first and last observations, which is commonly done in routine care and clinical trials analysis of clinically significant change:  
+
 ```{r}
 jt_rci_calc(difference = 1, sdiff = .7071068)
 ```
 
-That value, 1.414, is not greater than 1.96, so we would conclude that the change from pre-post is not reliable. 
+That value, 1.414, is not greater than 1.96, so we would conclude that the change from pre-post is not reliable. The `ReliableTrendIndex` term for this is `Unspecified` as opposed to `No Change` in order to indicate that the method could not specifically identify the change score. 
 
-However, the RTI would incorporate all six measurements. 
+However, the RTI would incorporate all six measurements. It is a waste to ignore two-thirds of our information here. 
 
 To use `rti_calc_simple()` we need the observations as a vector and the *squared* standard error of the difference. 
 
@@ -94,7 +98,7 @@ To use `rti_calc_simple()` we need the observations as a vector and the *squared
 mac_rti <- rti_calc_simple(mac_height$obs, .7071068^2)
 ```
 
-The object `mac_rti` contains a lot of information and can be viewed with `print.reliableTrend()` (which is also called by just the object name):
+The object `mac_rti` is of the class `reliableTrend`. It contains a lot of information and can be viewed with `print.reliableTrend()` (which is also called by just the object name):
 
 ```{r}
 print(mac_rti)
@@ -106,19 +110,28 @@ However, notice that several values there are missing or retained the default va
 summary(mac_rti)
 ```
 
+Because of this, I recommend using the `summary()` function when possible. 
+
 To fill in the missing values (and properly calculate the RTI and RCI comparison), call `reliableTrend()` on the `rmaObj` variable of `mac_rti`: 
 
 ```{r}
 mac_rti <- reliableTrend(mac_rti$rmaObj)
 summary(mac_rti)
+```
+
+So now we can clearly see that the RCI, if ignoring the interim measurements, would not detect a reliable change, but the RTI would. 
+
+To see the details: 
+
+```{r}
 print(mac_rti)
 ```
 
-That will give the full information. 
+That will give the full information. However, note that the re-analysis changed `mac_rti$values` from a six-observation vector to a difference score vector of 5 observations. This should not have dire consequences but must be carefully examined, and if the observed scores are important, altering this behavior is possible. The summary reflects this as well.   
 
 ## Analysis of complete data sets  
 
-More complete functions to analyze a complete data set are also provided in other vignetts and functions. Complete documentation to come!
+More complete functions to analyze a complete data set are also provided in other vignettes and functions. Complete documentation to come!
 
 ## License
 
