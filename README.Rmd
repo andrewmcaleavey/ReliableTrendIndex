@@ -131,7 +131,7 @@ That will give the full information. However, note that the re-analysis changed 
 
 ## Analysis of complete data sets  
 
-More complete functions to analyze a complete data set are also provided in other vignettes and functions. Complete documentation to come!
+More complete functions to analyze a complete data set are also provided in the function documentation and an initial `vignette("Introduction_to_ReliableTrendIndex")`. Complete documentation to come!
 
 ## License
 

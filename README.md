@@ -68,8 +68,8 @@ library(ReliableTrendIndex)
 #> Warning: package 'magrittr' was built under R version 4.0.5
 #> 
 #> You loaded ReliableTrendIndex
-#> Loading the ReliableTrendIndex package is not recommended, because you're probably not 
-#> going to find a situation in which the reliability of change scores matters.
+#> Think about your choices: would you rather develop a meaningful clinical test?
+#> Or is reliability really the best possible idea?
 ```
 
 ### One person RCI
@@ -329,7 +329,9 @@ as well.
 ## Analysis of complete data sets
 
 More complete functions to analyze a complete data set are also provided
-in other vignettes and functions. Complete documentation to come!
+in the function documentation and an initial
+`vignette("Introduction_to_ReliableTrendIndex")`. Complete documentation
+to come!
 
 ## License
 
