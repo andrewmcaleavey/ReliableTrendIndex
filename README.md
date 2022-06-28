@@ -142,7 +142,11 @@ for this is `Unspecified` as opposed to `No Change` in order to indicate
 that the method could not specifically identify the change score.
 
 However, the RTI would incorporate all six measurements. It is a waste
-to ignore two-thirds of our information here.
+to ignore two-thirds of our information here. In its most simple form,
+the RTI takes the RCI’s observed difference score question (How likely
+is this difference score, if the true change was actually 0?) and
+extends it to the overall sequence of scores (How likely is this
+sequence of scores if the true linear trend was actually 0?).
 
 To use `rti_calc_simple()` we need the observations as a vector and the
 *squared* standard error of the difference.
@@ -151,6 +155,12 @@ To use `rti_calc_simple()` we need the observations as a vector and the
 mac_rti <- rti_calc_simple(mac_height$obs, .7071068^2)
 #> [1] "More than two values provided, assuming they are evenly spaced in time."
 ```
+
+Note that it gave us this message on screen:
+`"More than two values provided, assuming they are evenly spaced in time."`.
+The function `rti_calc_simple()` is meant to be *simple*, so it is not
+meant to be used with uneven assessment spacing. Other methods allow
+more flexibility at the cost of increase complexity.
 
 The object `mac_rti` is of the class `reliableTrend`. It contains a lot
 of information and can be viewed with `print.reliableTrend()` (which is
@@ -321,9 +331,26 @@ print(mac_rti)
 
 That will give the full information. However, note that the re-analysis
 changed `mac_rti$values` to deviation-from-first-observation scores
-rather than raw scores. This should not have dire consequences but must
-be carefully examined, and if the observed scores are important,
-altering this behavior is possible.
+rather than raw scores (and inserted a leading 0 for the first
+observation). This should not have dire consequences but must be
+carefully examined, and if the observed scores are important, altering
+this behavior is possible.
+
+You might want to visualize this to see what it’s doing. Try
+`forest_to_reg_plot()`.
+
+``` r
+forest_to_reg_plot(mac_rti$rmaObj, 
+                   StError = sqrt(mac_rti$error_var)) +
+  ggplot2::labs(title = "Mac's height example",
+         y = "Height difference from baseline")
+```
+
+<img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
+
+Notice that the trend line is going up, and the 95% CI for the trend
+does not include a flat line. Therefore the RTI suggests zero change is
+unlikely.
 
 ## Analysis of complete data sets
 

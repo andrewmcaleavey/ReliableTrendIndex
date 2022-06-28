@@ -13,7 +13,13 @@
 #' @export
 #'
 #' @examples test <- rti_calc_simple(c(47.5, 32.5), 4.74^2)
-#' forest_to_reg_plot(test$rmaObj, StError = sqrt(test$variance))
+#' forest_to_reg_plot(test$rmaObj, StError = sqrt(test$variance)) +
+#'   labs(title = "The example data from J&T")
+#' 
+#' output2 <- rti_calc_simple(c(98,98,98,99,99,99), .7071068^2)
+#' forest_to_reg_plot(output2$rmaObj, StError = sqrt(output2$error_var)) +
+#'   labs(title = "Mac's height example", 
+#'        y = "Height difference from baseline")
 forest_to_reg_plot <- function(x, 
                                StError, 
                                compare_lm_model = NULL){
