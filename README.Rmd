@@ -103,7 +103,7 @@ The object `mac_rti` is of the class `reliableTrend`. It contains a lot of infor
 ```{r}
 print(mac_rti)
 ```
-
+ 
 However, notice that several values there are missing or retained the default values. This would be caught by the `summary()` method for `reliableTrend` objects: 
 
 ```{r}

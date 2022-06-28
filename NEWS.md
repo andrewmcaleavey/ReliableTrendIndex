@@ -1,4 +1,6 @@
-# ReliableTrendIndex (development version)
+# ReliableTrendIndex 0.1.0.9000 (development version)
+
+Changed to development version on the main branch. To indicate that this is still a work in progress even though the version number can increment more. 
 
 # ReliableTrendIndex 0.1.0
 

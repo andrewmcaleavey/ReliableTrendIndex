@@ -68,8 +68,8 @@ library(ReliableTrendIndex)
 #> Warning: package 'magrittr' was built under R version 4.0.5
 #> 
 #> You loaded ReliableTrendIndex
-#> Did you know that change scores are potentially misleading and 
-#> end-state functioning is generally preferable as an evaluation of any treatment course?
+#> You don't actually believe that the SD of a group has anything to do with any individual case, right?
+#> That seems implausible for most constructs.
 ```
 
 ### One person RCI
