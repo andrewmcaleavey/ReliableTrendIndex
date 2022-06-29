@@ -274,13 +274,29 @@ simple_rma <- function(x, error_var = .5,
 
 
 #' Compute RTI in a simple way
+#' 
+#' Given 
 #'
-#' @param values 
-#' @param sdiff 
-#' @param sem 
-#' @param scale_rci 
-#' @param sd 
-#' @param rxx 
+#' @param values Numeric. Either a vector of observed scores that contain measurement error 
+#' or a single difference score. 
+#' @param sdiff Numeric. Standard error of the difference score. Represents the SD of observed
+#' difference scores if there is no true score change.
+#' @param sem Numeric. Standard error of measurement. Represents the SD of observed scores 
+#' derived from the same true score.
+#' @param scale_rci Numeric. The "scale's RCI," meaning the number of scale points required
+#' to change in order to declare a change is "reliable."
+#' @param cutpoint Numeric, default is 1.96. Cutpoint on standard normal curve above
+#' which difference scores are considered reliable. 
+#' @param sd Numeric. SD to use in calculations. 
+#' Required if `sdiff`, `sem`, and `scale_rci`
+#' are not provided, and them must be accompanied by `rxx`. 
+#' J&T suggest this is the SD of a normal 
+#' population. this is probably what is done most commonly.
+#' @param rxx Numeric. Reliability coefficient of the observed scores. 
+#' Required if `sdiff`, `sem`, and `scale_rci`
+#' are not provided, and them must be accompanied by `sd`. 
+#' This should always be a test-retest reliability coefficient, not an internal consistency
+#' parameter.
 #'
 #' @return An object of class `reliableTrend`.
 #' @export
@@ -294,6 +310,7 @@ simple_rma <- function(x, error_var = .5,
 #' rti(mac_height$obs, scale_rci = 1.385)
 #' rti(jt_example_data_1$obs, sd = 7.5, rxx = .8)
 #' rti(mac_height$obs, sd = 1.02, rxx = .77)
+#' rti(15, sdiff = 4.74)
 rti <- function(values, 
                 sdiff = NULL, 
                 sem = NULL,
@@ -301,6 +318,10 @@ rti <- function(values,
                 cutpoint = 1.96,
                 sd = NULL, 
                 rxx = NULL){
+  #' Given a single difference, should add a leading 0
+  if(length(values) == 1){
+    values <- c(0, values)
+  }
   #' need one of these:
   #' 1 sdiff
   #' 2 sem
@@ -308,20 +329,24 @@ rti <- function(values,
   #' 4 sd and rxx
   if(!is.null(sdiff)){
     temp <- rti_calc_simple(values = values, 
-                    variance = (sdiff / sqrt(2))^2)
+                            variance = (sdiff / sqrt(2))^2, 
+                            cutpoint = cutpoint)
     return(reliableTrend(temp$rmaObj))
   } else if(!is.null(sem)) {
     temp <- rti_calc_simple(values = values, 
-                            variance = sem^2)
+                            variance = sem^2, 
+                            cutpoint = cutpoint)
     return(reliableTrend(temp$rmaObj))
   } else if(!is.null(scale_rci)) {
     sdiff <- scale_rci / cutpoint
     rti(values = values, 
-        sdiff = sdiff)
+        sdiff = sdiff, 
+        cutpoint = cutpoint)
   } else if(!is.null(sd) & !is.null(rxx)){
     sem <- sd * sqrt(1 - rxx)
     rti(values = values, 
-        sem = sem)
+        sem = sem, 
+        cutpoint = cutpoint)
   }
 }
 

@@ -80,7 +80,7 @@ If we had assessed a person more than twice, it would be nice to incorporate all
 knitr::kable(mac_height)
 ```
 
-That data shows a difference score of `1` cm. From the example text, we know that the standard error of the difference is `.7071068`. 
+That data shows a difference score of `1` cm. From the example text, we know that the standard error of the difference is `.7071068` and the standard error of measurement is `0.5`. 
 
 We could simply compute the RCI for this individual by using their first and last observations, which is commonly done in routine care and clinical trials analysis of clinically significant change:  
 
@@ -90,16 +90,18 @@ jt_rci_calc(difference = 1, sdiff = .7071068)
 
 That value, 1.414, is not greater than 1.96, so we would conclude that the change from pre-post is not reliable. The `ReliableTrendIndex` term for this is `Unspecified` as opposed to `No Change` in order to indicate that the method could not specifically identify the change score. 
 
-However, the RTI would incorporate all six measurements. It is a waste to ignore two-thirds of our information here. 
+However, the RTI would incorporate all six measurements. It is a waste to ignore two-thirds of our information here.  
+
 In its most simple form, the RTI takes the RCI's observed difference score question (How likely is this difference score, if the true change was actually 0?) and extends it to the overall sequence of scores (How likely is this sequence of scores if the true linear trend was actually 0?). 
 
-To use `rti_calc_simple()` we need the observations as a vector and the *squared* standard error of the difference. 
+The simplest function to use for a single person - whether computing the RCI and/or RTI - is `rti()`. 
 
 ```{r}
-mac_rti <- rti_calc_simple(mac_height$obs, .7071068^2)
+mac_rti <- rti(mac_height$obs, sdiff = .707)
 ```
 
-Note that it gave us this message on screen: `"More than two values provided, assuming they are evenly spaced in time."`. The function `rti_calc_simple()` is meant to be *simple*, so it is not meant to be used with uneven assessment spacing. Other methods allow more flexibility at the cost of increase complexity. 
+
+Note that it gave us this message on screen: `"More than two values provided, assuming they are evenly spaced in time."`. The function `rti`()` is meant to be *simple*, so it is not meant to be used with uneven assessment spacing. Other methods allow more flexibility at the cost of increase complexity. 
 
 The object `mac_rti` is of the class `reliableTrend`. It contains a lot of information and can be viewed with `print.reliableTrend()` (which is also called by just the object name):
 
@@ -107,30 +109,13 @@ The object `mac_rti` is of the class `reliableTrend`. It contains a lot of infor
 print(mac_rti)
 ```
  
-However, notice that several values there are missing or retained the default values. This would be caught by the `summary()` method for `reliableTrend` objects: 
+An additional text summary can be found using `summary()`. 
 
 ```{r}
 summary(mac_rti)
 ```
 
-Because of this, I recommend using the `summary()` function when possible. 
-
-To fill in the missing values (and properly calculate the RTI and RCI comparison), call `reliableTrend()` on the `rmaObj` variable of `mac_rti`: 
-
-```{r}
-mac_rti <- reliableTrend(mac_rti$rmaObj)
-summary(mac_rti)
-```
-
-So now we can clearly see that the RCI, if ignoring the interim measurements, would not detect a reliable change, but the RTI would. 
-
-To see the details: 
-
-```{r}
-print(mac_rti)
-```
-
-That will give the full information.   
+So now we can clearly see that the RCI, by ignoring the interim measurements and using a strong cutoff, would not detect a reliable change but the RTI would. 
 
 You might want to visualize this to see what it's doing. Try `forest_to_reg_plot()`. 
 

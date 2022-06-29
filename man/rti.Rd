@@ -15,23 +15,38 @@ rti(
 )
 }
 \arguments{
-\item{values}{}
+\item{values}{Numeric. Either a vector of observed scores that contain measurement error
+or a single difference score.}
 
-\item{sdiff}{}
+\item{sdiff}{Numeric. Standard error of the difference score. Represents the SD of observed
+difference scores if there is no true score change.}
 
-\item{sem}{}
+\item{sem}{Numeric. Standard error of measurement. Represents the SD of observed scores
+derived from the same true score.}
 
-\item{scale_rci}{}
+\item{scale_rci}{Numeric. The "scale's RCI," meaning the number of scale points required
+to change in order to declare a change is "reliable."}
 
-\item{sd}{}
+\item{cutpoint}{Numeric, default is 1.96. Cutpoint on standard normal curve above
+which difference scores are considered reliable.}
 
-\item{rxx}{}
+\item{sd}{Numeric. SD to use in calculations.
+Required if \code{sdiff}, \code{sem}, and \code{scale_rci}
+are not provided, and them must be accompanied by \code{rxx}.
+J&T suggest this is the SD of a normal
+population. this is probably what is done most commonly.}
+
+\item{rxx}{Numeric. Reliability coefficient of the observed scores.
+Required if \code{sdiff}, \code{sem}, and \code{scale_rci}
+are not provided, and them must be accompanied by \code{sd}.
+This should always be a test-retest reliability coefficient, not an internal consistency
+parameter.}
 }
 \value{
 An object of class \code{reliableTrend}.
 }
 \description{
-Compute RTI in a simple way
+Given
 }
 \examples{
 rti(jt_example_data_1$obs, sdiff = 4.74)
@@ -42,6 +57,8 @@ rti(jt_example_data_1$obs, scale_rci = 9.2904)
 rti(mac_height$obs, scale_rci = 1.385)
 rti(jt_example_data_1$obs, sd = 7.5, rxx = .8)
 rti(mac_height$obs, sd = 1.02, rxx = .77)
+rti(15, sdiff = 4.74)
+Given a single difference, should add a leading 0
 need one of these:
 1 sdiff
 2 sem

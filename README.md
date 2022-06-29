@@ -68,8 +68,8 @@ library(ReliableTrendIndex)
 #> Warning: package 'magrittr' was built under R version 4.0.5
 #> 
 #> You loaded ReliableTrendIndex
-#> Think about your choices: would you rather develop a meaningful clinical test?
-#> Or is reliability really the best possible idea?
+#> You don't actually believe that the SD of a group has anything to do with any individual case, right?
+#> That seems implausible for most constructs.
 ```
 
 ### One person RCI
@@ -125,7 +125,8 @@ knitr::kable(mac_height)
 |  99 |    6 |
 
 That data shows a difference score of `1` cm. From the example text, we
-know that the standard error of the difference is `.7071068`.
+know that the standard error of the difference is `.7071068` and the
+standard error of measurement is `0.5`.
 
 We could simply compute the RCI for this individual by using their first
 and last observations, which is commonly done in routine care and
@@ -142,25 +143,27 @@ for this is `Unspecified` as opposed to `No Change` in order to indicate
 that the method could not specifically identify the change score.
 
 However, the RTI would incorporate all six measurements. It is a waste
-to ignore two-thirds of our information here. In its most simple form,
-the RTI takes the RCI’s observed difference score question (How likely
-is this difference score, if the true change was actually 0?) and
-extends it to the overall sequence of scores (How likely is this
-sequence of scores if the true linear trend was actually 0?).
+to ignore two-thirds of our information here.
 
-To use `rti_calc_simple()` we need the observations as a vector and the
-*squared* standard error of the difference.
+In its most simple form, the RTI takes the RCI’s observed difference
+score question (How likely is this difference score, if the true change
+was actually 0?) and extends it to the overall sequence of scores (How
+likely is this sequence of scores if the true linear trend was actually
+0?).
+
+The simplest function to use for a single person - whether computing the
+RCI and/or RTI - is `rti()`.
 
 ``` r
-mac_rti <- rti_calc_simple(mac_height$obs, .7071068^2)
+mac_rti <- rti(mac_height$obs, sdiff = .707)
 #> [1] "More than two values provided, assuming they are evenly spaced in time."
 ```
 
 Note that it gave us this message on screen:
 `"More than two values provided, assuming they are evenly spaced in time."`.
-The function `rti_calc_simple()` is meant to be *simple*, so it is not
-meant to be used with uneven assessment spacing. Other methods allow
-more flexibility at the cost of increase complexity.
+The function `rti`()\` is meant to be *simple*, so it is not meant to be
+used with uneven assessment spacing. Other methods allow more
+flexibility at the cost of increase complexity.
 
 The object `mac_rti` is of the class `reliableTrend`. It contains a lot
 of information and can be viewed with `print.reliableTrend()` (which is
@@ -169,121 +172,16 @@ also called by just the object name):
 ``` r
 print(mac_rti)
 #> $RCI
-#> [1] NA
+#> [1] 1.414427
 #> 
 #> $RTI
-#> [1] 2.151411
+#> [1] 2.151736
 #> 
 #> $pd.RCI
-#> numeric(0)
+#> [1] 0.9213817
 #> 
 #> $pd.RTI
-#> numeric(0)
-#> 
-#> $category.RTI
-#> [1] "Reliable Increase"
-#> 
-#> $category.RCI
-#> [1] "Unspecified"
-#> 
-#> $sign.RTI
-#> [1] "Not calculated"
-#> 
-#> $sign.difference
-#> [1] "Not calculated"
-#> 
-#> $values
-#> [1] 98 98 98 99 99 99
-#> 
-#> $values.prepost
-#> [1] 98 99
-#> 
-#> $error_var
-#> [1] 0.5
-#> 
-#> $cutpoint
-#> [1] 1.96
-#> 
-#> $observed
-#> [1] "obs_score"
-#> 
-#> $scale_RCI
-#> numeric(0)
-#> 
-#> $rmaObj
-#> 
-#> Fixed-Effects with Moderators Model (k = 6)
-#> 
-#> I^2 (residual heterogeneity / unaccounted variability): 0.00%
-#> H^2 (unaccounted variability / sampling variability):   0.34
-#> R^2 (amount of heterogeneity accounted for):            71.43%
-#> 
-#> Test for Residual Heterogeneity:
-#> QE(df = 4) = 1.3714, p-val = 0.8491
-#> 
-#> Test of Moderators (coefficient 2):
-#> QM(df = 1) = 4.6286, p-val = 0.0314
-#> 
-#> Model Results:
-#> 
-#>              estimate      se      zval    pval    ci.lb    ci.ub     ​ 
-#> intrcpt       97.6000  0.4655  209.6784  <.0001  96.6877  98.5123  *** 
-#> time_linear    0.2571  0.1195    2.1514  0.0314   0.0229   0.4914    * 
-#> 
-#> ---
-#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-```
-
-However, notice that several values there are missing or retained the
-default values. This would be caught by the `summary()` method for
-`reliableTrend` objects:
-
-``` r
-summary(mac_rti)
-#> Warning in summary.reliableTrend(mac_rti): Only parts of this reliableTrend
-#> object are valid. Do not trust the summary.
-#> 
-#> Reliable Trend Analysis:
-#> 
-#> This sequence of 6 values has a Reliable Increase using the RTI.
-#> A pre-post analysis would have an Unspecified difference using the RCI.
-```
-
-Because of this, I recommend using the `summary()` function when
-possible.
-
-To fill in the missing values (and properly calculate the RTI and RCI
-comparison), call `reliableTrend()` on the `rmaObj` variable of
-`mac_rti`:
-
-``` r
-mac_rti <- reliableTrend(mac_rti$rmaObj)
-summary(mac_rti)
-#> 
-#> Reliable Trend Analysis:
-#> 
-#> This sequence of 6 values has a Reliable Increase using the RTI.
-#> A pre-post analysis would have an Unspecified difference using the RCI.
-```
-
-So now we can clearly see that the RCI, if ignoring the interim
-measurements, would not detect a reliable change, but the RTI would.
-
-To see the details:
-
-``` r
-print(mac_rti)
-#> $RCI
-#> [1] 1.414213
-#> 
-#> $RTI
-#> [1] 2.151411
-#> 
-#> $pd.RCI
-#> [1] 0.9213504
-#> 
-#> $pd.RTI
-#> [1] 0.9842781
+#> [1] 0.9842909
 #> 
 #> $category.RTI
 #> [1] "Reliable Increase"
@@ -304,7 +202,7 @@ print(mac_rti)
 #> [1] 98 99
 #> 
 #> $error_var
-#> [1] 0.25
+#> [1] 0.4999245
 #> 
 #> $cutpoint
 #> [1] 1.96
@@ -313,7 +211,7 @@ print(mac_rti)
 #> [1] "obs_score"
 #> 
 #> $scale_RCI
-#> [1] 0.9800001
+#> [1] 1.38572
 #> 
 #> $rmaObj
 #> 
@@ -324,22 +222,35 @@ print(mac_rti)
 #> R^2 (amount of heterogeneity accounted for):            71.43%
 #> 
 #> Test for Residual Heterogeneity:
-#> QE(df = 4) = 1.3714, p-val = 0.8491
+#> QE(df = 4) = 1.3718, p-val = 0.8491
 #> 
 #> Test of Moderators (coefficient 2):
-#> QM(df = 1) = 4.6286, p-val = 0.0314
+#> QM(df = 1) = 4.6300, p-val = 0.0314
 #> 
 #> Model Results:
 #> 
 #>              estimate      se      zval    pval    ci.lb    ci.ub     ​ 
-#> intrcpt       97.6000  0.4655  209.6784  <.0001  96.6877  98.5123  *** 
-#> time_linear    0.2571  0.1195    2.1514  0.0314   0.0229   0.4914    * 
+#> intrcpt       97.6000  0.4654  209.7101  <.0001  96.6878  98.5122  *** 
+#> time_linear    0.2571  0.1195    2.1517  0.0314   0.0229   0.4914    * 
 #> 
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
 
-That will give the full information.
+An additional text summary can be found using `summary()`.
+
+``` r
+summary(mac_rti)
+#> 
+#> Reliable Trend Analysis:
+#> 
+#> This sequence of 6 values has a Reliable Increase using the RTI.
+#> A pre-post analysis would have an Unspecified difference using the RCI.
+```
+
+So now we can clearly see that the RCI, by ignoring the interim
+measurements and using a strong cutoff, would not detect a reliable
+change but the RTI would.
 
 You might want to visualize this to see what it’s doing. Try
 `forest_to_reg_plot()`.
@@ -351,7 +262,7 @@ forest_to_reg_plot(mac_rti$rmaObj,
          y = "Height")
 ```
 
-<img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
 
 Notice that the trend line is going up, and the 95% CI for the RTI
 (shaded region) is more precise than the 95% CI for individual
