@@ -68,8 +68,8 @@ library(ReliableTrendIndex)
 #> Warning: package 'magrittr' was built under R version 4.0.5
 #> 
 #> You loaded ReliableTrendIndex
-#> You don't actually believe that the SD of a group has anything to do with any individual case, right?
-#> That seems implausible for most constructs.
+#> Think about your choices: would you rather develop a meaningful clinical test?
+#> Or is reliability really the best possible idea?
 ```
 
 ### One person RCI
@@ -339,12 +339,7 @@ print(mac_rti)
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
 
-That will give the full information. However, note that the re-analysis
-changed `mac_rti$values` to deviation-from-first-observation scores
-rather than raw scores (and inserted a leading 0 for the first
-observation). This should not have dire consequences but must be
-carefully examined, and if the observed scores are important, altering
-this behavior is possible.
+That will give the full information.
 
 You might want to visualize this to see what it’s doing. Try
 `forest_to_reg_plot()`.
@@ -353,7 +348,7 @@ You might want to visualize this to see what it’s doing. Try
 forest_to_reg_plot(mac_rti$rmaObj, 
                    StError = sqrt(mac_rti$error_var)) +
   ggplot2::labs(title = "Mac's height example",
-         y = "Height difference from baseline")
+         y = "Height")
 ```
 
 <img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />

@@ -130,7 +130,7 @@ To see the details:
 print(mac_rti)
 ```
 
-That will give the full information. However, note that the re-analysis changed `mac_rti$values` to deviation-from-first-observation scores rather than raw scores (and inserted a leading 0 for the first observation). This should not have dire consequences but must be carefully examined, and if the observed scores are important, altering this behavior is possible.   
+That will give the full information.   
 
 You might want to visualize this to see what it's doing. Try `forest_to_reg_plot()`. 
 
@@ -138,7 +138,7 @@ You might want to visualize this to see what it's doing. Try `forest_to_reg_plot
 forest_to_reg_plot(mac_rti$rmaObj, 
                    StError = sqrt(mac_rti$error_var)) +
   ggplot2::labs(title = "Mac's height example",
-         y = "Height difference from baseline")
+         y = "Height")
 ```
 
 Notice that the trend line is going up, and the 95% CI for the RTI (shaded region) is more precise than the 95% CI for individual observations (error bars), which is what the RCI on its own does.    
