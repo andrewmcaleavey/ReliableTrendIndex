@@ -12,8 +12,9 @@ than two observations of the same variable for one person. While the three cases
 treated separately under the hood and return slightly different values and text,
 the computation is the same and all involve primarily \code{metafor::rma.uni()}.}
 
-\item{variance}{Numeric. The error variance. NOT the Sdiff directly, but if you have
-the Sdiff previously computed, you can use its square.}
+\item{variance}{Numeric. The  SEm!!!!! The error variance of a given observation.
+NOT the Sdiff directly, but if you have
+the Sdiff previously computed, you can divide it by the square root of 2.}
 
 \item{digits}{Integer. Number of digits to print for metafor::rma(). Defaults to 2.}
 

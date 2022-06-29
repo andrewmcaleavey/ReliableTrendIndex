@@ -274,15 +274,15 @@ reliableTrend <- function(x = NULL,
     # print("Inferring reliableTrend values from rma object.")
     # in this case x is an rma object. So need to extract the values from it.
     #if they are not provided by the arguments, for some of them
-    RTI = x$zval 
+    RTI = x$zval[length(x$zval)] 
     # RCI = NA_real_,
     # pd.RCI = NA_real_, 
-    pd.RTI = pnorm(x$zval)
+    pd.RTI = pnorm(RTI)
     rmaObj = x 
     # for values, if they are provided, check that they are the same
     # as the rma version, then 
     if(missing(values)) {
-      values <- c(0, as.numeric(x$yi))
+      values <- as.numeric(x$yi)
     } 
     values.prepost <- c(values[1], values[length(values)])
     if(missing(error_var)) error_var <-  unique(x$vi) 
@@ -294,7 +294,7 @@ reliableTrend <- function(x = NULL,
     scale_RCI <- sqrt(error_var) * cutpoint 
     RCI <- jt_rci_calc(difference = values[length(values)] - values[1], 
                            # sdiff = sqrt(error_var))
-                       sdiff = sqrt(error_var))
+                       sdiff = sqrt(error_var * 2))
     pd.RCI <- pnorm(RCI) 
     category.RCI <- ifelse(RCI > cutpoint, 
                            "Reliable Increase", 

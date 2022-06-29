@@ -172,7 +172,7 @@ print(mac_rti)
 #> [1] NA
 #> 
 #> $RTI
-#> [1] 2.28831
+#> [1] 2.151411
 #> 
 #> $pd.RCI
 #> numeric(0)
@@ -212,18 +212,23 @@ print(mac_rti)
 #> 
 #> $rmaObj
 #> 
-#> Fixed-Effects with Moderators Model (k = 5)
+#> Fixed-Effects with Moderators Model (k = 6)
 #> 
 #> I^2 (residual heterogeneity / unaccounted variability): 0.00%
-#> H^2 (unaccounted variability / sampling variability):   0.19
+#> H^2 (unaccounted variability / sampling variability):   0.34
+#> R^2 (amount of heterogeneity accounted for):            71.43%
 #> 
 #> Test for Residual Heterogeneity:
-#> QE(df = 4) = 0.7636, p-val = 0.9433
+#> QE(df = 4) = 1.3714, p-val = 0.8491
+#> 
+#> Test of Moderators (coefficient 2):
+#> QM(df = 1) = 4.6286, p-val = 0.0314
 #> 
 #> Model Results:
 #> 
-#>              estimate      se    zval    pval   ci.lb   ci.ub   ​ 
-#> time_linear    0.2182  0.0953  2.2883  0.0221  0.0313  0.4051  * 
+#>              estimate      se      zval    pval    ci.lb    ci.ub     ​ 
+#> intrcpt       97.6000  0.4655  209.6784  <.0001  96.6877  98.5123  *** 
+#> time_linear    0.2571  0.1195    2.1514  0.0314   0.0229   0.4914    * 
 #> 
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
@@ -257,7 +262,7 @@ summary(mac_rti)
 #> 
 #> Reliable Trend Analysis:
 #> 
-#> This sequence of 5 values has a Reliable Increase using the RTI.
+#> This sequence of 6 values has a Reliable Increase using the RTI.
 #> A pre-post analysis would have an Unspecified difference using the RCI.
 ```
 
@@ -269,16 +274,16 @@ To see the details:
 ``` r
 print(mac_rti)
 #> $RCI
-#> [1] 1.414214
+#> [1] 1.414213
 #> 
 #> $RTI
-#> [1] 2.28831
+#> [1] 2.151411
 #> 
 #> $pd.RCI
 #> [1] 0.9213504
 #> 
 #> $pd.RTI
-#> [1] 0.9889403
+#> [1] 0.9842781
 #> 
 #> $category.RTI
 #> [1] "Reliable Increase"
@@ -293,13 +298,13 @@ print(mac_rti)
 #> [1] "Increase"
 #> 
 #> $values
-#> [1] 0 0 1 1 1
+#> [1] 98 98 98 99 99 99
 #> 
 #> $values.prepost
-#> [1] 0 1
+#> [1] 98 99
 #> 
 #> $error_var
-#> [1] 0.5
+#> [1] 0.25
 #> 
 #> $cutpoint
 #> [1] 1.96
@@ -308,22 +313,27 @@ print(mac_rti)
 #> [1] "obs_score"
 #> 
 #> $scale_RCI
-#> [1] 1.385929
+#> [1] 0.9800001
 #> 
 #> $rmaObj
 #> 
-#> Fixed-Effects with Moderators Model (k = 5)
+#> Fixed-Effects with Moderators Model (k = 6)
 #> 
 #> I^2 (residual heterogeneity / unaccounted variability): 0.00%
-#> H^2 (unaccounted variability / sampling variability):   0.19
+#> H^2 (unaccounted variability / sampling variability):   0.34
+#> R^2 (amount of heterogeneity accounted for):            71.43%
 #> 
 #> Test for Residual Heterogeneity:
-#> QE(df = 4) = 0.7636, p-val = 0.9433
+#> QE(df = 4) = 1.3714, p-val = 0.8491
+#> 
+#> Test of Moderators (coefficient 2):
+#> QM(df = 1) = 4.6286, p-val = 0.0314
 #> 
 #> Model Results:
 #> 
-#>              estimate      se    zval    pval   ci.lb   ci.ub   ​ 
-#> time_linear    0.2182  0.0953  2.2883  0.0221  0.0313  0.4051  * 
+#>              estimate      se      zval    pval    ci.lb    ci.ub     ​ 
+#> intrcpt       97.6000  0.4655  209.6784  <.0001  96.6877  98.5123  *** 
+#> time_linear    0.2571  0.1195    2.1514  0.0314   0.0229   0.4914    * 
 #> 
 #> ---
 #> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
@@ -348,9 +358,9 @@ forest_to_reg_plot(mac_rti$rmaObj,
 
 <img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
 
-Notice that the trend line is going up, and the 95% CI for the trend
-does not include a flat line. Therefore the RTI suggests zero change is
-unlikely.
+Notice that the trend line is going up, and the 95% CI for the RTI
+(shaded region) is more precise than the 95% CI for individual
+observations (error bars), which is what the RCI on its own does.
 
 ## Analysis of complete data sets
 

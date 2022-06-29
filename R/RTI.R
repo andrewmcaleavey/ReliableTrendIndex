@@ -10,8 +10,9 @@
 #' than two observations of the same variable for one person. While the three cases are 
 #' treated separately under the hood and return slightly different values and text, 
 #' the computation is the same and all involve primarily \code{metafor::rma.uni()}.
-#' @param variance Numeric. The error variance. NOT the Sdiff directly, but if you have
-#' the Sdiff previously computed, you can use its square. 
+#' @param variance Numeric. The  SEm!!!!! The error variance of a given observation. 
+#' NOT the Sdiff directly, but if you have
+#' the Sdiff previously computed, you can divide it by the square root of 2. 
 #' @param digits Integer. Number of digits to print for metafor::rma(). Defaults to 2.
 #' @param cutpoint Cutpoint on z-scale to use for "reliability." Defaults to 1.96.
 #' @param ... Additional arguments passed on.
@@ -42,8 +43,9 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
                                           "Reliable Decrease", 
                                           "Unspecified"))
     return(list(JT_rci = JT_rci, 
-                RTI = NA, 
+                RTI = JT_rci, 
                 category.RCI = JT_rci_classification,
+                category.RTI = JT_rci_classification,
                 rmaObj = rmaobj,
                 values = values, 
                 variance = variance, 
@@ -73,14 +75,19 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
   } else {
     print("More than two values provided, assuming they are evenly spaced in time.")
     difs <- values[-1] - values[1]
+    values.prepost <- c(values[1], values[length(values)])
     time_linear <- seq(from = 1, 
-                       to = length(values) - 1, 
+                       to = length(values), 
                        by = 1)
-    rmaobj <- metafor::rma.uni(yi = difs, 
-                               mods = ~ 0 + time_linear,
-                               vi = variance, 
+    rmaobj <- metafor::rma.uni(yi = values, 
+                               mods = ~ time_linear,
+                               vi = variance^2, 
                                method = "FE")
-    RTI = rmaobj$zval
+    rmaobj.rci <- metafor::rma.uni(yi = values.prepost  - values.prepost[1], 
+                                   mods = ~ 0 + c(0,1), 
+                                   vi  = variance^2, 
+                                   method = "FE")
+    RTI = rmaobj$zval[2]
     RTI_classification = ifelse(RTI > cutpoint, 
                                 "Reliable Increase", 
                                 ifelse(RTI < -cutpoint, 

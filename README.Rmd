@@ -141,7 +141,7 @@ forest_to_reg_plot(mac_rti$rmaObj,
          y = "Height difference from baseline")
 ```
 
-Notice that the trend line is going up, and the 95% CI for the trend does not include a flat line. Therefore the RTI suggests zero change is unlikely.  
+Notice that the trend line is going up, and the 95% CI for the RTI (shaded region) is more precise than the 95% CI for individual observations (error bars), which is what the RCI on its own does.    
 
 ## Analysis of complete data sets  
 
