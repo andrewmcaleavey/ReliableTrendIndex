@@ -177,12 +177,13 @@ validate_reliableTrend <- function(x) {
 #' @param values Numeric vector. The values used to compute the RTI.
 #' @param values.prepost Numeric vector of length 2. The first and last values.
 #' @param error_var Numeric. The error variance used to compute the RCI and RTI. 
-#' This is on the variance scale, so is the squared standard error of the difference. 
+#' This is on the variance scale, so is the squared standard error of measurement. 
+#' If the Sdiff is available, this value should be `(sdiff/sqrt(2))^2`.
 #' @param cutpoint Numeric. Z-scale cutpoint to use for reliability categorization. 
 #' Default is 1.96.
 #' @param scale_RCI Numeric. The "RCI for a scale," meaning how many scale points
 #' need to be observed in a difference score for that difference to be considered
-#' "reliable" under J&T.
+#' "reliable" under J&T. 
 #' @param observed Character. Name of the variable of data frame `x` with the observed scores.
 #'
 #' @return an object of class `reliableTrend`, which is a glorified list. 
@@ -285,16 +286,16 @@ reliableTrend <- function(x = NULL,
       values <- as.numeric(x$yi)
     } 
     values.prepost <- c(values[1], values[length(values)])
-    if(missing(error_var)) error_var <-  unique(x$vi) 
+    if(missing(error_var)) error_var <-  sqrt(unique(x$vi))
     category.RTI <- ifelse(RTI > cutpoint, 
                           "Reliable Increase", 
                           ifelse(RTI < -cutpoint, 
                                  "Reliable Decrease", 
                                  "Unspecified")) 
-    scale_RCI <- sqrt(error_var) * cutpoint 
+    scale_RCI <- error_var*sqrt(2)*cutpoint 
     RCI <- jt_rci_calc(difference = values[length(values)] - values[1], 
                            # sdiff = sqrt(error_var))
-                       sdiff = sqrt(error_var * 2))
+                       sdiff = error_var * sqrt(2))
     pd.RCI <- pnorm(RCI) 
     category.RCI <- ifelse(RCI > cutpoint, 
                            "Reliable Increase", 
@@ -352,11 +353,11 @@ reliableTrend <- function(x = NULL,
   
 }
 # tests
-# output2 <- rti_calc_simple(c(98,98,98,99,99,99), .7071068^2)
+# output2 <- rti_calc_simple(c(98,98,98,99,99,99), .5^2)
 # output2
 # reliableTrend(output2$rmaObj)
 # reliableTrend()
-# reliableTrend(list())# runs into the problem that all of the parameters need to be provided. 
+# reliableTrend(list()) # runs into the problem that all of the parameters need to be provided. 
 # tester <- rti_calc_simple(values = c(5, 3, 2, 3, 1, 1, 1), .5)
 # reliableTrend(tester$rmaObj)
 # print function

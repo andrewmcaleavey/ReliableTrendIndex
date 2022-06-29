@@ -52,25 +52,24 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
                 cutpoint = cutpoint))
   } else if(length(values) == 2) {
     difs <- values[-1] - values[1]
-    time_linear <- seq(from = 1, 
-                       to = length(values) - 1, 
-                       by = 1)
-    rmaobj <- metafor::rma.uni(yi = difs, 
-                               mods = ~ 0 + time_linear,
-                               vi = variance, 
+    values.prepost <- c(values[1], values[length(values)])
+    time_linear <- c(0, 1)
+    rmaobj <- metafor::rma.uni(yi = values, 
+                               mods = ~ time_linear, 
+                               vi  = variance, 
                                method = "FE")
-    RTI = rmaobj$zval
-    RTI_classification = ifelse(RTI > cutpoint, 
-                                "Reliable Increase", 
-                                ifelse(RTI < -cutpoint, 
-                                       "Reliable Decrease", 
+    RTI = rmaobj$zval[length(rmaobj$zval)]
+    RTI_classification = ifelse(RTI > cutpoint,
+                                "Reliable Increase",
+                                ifelse(RTI < -cutpoint,
+                                       "Reliable Decrease",
                                        "Unspecified"))
-    return(list(JT_rci = RTI, 
+    return(list(JT_rci = RTI,
                 RTI = RTI,
                 category.RTI = RTI_classification,
                 rmaObj = rmaobj,
-                values = values, 
-                variance = variance, 
+                values = values,
+                variance = variance,
                 cutpoint = cutpoint))
   } else {
     print("More than two values provided, assuming they are evenly spaced in time.")
@@ -80,15 +79,15 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
                        to = length(values), 
                        by = 1)
     rmaobj <- metafor::rma.uni(yi = values, 
-                               mods = ~ time_linear,
-                               vi = variance^2, 
+                               mods = ~  time_linear,
+                               vi = variance, 
                                method = "FE")
     rmaobj.rci <- metafor::rma.uni(yi = values.prepost  - values.prepost[1], 
-                                   mods = ~ 0 + c(0,1), 
-                                   vi  = variance^2, 
+                                   mods = ~ c(0,1), 
+                                   vi  = variance, 
                                    method = "FE")
-    RTI = rmaobj$zval[2]
-    RTI_classification = ifelse(RTI > cutpoint, 
+    RTI <-  rmaobj$zval[length(rmaobj$zval)]
+    RTI_classification <-  ifelse(RTI > cutpoint, 
                                 "Reliable Increase", 
                                 ifelse(RTI < -cutpoint, 
                                        "Reliable Decrease", 
@@ -260,15 +259,69 @@ simple_rma <- function(x, error_var = .5,
 # 
 # table(test4$category.RCI, test4$true_change)
 # table(test4$category.RTI, test4$true_change)
+# 
+# add_rti <- function(data, id_var, obs_var, error_value, ...){
+#   temp <- compute_rti_data(data = data, 
+#                            id_var = id_var, 
+#                            obs_var = obs_var, 
+#                            error_value = error_value)
+#   
+#   outdata <- tibble(id = unique(data[[id_var]]), 
+#                     RTI = temp[])
+#   outdata
+# }
+# # add_rti(data = simdata1, id_var = "id", obs_var = value, error_value = .2)
 
-add_rti <- function(data, id_var, obs_var, error_value, ...){
-  temp <- compute_rti_data(data = data, 
-                           id_var = id_var, 
-                           obs_var = obs_var, 
-                           error_value = error_value)
-  
-  outdata <- tibble(id = unique(data[[id_var]]), 
-                    RTI = temp[])
-  outdata
+
+#' Compute RTI in a simple way
+#'
+#' @param values 
+#' @param sdiff 
+#' @param sem 
+#' @param scale_rci 
+#' @param sd 
+#' @param rxx 
+#'
+#' @return An object of class `reliableTrend`.
+#' @export
+#'
+#' @examples
+#' rti(jt_example_data_1$obs, sdiff = 4.74)
+#' rti(mac_height$obs, sdiff = .707)
+#' rti(jt_example_data_1$obs, sem = 3.35)
+#' rti(mac_height$obs, sem = .5)
+#' rti(jt_example_data_1$obs, scale_rci = 9.2904)
+#' rti(mac_height$obs, scale_rci = 1.385)
+#' rti(jt_example_data_1$obs, sd = 7.5, rxx = .8)
+#' rti(mac_height$obs, sd = 1.02, rxx = .77)
+rti <- function(values, 
+                sdiff = NULL, 
+                sem = NULL,
+                scale_rci = NULL,
+                cutpoint = 1.96,
+                sd = NULL, 
+                rxx = NULL){
+  #' need one of these:
+  #' 1 sdiff
+  #' 2 sem
+  #' 3 scale_rci
+  #' 4 sd and rxx
+  if(!is.null(sdiff)){
+    temp <- rti_calc_simple(values = values, 
+                    variance = (sdiff / sqrt(2))^2)
+    return(reliableTrend(temp$rmaObj))
+  } else if(!is.null(sem)) {
+    temp <- rti_calc_simple(values = values, 
+                            variance = sem^2)
+    return(reliableTrend(temp$rmaObj))
+  } else if(!is.null(scale_rci)) {
+    sdiff <- scale_rci / cutpoint
+    rti(values = values, 
+        sdiff = sdiff)
+  } else if(!is.null(sd) & !is.null(rxx)){
+    sem <- sd * sqrt(1 - rxx)
+    rti(values = values, 
+        sem = sem)
+  }
 }
-# add_rti(data = simdata1, id_var = "id", obs_var = value, error_value = .2)
+

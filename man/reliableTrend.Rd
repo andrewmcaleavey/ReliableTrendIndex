@@ -58,7 +58,8 @@ package.}
 \item{values.prepost}{Numeric vector of length 2. The first and last values.}
 
 \item{error_var}{Numeric. The error variance used to compute the RCI and RTI.
-This is on the variance scale, so is the squared standard error of the difference.}
+This is on the variance scale, so is the squared standard error of measurement.
+If the Sdiff is available, this value should be \code{(sdiff/sqrt(2))^2}.}
 
 \item{cutpoint}{Numeric. Z-scale cutpoint to use for reliability categorization.
 Default is 1.96.}

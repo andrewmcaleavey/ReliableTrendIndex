@@ -96,6 +96,7 @@ scale_rci_calc <- function(rxx = NULL,
 #' @export
 #'
 #' @examples jt_rci_calc(difference = 15, sdiff = 4.74)
+#' jt_rci_calc(difference = 1, sdiff = .707)
 jt_rci_calc <- function(difference = NULL,
                         t1 = NULL, 
                         t2 = NULL,

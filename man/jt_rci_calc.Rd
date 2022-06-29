@@ -47,4 +47,5 @@ essentially intended to be interpreted as Z-scores.
 }
 \examples{
 jt_rci_calc(difference = 15, sdiff = 4.74)
+jt_rci_calc(difference = 1, sdiff = .707)
 }
