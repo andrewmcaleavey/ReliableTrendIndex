@@ -4,13 +4,14 @@
 \alias{forest_to_reg_plot}
 \title{Turning metafor's forest plots into regression plots with {ggplot2}}
 \usage{
-forest_to_reg_plot(x, StError, compare_lm_model = NULL)
+forest_to_reg_plot(x, StError = NULL, compare_lm_model = NULL)
 }
 \arguments{
-\item{x}{A model from the {metafor} package. Designed only to work with univariate models.}
+\item{x}{A model from the {metafor} package or an object of class = \code{reliableTrend}.
+Designed only to work with univariate models.}
 
-\item{StError}{Numeric. Standard error of the difference score to use.
-Within the package should be available as the output of a call to rti_calulator()$variance}
+\item{StError}{Numeric. Standard error of the measurement (\code{sem}, not \code{sdiff}).
+If \code{x} is class \code{reliableTrend}, it is computed automatically.}
 
 \item{compare_lm_model}{Either NULL (default) or an object from lm().}
 }
@@ -21,12 +22,14 @@ a ggplot2 object
 Turning metafor's forest plots into regression plots with {ggplot2}
 }
 \examples{
-test <- rti_calc_simple(c(47.5, 32.5), 4.74^2)
+test <- rti_calc_simple(c(47.5, 32.5), 3.35)
 forest_to_reg_plot(test$rmaObj, StError = sqrt(test$variance)) +
   labs(title = "The example data from J&T")
 
-output2 <- rti_calc_simple(c(98,98,98,99,99,99), .7071068^2)
-forest_to_reg_plot(output2$rmaObj, StError = sqrt(output2$error_var)) +
+output2 <- rti_calc_simple(c(98,98,98,99,99,99), .5)
+forest_to_reg_plot(output2$rmaObj, StError = output2$error_var) +
   labs(title = "Mac's height example", 
        y = "Height difference from baseline")
+# test with reliableTrend object
+forest_to_reg_plot(rti(mac_height$obs, sem = .5))
 }

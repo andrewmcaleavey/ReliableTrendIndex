@@ -68,8 +68,8 @@ library(ReliableTrendIndex)
 #> Warning: package 'magrittr' was built under R version 4.0.5
 #> 
 #> You loaded ReliableTrendIndex
-#> Loading the ReliableTrendIndex package is not recommended, because you're probably not 
-#> going to find a situation in which the reliability of change scores matters.
+#> You don't actually believe that the SD of a group has anything to do with any individual case, right?
+#> That seems implausible for most constructs.
 ```
 
 ### One person RCI
@@ -253,10 +253,10 @@ measurements and using a strong cutoff, would not detect a reliable
 change but the RTI would.
 
 You might want to visualize this to see what it’s doing. Try
-`forest_to_reg_plot()`.
+`plot.reliableTrend()` (or just `plot()`).
 
 ``` r
-forest_to_reg_plot(mac_rti) +
+plot(mac_rti) +
   ggplot2::labs(title = "Mac's height example",
          y = "Height")
 ```

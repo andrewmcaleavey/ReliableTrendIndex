@@ -85,3 +85,19 @@ forest_to_reg_plot <- function(x,
            For more than two time points, the shaded area represents the RTI CI.")
   }
 }
+
+# S3 generic plot.reliableTrend() that just calls the forest_to_reg_plot() function. 
+
+#' Plot a reliableTrend object
+#'
+#' @param x An object of class `reliableTrend`.
+#'
+#' @return A ggplot2 object
+#' @export
+#'
+#' @examples 
+#' mac_rti <- rti(mac_height$obs, sdiff = .707)
+#' plot(mac_rti)
+plot.reliableTrend <- function(x){
+  forest_to_reg_plot(x)
+}
