@@ -392,12 +392,20 @@ summary.reliableTrend <- function(x){
              length(x$values), 
              " values has",
              article.RTI,
-             x$category.RTI), 
-      "using the RTI.\n")
-  cat(paste0("A pre-post analysis would have", 
+             x$category.RTI, 
+             " using the RTI.\nThe likelihood of ", 
+             x$sign.RTI, 
+             " is ", 
+             round(x$pd.RTI, 5), 
+             ".\n"))
+  cat(paste0("\nA pre-post analysis would have", 
              article.RCI,
-             x$category.RCI), 
-      "difference using the RCI.\n")
+             x$category.RCI, 
+             " difference using the RCI.\n\nThe likelihood of ", 
+             x$sign.difference, 
+             " is ", 
+             round(x$pd.RCI, 5), 
+             ".\n"))
   cat("\n")
   invisible(x)
 }

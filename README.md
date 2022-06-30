@@ -68,8 +68,8 @@ library(ReliableTrendIndex)
 #> Warning: package 'magrittr' was built under R version 4.0.5
 #> 
 #> You loaded ReliableTrendIndex
-#> You don't actually believe that the SD of a group has anything to do with any individual case, right?
-#> That seems implausible for most constructs.
+#> Loading the ReliableTrendIndex package is not recommended, because you're probably not 
+#> going to find a situation in which the reliability of change scores matters.
 ```
 
 ### One person RCI
@@ -245,7 +245,11 @@ summary(mac_rti)
 #> Reliable Trend Analysis:
 #> 
 #> This sequence of 6 values has a Reliable Increase using the RTI.
+#> The likelihood of Increase is 0.98429.
+#> 
 #> A pre-post analysis would have an Unspecified difference using the RCI.
+#> 
+#> The likelihood of Increase is 0.92138.
 ```
 
 So now we can clearly see that the RCI, by ignoring the interim
@@ -256,9 +260,7 @@ You might want to visualize this to see what it’s doing. Try
 `plot.reliableTrend()` (or just `plot()`).
 
 ``` r
-plot(mac_rti) +
-  ggplot2::labs(title = "Mac's height example",
-         y = "Height")
+plot(mac_rti) 
 ```
 
 <img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
@@ -266,6 +268,19 @@ plot(mac_rti) +
 Notice that the trend line is going up, and the 95% CI for the RTI
 (shaded region) is more precise than the 95% CI for individual
 observations (error bars), which is what the RCI on its own relies on.
+
+The output of `plot.reliableTrend()` is a `ggplot2` object, so you can
+modify it in that ecosystem:
+
+``` r
+plot(mac_rti) +
+  ggplot2::labs(title = "Mac's height example",
+                y = "Height", 
+                x = "Occasion") +
+  ggplot2::theme_dark()
+```
+
+<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
 
 ## Analysis of complete data sets
 
