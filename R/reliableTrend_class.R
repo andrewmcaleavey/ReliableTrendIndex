@@ -278,7 +278,7 @@ reliableTrend <- function(x = NULL,
     RTI = x$zval[length(x$zval)] 
     # RCI = NA_real_,
     # pd.RCI = NA_real_, 
-    pd.RTI = pnorm(RTI)
+    pd.RTI = pnorm(abs(RTI))
     rmaObj = x 
     # for values, if they are provided, check that they are the same
     # as the rma version, then 
@@ -296,7 +296,7 @@ reliableTrend <- function(x = NULL,
     RCI <- jt_rci_calc(difference = values[length(values)] - values[1], 
                            # sdiff = sqrt(error_var))
                        sdiff = error_var * sqrt(2))
-    pd.RCI <- pnorm(RCI) 
+    pd.RCI <- pnorm(abs(RCI)) 
     category.RCI <- ifelse(RCI > cutpoint, 
                            "Reliable Increase", 
                            ifelse(RCI < -cutpoint, 

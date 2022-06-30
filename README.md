@@ -68,8 +68,8 @@ library(ReliableTrendIndex)
 #> Warning: package 'magrittr' was built under R version 4.0.5
 #> 
 #> You loaded ReliableTrendIndex
-#> You don't actually believe that the SD of a group has anything to do with any individual case, right?
-#> That seems implausible for most constructs.
+#> Loading the ReliableTrendIndex package is not recommended, because you're probably not 
+#> going to find a situation in which the reliability of change scores matters.
 ```
 
 ### One person RCI
@@ -161,7 +161,7 @@ mac_rti <- rti(mac_height$obs, sdiff = .707)
 
 Note that it gave us this message on screen:
 `"More than two values provided, assuming they are evenly spaced in time."`.
-The function `rti`()\` is meant to be *simple*, so it is not meant to be
+The function `rti()` is meant to be *simple*, so it is not meant to be
 used with uneven assessment spacing. Other methods allow more
 flexibility at the cost of increase complexity.
 
@@ -256,8 +256,7 @@ You might want to visualize this to see what it’s doing. Try
 `forest_to_reg_plot()`.
 
 ``` r
-forest_to_reg_plot(mac_rti$rmaObj, 
-                   StError = sqrt(mac_rti$error_var)) +
+forest_to_reg_plot(mac_rti) +
   ggplot2::labs(title = "Mac's height example",
          y = "Height")
 ```
@@ -266,7 +265,7 @@ forest_to_reg_plot(mac_rti$rmaObj,
 
 Notice that the trend line is going up, and the 95% CI for the RTI
 (shaded region) is more precise than the 95% CI for individual
-observations (error bars), which is what the RCI on its own does.
+observations (error bars), which is what the RCI on its own relies on.
 
 ## Analysis of complete data sets
 
