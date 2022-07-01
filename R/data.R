@@ -47,3 +47,22 @@
 #' }
 #' @source McAleavey 2022 
 "mac_height"
+
+#' Liu Data
+#' 
+#' Data from a single case using the PHQ-9 Modified for Adolescents. 
+#' Presented in Liu, F. F., & Adrian, M. C. (2019). Is treatment working? Detecting real 
+#' change in the treatment of child and adolescent depression. Journal of the American 
+#' Academy of Child & Adolescent Psychiatry, 58(12), 1157-1164.
+#' 
+#' A `data.frame` containing the sample data for one individual measured at 12 times. 
+#' 
+#' @format A data.frame with 12 rows and 2 variables:  
+#' \describe{
+#'   \item{obs}{Observed score.}
+#'   \item{time}{Indicator for time.}
+#' }
+#' @source Liu, F. F., & Adrian, M. C. (2019). Is treatment working? Detecting real 
+#' change in the treatment of child and adolescent depression. Journal of the American 
+#' Academy of Child & Adolescent Psychiatry, 58(12), 1157-1164. 
+"liu_data"
