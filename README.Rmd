@@ -88,7 +88,7 @@ We could simply compute the RCI for this individual by using their first and las
 jt_rci_calc(difference = 1, sdiff = .7071068)
 ```
 
-That value, 1.414, is not greater than 1.96, so we would conclude that the change from pre-post is not reliable. The `ReliableTrendIndex` term for this is `Unspecified` as opposed to `No Change` in order to indicate that the method could not specifically identify the change score. 
+That value, 1.414, is not greater than 1.96, so we would conclude that the change from pre-post is not reliable. The `ReliableTrendIndex` term for this is `Less than reliable` as opposed to `No Change` in order to indicate that the method could not specifically identify the change score. 
 
 However, the RTI would incorporate all six measurements. It is a waste to ignore two-thirds of our information here.  
 
@@ -115,7 +115,7 @@ An additional text summary can be found using `summary()`.
 summary(mac_rti)
 ```
 
-So now we can clearly see that the RCI, by ignoring the interim measurements and using a strong cutoff, would not detect a reliable change but the RTI would. 
+So now we can clearly see that the RCI, by ignoring the interim measurements and using a strong cutoff, would not detect a reliable change but the RTI would. Note that the summary also tells us the probability of the result being in its most likely direction. It is not uncommon for large probabilities like 80-90% to be considered "Unreliable" due to the conservative Type I error approach of the RCI.
 
 You might want to visualize this to see what it's doing. Try `plot.reliableTrend()` (or just `plot()`). 
 

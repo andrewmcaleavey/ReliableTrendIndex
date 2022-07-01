@@ -17,9 +17,9 @@
 #' fixed measurement error at each observation. 
 #' @param pd.RCI Numeric. 
 #' @param pd.RTI Numeric. 
-#' @param category.RTI Character. Default is "Unspecified". One of "Unspecified", 
+#' @param category.RTI Character. Default is "Less than reliable". One of "Less than reliable", 
 #' "Reliable Increase", or "Reliable Decrease".
-#' @param category.RCI Character. Default is "Unspecified". One of "Unspecified", 
+#' @param category.RCI Character. Default is "Less than reliable". One of "Less than reliable", 
 #' "Reliable Increase", or "Reliable Decrease".
 #' @param sign.RTI Character. Indicates whether the RTI estimates the trend to be 
 #' most likely increasing, decreasing or flat, regardless of confidence level. 
@@ -50,8 +50,8 @@ new_reliableTrend <- function(RCI = double(),
                               RTI = double(), 
                               pd.RCI = double(),
                               pd.RTI = double(),
-                              category.RTI = "Unspecified", 
-                              category.RCI = "Unspecified",
+                              category.RTI = "Less than reliable", 
+                              category.RCI = "Less than reliable",
                               sign.RTI = "Not calculated",
                               sign.difference = "Not calculated",
                               rmaObj = list(), 
@@ -68,11 +68,11 @@ new_reliableTrend <- function(RCI = double(),
   stopifnot(is.double(pd.RCI))
   stopifnot(is.double(pd.RTI))
   category.RTI <- match.arg(category.RTI, 
-                            c("Unspecified", 
+                            c("Less than reliable", 
                               "Reliable Increase", 
                               "Reliable Decrease"))
   category.RCI <- match.arg(category.RCI, 
-                            c("Unspecified", 
+                            c("Less than reliable", 
                               "Reliable Increase", 
                               "Reliable Decrease"))
   sign.RTI <- match.arg(sign.RTI, 
@@ -162,9 +162,9 @@ validate_reliableTrend <- function(x) {
 #' fixed measurement error at each observation. 
 #' @param pd.RCI Numeric. 
 #' @param pd.RTI Numeric. 
-#' @param category.RTI Character. Default is "Unspecified". One of "Unspecified", 
+#' @param category.RTI Character. Default is "Less than reliable". One of "Less than reliable", 
 #' "Reliable Increase", or "Reliable Decrease".
-#' @param category.RCI Character. Default is "Unspecified". One of "Unspecified", 
+#' @param category.RCI Character. Default is "Less than reliable". One of "Less than reliable", 
 #' "Reliable Increase", or "Reliable Decrease".
 #' @param sign.RTI Character. Indicates whether the RTI estimates the trend to be 
 #' most likely increasing, decreasing or flat, regardless of confidence level. 
@@ -206,8 +206,8 @@ reliableTrend <- function(x = NULL,
                           RTI = double(), 
                           pd.RCI = double(),
                           pd.RTI = double(),
-                          category.RTI = "Unspecified", 
-                          category.RCI = "Unspecified",
+                          category.RTI = "Less than reliable", 
+                          category.RCI = "Less than reliable",
                           sign.RTI = "Not calculated",
                           sign.difference = "Not calculated",
                           rmaObj = list(), 
@@ -291,7 +291,7 @@ reliableTrend <- function(x = NULL,
                           "Reliable Increase", 
                           ifelse(RTI < -cutpoint, 
                                  "Reliable Decrease", 
-                                 "Unspecified")) 
+                                 "Less than reliable")) 
     scale_RCI <- error_var*sqrt(2)*cutpoint 
     RCI <- jt_rci_calc(difference = values[length(values)] - values[1], 
                            # sdiff = sqrt(error_var))
@@ -301,7 +301,7 @@ reliableTrend <- function(x = NULL,
                            "Reliable Increase", 
                            ifelse(RCI < -cutpoint, 
                                   "Reliable Decrease", 
-                                  "Unspecified")) 
+                                  "Less than reliable")) 
     sign.RTI <- ifelse(RTI > 0, 
                            "Increase", 
                            ifelse(RTI < 0, 
@@ -381,11 +381,11 @@ summary.reliableTrend <- function(x){
     warning("Only parts of this reliableTrend object are valid. Do not trust the summary.")
   }
   
-  article.RTI <- ifelse(x$category.RTI == "Unspecified", 
-                        " an ", 
+  article.RTI <- ifelse(x$category.RTI == "Less than reliable", 
+                        " a ", 
                         " a ")
-  article.RCI <- ifelse(x$category.RCI == "Unspecified", 
-                        " an ", 
+  article.RCI <- ifelse(x$category.RCI == "Less than reliable", 
+                        " a ", 
                         " a ")
   cat("\nReliable Trend Analysis:\n\n")
   cat(paste0("This sequence of ", 
@@ -393,17 +393,17 @@ summary.reliableTrend <- function(x){
              " values has",
              article.RTI,
              x$category.RTI, 
-             " using the RTI.\nThe likelihood of ", 
+             " using the RTI.\nThe likelihood of an overall ", 
              x$sign.RTI, 
-             " is ", 
+             " in true score is ", 
              round(x$pd.RTI, 5), 
-             ".\n"))
+             " using the RTI.\n"))
   cat(paste0("\nA pre-post analysis would have", 
              article.RCI,
              x$category.RCI, 
-             " difference using the RCI.\n\nThe likelihood of ", 
+             " change using the RCI.\nThe likelihood of ", 
              x$sign.difference, 
-             " is ", 
+             " given just the pre-post values is ", 
              round(x$pd.RCI, 5), 
              ".\n"))
   cat("\n")

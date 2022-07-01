@@ -10,8 +10,8 @@ reliableTrend(
   RTI = double(),
   pd.RCI = double(),
   pd.RTI = double(),
-  category.RTI = "Unspecified",
-  category.RCI = "Unspecified",
+  category.RTI = "Less than reliable",
+  category.RCI = "Less than reliable",
   sign.RTI = "Not calculated",
   sign.difference = "Not calculated",
   rmaObj = list(),
@@ -36,10 +36,10 @@ fixed measurement error at each observation.}
 
 \item{pd.RTI}{Numeric.}
 
-\item{category.RTI}{Character. Default is "Unspecified". One of "Unspecified",
+\item{category.RTI}{Character. Default is "Less than reliable". One of "Less than reliable",
 "Reliable Increase", or "Reliable Decrease".}
 
-\item{category.RCI}{Character. Default is "Unspecified". One of "Unspecified",
+\item{category.RCI}{Character. Default is "Less than reliable". One of "Less than reliable",
 "Reliable Increase", or "Reliable Decrease".}
 
 \item{sign.RTI}{Character. Indicates whether the RTI estimates the trend to be

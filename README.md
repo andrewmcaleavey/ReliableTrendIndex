@@ -68,8 +68,8 @@ library(ReliableTrendIndex)
 #> Warning: package 'magrittr' was built under R version 4.0.5
 #> 
 #> You loaded ReliableTrendIndex
-#> Loading the ReliableTrendIndex package is not recommended, because you're probably not 
-#> going to find a situation in which the reliability of change scores matters.
+#> You don't actually believe that the SD of a group has anything to do with any individual case, right?
+#> That seems implausible for most constructs.
 ```
 
 ### One person RCI
@@ -139,8 +139,9 @@ jt_rci_calc(difference = 1, sdiff = .7071068)
 
 That value, 1.414, is not greater than 1.96, so we would conclude that
 the change from pre-post is not reliable. The `ReliableTrendIndex` term
-for this is `Unspecified` as opposed to `No Change` in order to indicate
-that the method could not specifically identify the change score.
+for this is `Less than reliable` as opposed to `No Change` in order to
+indicate that the method could not specifically identify the change
+score.
 
 However, the RTI would incorporate all six measurements. It is a waste
 to ignore two-thirds of our information here.
@@ -187,7 +188,7 @@ print(mac_rti)
 #> [1] "Reliable Increase"
 #> 
 #> $category.RCI
-#> [1] "Unspecified"
+#> [1] "Less than reliable"
 #> 
 #> $sign.RTI
 #> [1] "Increase"
@@ -245,16 +246,18 @@ summary(mac_rti)
 #> Reliable Trend Analysis:
 #> 
 #> This sequence of 6 values has a Reliable Increase using the RTI.
-#> The likelihood of Increase is 0.98429.
+#> The likelihood of an overall Increase in true score is 0.98429 using the RTI.
 #> 
-#> A pre-post analysis would have an Unspecified difference using the RCI.
-#> 
-#> The likelihood of Increase is 0.92138.
+#> A pre-post analysis would have a Less than reliable change using the RCI.
+#> The likelihood of Increase given just the pre-post values is 0.92138.
 ```
 
 So now we can clearly see that the RCI, by ignoring the interim
 measurements and using a strong cutoff, would not detect a reliable
-change but the RTI would.
+change but the RTI would. Note that the summary also tells us the
+probability of the result being in its most likely direction. It is not
+uncommon for large probabilities like 80-90% to be considered
+“Unreliable” due to the conservative Type I error approach of the RCI.
 
 You might want to visualize this to see what it’s doing. Try
 `plot.reliableTrend()` (or just `plot()`).

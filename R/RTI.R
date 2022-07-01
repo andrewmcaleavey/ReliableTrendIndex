@@ -41,7 +41,7 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
                                    "Reliable Increase", 
                                    ifelse(JT_rci < -cutpoint, 
                                           "Reliable Decrease", 
-                                          "Unspecified"))
+                                          "Less than reliable"))
     return(list(JT_rci = JT_rci, 
                 RTI = JT_rci, 
                 category.RCI = JT_rci_classification,
@@ -63,7 +63,7 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
                                 "Reliable Increase",
                                 ifelse(RTI < -cutpoint,
                                        "Reliable Decrease",
-                                       "Unspecified"))
+                                       "Less than reliable"))
     return(list(JT_rci = RTI,
                 RTI = RTI,
                 category.RTI = RTI_classification,
@@ -91,7 +91,7 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
                                 "Reliable Increase", 
                                 ifelse(RTI < -cutpoint, 
                                        "Reliable Decrease", 
-                                       "Unspecified"))
+                                       "Less than reliable"))
     return(reliableTrend(RCI = NA_real_,
                          RTI = RTI, 
                          category.RTI = RTI_classification,
