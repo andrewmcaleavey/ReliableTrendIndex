@@ -8,23 +8,31 @@
 
 An R package for analysis of “reliable” changes.
 
-PLEASE DO NOT USE RELIABLE CHANGE OR THIS PACKAGE FOR ANYTHING WITH
-MEANINGFUL CONSEQUENCES.
-
-The idea of reliable change is extremely questionable, and there are
-almost certainly better ways to investigate the questions in which you
-are interested.
+I should be clear with my opinion here: The idea of reliable change is
+extremely questionable, and there are almost certainly better ways to
+investigate the questions in which you are interested.
 
 The goal of this package is to provide a simple interface for computing
 the RCI and RTI given a data set. I intend it for my own personal use
 and as an educational/demonstration tool in this ongoing research
 endeavor.
 
+If you are interested in contributing to this work in any way (including
+by pointing out mistakes or providing counterarguments), please get in
+touch with me (probably best on twitter:
+[@andrewathan](https://twitter.com/andrewathan) or
+[GitHub](https://github.com/andrewmcaleavey/ReliableTrendIndex)).
+
+I think the RTI is better than the RCI in almost any case with more than
+2 or 3 data points, but it is not my opinion that the RTI solves the
+RCI’s problems. There are many reasons not to be interested in reliable
+changes - but if you are, the RTI might be a usable solution.
+
 ## Installation
 
-I don’t recommend installing this package. I am providing it publicly
-because it should be available to everyone who is interested in these
-issues, to discover strengths and weaknesses of this framework.
+I am providing this package publicly because it should be available to
+everyone who is interested in these issues, to discover strengths and
+weaknesses of this framework. Not because I think it is perfect.
 
 You can install the development version of ReliableTrendIndex from
 [GitHub](https://github.com/) with:
@@ -42,10 +50,10 @@ compute them, but it is easier to have them in one standard format than
 bother with always having to re-write these functions with varying
 levels of stability on a per-project basis.
 
-I repeat, however, that *I don’t really think these functions should be
-used for any clinically-meaningful application* except with extreme
-caution. The idea of “reliable” change is questionably justified and has
-a strong tendency to confuse or mislead users.
+I repeat, however, that *this package should be used with caution*. The
+idea of “reliable” change is questionably justified and has a strong
+tendency to confuse or mislead users. Plus, I may have made mistakes, so
+it is provided as-is.
 
 Bugs and issues can be reported at [the GitHub
 repo](https://github.com/andrewmcaleavey/ReliableTrendIndex). If anyone
@@ -68,8 +76,8 @@ library(ReliableTrendIndex)
 #> Warning: package 'magrittr' was built under R version 4.0.5
 #> 
 #> You loaded ReliableTrendIndex
-#> You don't actually believe that the SD of a group has anything to do with any individual case, right?
-#> That seems implausible for most constructs.
+#> Think about your choices: would you rather develop a meaningful clinical test?
+#> Or is reliability really the best possible idea?
 ```
 
 ### One person RCI

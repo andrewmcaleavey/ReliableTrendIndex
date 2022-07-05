@@ -87,12 +87,13 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
                                    vi  = variance, 
                                    method = "FE")
     RTI <-  rmaobj$zval[length(rmaobj$zval)]
+    RCI <- rmaobj.rci$zval[length(rmaobj.rci$zval)]
     RTI_classification <-  ifelse(RTI > cutpoint, 
                                 "Reliable Increase", 
                                 ifelse(RTI < -cutpoint, 
                                        "Reliable Decrease", 
                                        "Less than reliable"))
-    return(reliableTrend(RCI = NA_real_,
+    return(reliableTrend(RCI = RCI,
                          RTI = RTI, 
                          category.RTI = RTI_classification,
                          rmaObj = rmaobj,

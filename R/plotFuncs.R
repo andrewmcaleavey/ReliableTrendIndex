@@ -56,7 +56,7 @@ forest_to_reg_plot <- function(x,
                       linetype = "dashed") +
       ggplot2::labs(x = "time", 
            y = "outcome", 
-           caption = "Error bar represents the single-timepoint RCI CI.
+           caption = "Error bars represent the individual observation CIs, which is the basis of the RCI.
            For more than two time points, the shaded area represents the RTI CI.")
   }
   else {
