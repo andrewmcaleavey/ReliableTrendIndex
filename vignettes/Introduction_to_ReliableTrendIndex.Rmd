@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(ReliableTrendIndex)
+library(ggplot2)
 ```
 
 I hope no one ever reads this. Except me, probably, when I want to do revisions to some paper later on. 
@@ -63,6 +64,23 @@ sim_data_1 <- simulated_data %>%
            pull(id)) %>% 
   right_join(simulated_data) %>% 
   group_by(id) %>% 
+  mutate(first_obs = first(obs_score), 
+         last_obs = last(obs_score)) %>% 
+  slice_tail(n = 1)
+
+sim_data_2 <- simulated_data %>%
+  split(.$id) %>%
+  purrr::map(~ rti(values = .$obs_score, sem = .2)) %>%
+  # purrr::map(reliableTrend) %>%
+  purrr::map_dfr(rti_to_df) %>% 
+  mutate(id = simulated_data %>% 
+           group_by(id) %>% 
+           slice_tail(n = 1) %>% 
+           pull(id)) %>% 
+  right_join(simulated_data) %>% 
+  group_by(id) %>% 
+  mutate(first_obs = first(obs_score), 
+         last_obs = last(obs_score)) %>% 
   slice_tail(n = 1)
 ```
 
@@ -71,14 +89,19 @@ if we want to compare the RCI to RTI we could see how similar they are:
 ```{r}
 table(sim_data_1$category.RCI)
 table(sim_data_1$category.RTI)
+table(sim_data_2$category.RCI)
+table(sim_data_2$category.RTI)
 ```
 
-In this data, the RTI identifies `r sum(sim_data_1$category.RCI != "Less than reliable")` people as "reliably" changed Compared to the `r sum(sim_data_1$category.RTI != "Less than reliable")` of the RCI. 
+In this data, the RTI identifies `r sum(sim_data_2$category.RCI != "Less than reliable")` people as "reliably" changed Compared to the `r sum(sim_data_2$category.RTI != "Less than reliable")` of the RCI. 
 
 ```{r}
 table(sim_data_1$category.RCI, 
       sim_data_1$category.RTI, 
       sim_data_1$true_change)
+table(sim_data_2$category.RCI, 
+      sim_data_2$category.RTI, 
+      sim_data_2$true_change)
 ```
 
 The top table is people whose true scores truly decreased, the bottom are the people whose true scores truly increased. The rows are the RCI categories and the columns are the RTI.  
@@ -99,6 +122,56 @@ RTI versus truth:
 table(sim_data_1$category.RTI, sim_data_1$true_change)
 ```
 
+This comparison is fairly favorable to the RCI, as it  allows the RCI to classify about 70% of individuals. In applied data, this would be unusual (though not unheard of), because the RCI generally  fails to classify 40-70% of individuals (largely as a function of the ratio of reliability and effect size). 
+
+### Plotting the sample  
+
+It is possible to construct a plot with pre-post scores indicating individuals' RCI status. 
+
+
+```{r}
+ggplot(data = sim_data_2,
+       aes(x = last_obs, 
+           y = first_obs)) +
+  geom_abline(slope = 1, 
+              intercept = c(0, 
+                            1.96*.2*sqrt(2), 
+                            -1.96*.2*sqrt(2)), 
+              linetype = c("solid", "dashed", "dashed")) + 
+  geom_ribbon(aes(ymax = last_obs + 1.96*.2*sqrt(2), 
+                  ymin = last_obs - 1.96*.2*sqrt(2)), 
+              fill = "blue", 
+              alpha = .1) +
+  geom_point(aes(shape = category.RCI, 
+                 color = category.RCI)) + 
+  labs(title = "RCI plot", 
+       y = "Pre-treatment score", 
+       x = "Post-treatment score")
+```
+
+That plot is similar to the Jacobson & Truax method, and shows the traditional effects. 
+
+```{r}
+ggplot(data = sim_data_2,
+       aes(x = last_obs, 
+           y = first_obs)) +
+  geom_abline(slope = 1, 
+              intercept = c(0, 
+                            1.96*.2*sqrt(2), 
+                            -1.96*.2*sqrt(2)), 
+              linetype = c("solid", "dashed", "dashed")) + 
+  geom_ribbon(aes(ymax = last_obs + 1.96*.2*sqrt(2), 
+                  ymin = last_obs - 1.96*.2*sqrt(2)), 
+              fill = "blue", 
+              alpha = .1) +
+  geom_point(aes(shape = category.RTI, 
+                 color = category.RTI)) + 
+  labs(title = "RTI plot", 
+       y = "Pre-treatment score", 
+       x = "Post-treatment score")
+```
+
+In that plot, we can see many of the points within the uncertainty band are actually reliably different from their baseline score, and a small number of points outside it are actually not very convincingly reliably different from baseline. 
 
 It is not clear when you would want to use the RCI over the RTI, if there are more than two data points for any individuals. 
 

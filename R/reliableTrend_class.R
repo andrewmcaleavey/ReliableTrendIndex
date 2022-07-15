@@ -293,7 +293,7 @@ reliableTrend <- function(x = NULL,
                                  "Reliable Decrease", 
                                  "Less than reliable")) 
     scale_RCI <- error_var*sqrt(2)*cutpoint 
-    RCI <- jt_rci_calc(difference = values[length(values)] - values[1], 
+    RCI <- jt_rci_calc(difference = values.prepost[2] - values.prepost[1], 
                            # sdiff = sqrt(error_var))
                        sdiff = error_var * sqrt(2))
     pd.RCI <- pnorm(abs(RCI)) 
