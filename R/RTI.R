@@ -72,7 +72,7 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
                 variance = variance,
                 cutpoint = cutpoint))
   } else {
-    print("More than two values provided, assuming they are evenly spaced in time.")
+    warning("More than two values provided, assuming they are evenly spaced in time.")
     difs <- values[-1] - values[1]
     values.prepost <- c(values[1], values[length(values)])
     time_linear <- seq(from = 1, 

@@ -1,6 +1,9 @@
 ---
 title: "Introduction_to_ReliableTrendIndex"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette: 
+    fig_width: 7 
+    fig_height: 7
 vignette: >
   %\VignetteIndexEntry{Introduction_to_ReliableTrendIndex}
   %\VignetteEngine{knitr::rmarkdown}
@@ -52,22 +55,7 @@ simulated_data
 
 The data has 500 individuals (`id`) with true scores at varying number of observations. Each person was measured between 2-20 times. There is an average effect of increasing scores over time, and the true scores all follow a linear pattern, but there is noise added to the `obs_score` variable. Specifically, it has a random normal variable added with SD = .2.  
 
-```{r example of multiple ppl}
-sim_data_1 <- simulated_data %>%
-  split(.$id) %>%
-  purrr::map(~ simple_rma(., error_var = .2^2)) %>%
-  purrr::map(reliableTrend) %>%
-  purrr::map_dfr(rti_to_df) %>% 
-  mutate(id = simulated_data %>% 
-           group_by(id) %>% 
-           slice_tail(n = 1) %>% 
-           pull(id)) %>% 
-  right_join(simulated_data) %>% 
-  group_by(id) %>% 
-  mutate(first_obs = first(obs_score), 
-         last_obs = last(obs_score)) %>% 
-  slice_tail(n = 1)
-
+```{r example of multiple ppl, warning=FALSE}
 sim_data_2 <- simulated_data %>%
   split(.$id) %>%
   purrr::map(~ rti(values = .$obs_score, sem = .2)) %>%
@@ -87,8 +75,6 @@ sim_data_2 <- simulated_data %>%
 if we want to compare the RCI to RTI we could see how similar they are: 
 
 ```{r}
-table(sim_data_1$category.RCI)
-table(sim_data_1$category.RTI)
 table(sim_data_2$category.RCI)
 table(sim_data_2$category.RTI)
 ```
@@ -96,9 +82,6 @@ table(sim_data_2$category.RTI)
 In this data, the RTI identifies `r sum(sim_data_2$category.RCI != "Less than reliable")` people as "reliably" changed Compared to the `r sum(sim_data_2$category.RTI != "Less than reliable")` of the RCI. 
 
 ```{r}
-table(sim_data_1$category.RCI, 
-      sim_data_1$category.RTI, 
-      sim_data_1$true_change)
 table(sim_data_2$category.RCI, 
       sim_data_2$category.RTI, 
       sim_data_2$true_change)
@@ -108,18 +91,18 @@ The top table is people whose true scores truly decreased, the bottom are the pe
 
 We can see that:   
 
-* `r sum(sim_data_1$true_change == "True Decrease" & sim_data_1$category.RTI == "Reliable Decrease" & sim_data_1$category.RCI == "Less than reliable")` people who truly decreased were identified correctly by the RTI but 'Less than reliable' by the RCI. In contrast, the RCI only identified `r sum(sim_data_1$true_change == "True Decrease" & sim_data_1$category.RCI == "Reliable Decrease" & sim_data_1$category.RTI == "Less than reliable")` people who truly decreased while the RTI said they were 'Less than reliable.'   
+* `r sum(sim_data_2$true_change == "True Decrease" & sim_data_2$category.RTI == "Reliable Decrease" & sim_data_2$category.RCI == "Less than reliable")` people who truly decreased were identified correctly by the RTI but 'Less than reliable' by the RCI. In contrast, the RCI only identified `r sum(sim_data_2$true_change == "True Decrease" & sim_data_2$category.RCI == "Reliable Decrease" & sim_data_2$category.RTI == "Less than reliable")` people who truly decreased while the RTI said they were 'Less than reliable.'   
 
 Overall, other comparisons are in favor of the RTI in most cases.  
 
 RCI versus truth: 
 ```{r example of multiple ppl2}
-table(sim_data_1$category.RCI, sim_data_1$true_change)
+table(sim_data_2$category.RCI, sim_data_2$true_change)
 ```
 
 RTI versus truth: 
 ```{r example of multiple ppl3}
-table(sim_data_1$category.RTI, sim_data_1$true_change)
+table(sim_data_2$category.RTI, sim_data_2$true_change)
 ```
 
 This comparison is fairly favorable to the RCI, as it  allows the RCI to classify about 70% of individuals. In applied data, this would be unusual (though not unheard of), because the RCI generally  fails to classify 40-70% of individuals (largely as a function of the ratio of reliability and effect size). 
@@ -173,6 +156,5 @@ ggplot(data = sim_data_2,
 
 In that plot, we can see many of the points within the uncertainty band are actually reliably different from their baseline score, and a small number of points outside it are actually not very convincingly reliably different from baseline. 
 
-It is not clear when you would want to use the RCI over the RTI, if there are more than two data points for any individuals. 
-
+From the RCI's perspective, those latter few people are misclassified by the RTI. But the same can be said in reverse for the many others within the shaded area in the second plot.  
 

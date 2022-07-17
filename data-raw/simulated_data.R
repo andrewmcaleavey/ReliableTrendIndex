@@ -1,7 +1,7 @@
 ## Simulating data to have as a test object
 
 ids <- 1:500  
-id_variable <- unlist(lapply(ids, function(x) rep(x, each = sample(2:20, length(ids), replace = TRUE))))
+id_variable <- unlist(lapply(ids, function(x) rep(x, each = sample(4:20, length(ids), replace = TRUE))))
 id_data <- id_variable %>% 
   tibble() %>% 
   set_names("id") %>% 
