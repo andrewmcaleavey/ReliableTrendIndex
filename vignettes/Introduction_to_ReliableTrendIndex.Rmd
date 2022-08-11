@@ -32,7 +32,7 @@ The function `reliableTrend()` creates objects of class `reliableTrend`. This cl
 
 ### Meta-analysis backbone  
 
-The functions are mostly wrappers around functions from the `{metafor}` package, available on CRAN. The chief of these is `metafor::rma()`, which conducts simple univariate meta-analyses. Read about it at `?metafor::rma()`. It was worth developing wrapper functions for me because **A)** those functions are much more complex than the RCI/RTI I am working with here, and **B)** the variables in that package are named appropriately nonspecific things for meta-analysis, but overly complex things for me. 
+The functions are mostly wrappers around functions from the `{metafor}` package, available on CRAN. The chief of these is `metafor::rma()`, which conducts simple univariate meta-analyses. Read about it at `?metafor::rma()`. It was worth developing wrapper functions for me because **A)** those functions are much more complex than the RCI/RTI I am working with here, and **B)** the variables in that package are named appropriately nonspecific things for meta-analysis, but overly complex things for this purpose. At the same time, any upstream changes to `{metafor}` will cause problems for this package.  
 
 ## Workflows  
 
@@ -41,7 +41,7 @@ The two essential use cases are when you have one person, and when you have more
 
 ### One person workflows  
 
-Obviously, this is the simple case. See the README for a couple of simple examples.  
+Obviously, this is the simple case. See the README for examples.  
 
 ### Multi-person workflows  
 
@@ -53,7 +53,7 @@ We have a simulated data set available in the package.
 simulated_data
 ```
 
-The data has 500 individuals (`id`) with true scores at varying number of observations. Each person was measured between 2-20 times. There is an average effect of increasing scores over time, and the true scores all follow a linear pattern, but there is noise added to the `obs_score` variable. Specifically, it has a random normal variable added with SD = .2.  
+The data has 500 individuals (`id`) with true scores at varying number of observations. Each person was measured between 4-20 times. (If you have fewer than 4 observations per person, the RTI will return the same value as the RCI.) There is an average effect of increasing scores over time, and the true scores all follow a linear pattern, but there is noise added to the `obs_score` variable. Specifically, it has a random normal variable added with SD = .2.  
 
 ```{r example of multiple ppl, warning=FALSE}
 sim_data_2 <- simulated_data %>%
@@ -154,7 +154,45 @@ ggplot(data = sim_data_2,
        x = "Post-treatment score")
 ```
 
-In that plot, we can see many of the points within the uncertainty band are actually reliably different from their baseline score, and a small number of points outside it are actually not very convincingly reliably different from baseline. 
+In that plot, we can see many of the points within the uncertainty band are actually reliably different from their baseline score, and a small number of points outside it are actually not very convincingly reliably different from baseline. From the RCI's perspective, those latter few people are misclassified by the RTI. But the same can be said in reverse for the many others within the shaded area in the second plot.  
 
-From the RCI's perspective, those latter few people are misclassified by the RTI. But the same can be said in reverse for the many others within the shaded area in the second plot.  
+A more RCI-centric plot would involve estimating the linear trend along with its uncertainty, much like a caterpillar plot, or a plot of the estimated confidence in Increase/Decrease
 
+```{r}
+ggplot(sim_data_2, 
+       aes(x = reorder(slope.est, slope.est),  
+           y = slope.est, 
+           ymin = slope.lb, 
+           ymax = slope.ub)) +
+  geom_hline(yintercept = 0, 
+             linetype = "dashed") +
+  geom_pointrange(aes(color = category.RTI)) +
+  labs(title = "RTI Caterpillar plot", 
+       x = "Patient", 
+       y = "Estimated slope per observation") +
+  theme(axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank())
+
+```
+
+
+Compare to the RCI categories: 
+
+
+```{r}
+ggplot(sim_data_2, 
+       aes(x = reorder(slope.est, slope.est),  
+           y = slope.est, 
+           ymin = slope.lb, 
+           ymax = slope.ub)) +
+  geom_hline(yintercept = 0, 
+             linetype = "dashed") +
+  geom_pointrange(aes(color = category.RCI)) +
+  labs(title = "RCI Caterpillar plot", 
+       x = "Patient", 
+       y = "Estimated slope per observation") +
+  theme(axis.text.x = element_blank(), 
+        axis.ticks.x = element_blank())
+```
+
+The differences are relatively minor in this case,  and mostly for those patients with small estimated changes. 

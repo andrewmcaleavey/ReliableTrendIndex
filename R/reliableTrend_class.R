@@ -452,7 +452,10 @@ rti_to_stripped_list <- function(x) {
        sign.difference = x$sign.difference,
        error_var = x$error_var ,
        cutpoint = x$cutpoint ,
-       scale_RCI = x$scale_RCI)
+       scale_RCI = x$scale_RCI, 
+       slope.est = x$rmaObj$beta[length(x$rmaObj$beta)], 
+       slope.lb = x$rmaObj$ci.lb[length(x$rmaObj$ci.lb)],
+       slope.ub = x$rmaObj$ci.ub[length(x$rmaObj$ci.ub)])
 }
 
 # same but to a data.frame
