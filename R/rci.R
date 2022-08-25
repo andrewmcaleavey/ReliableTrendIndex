@@ -28,7 +28,7 @@
 #' 1986 correction) has become the dominant version of providing statistical tests to the
 #' difference between two scores from one person, it is merely the simplest possible
 #' version of this estimand. To achieve simplicity, it relies on assumptions that will not
-#' generally be true and that you may be able to relax by including more information. 
+#' generally be true, but you may be able to relax by including more information. 
 #' 
 #' For instance, it is possible that the SD among a group of individuals at time 1 is different
 #' than the SD at time 2, for instance because treatment will de-homogenize individuals or
@@ -50,20 +50,32 @@ rci <- function(difference = NULL,
                 sdiff = NULL, 
                 sem = NULL, 
                 prob = .975,
-                verbose = FALSE){
+                verbose = FALSE, 
+                rc.type = "jt"){
   # check for the correct type of data presented
   # if there is t1, there needs to be t2 and can set diff
+  
+
   
   # if there is no RCI provided for the scale, need to compute it. 
   if(is.null(scale_rci)){
     scale_rci <- scale_rci_calc(sdiff = sdiff, 
-                                rxx = rxx,
+                                rxx = r1,
                                 sd1 = sd1,
                                 sem = sem,
                                 prob = prob, 
                                 verbose = FALSE)
   }
   # should have scale_rci now
+  
+  #testing Maassen formula
+  if(rc.type == "maassen"){
+    sdiff = sqrt((sd1^2 + sd2^2) * (1 - r1))
+  }
+  
+  if(rc.type == "mcnemar"){
+    sdiff = sqrt(sd1^2 * (1 - r1) + sd2^2 * (1 - r2))
+  }
   
   # if only the scale_rci is provided, need to compute sdiff
   if(!is.null(scale_rci) & is.null(sdiff)){
@@ -88,8 +100,12 @@ rci <- function(difference = NULL,
                 scale_rci = scale_rci,
                 sdiff = sdiff, 
                 sem = sem, 
-                rxx = rxx, 
+                r1 = r1, 
+                r2 = r2, 
                 sd1 = sd1, 
-                prob = prob))
+                sd2 = sd2, 
+                prob = prob, 
+                rc.type = rc.type))
   }
 }
+

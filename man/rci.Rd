@@ -55,7 +55,7 @@ While the Jacobson & Truax (1991) definition (which is actually the Christensen 
 1986 correction) has become the dominant version of providing statistical tests to the
 difference between two scores from one person, it is merely the simplest possible
 version of this estimand. To achieve simplicity, it relies on assumptions that will not
-generally be true and that you may be able to relax by including more information.
+generally be true, but you may be able to relax by including more information.
 
 For instance, it is possible that the SD among a group of individuals at time 1 is different
 than the SD at time 2, for instance because treatment will de-homogenize individuals or

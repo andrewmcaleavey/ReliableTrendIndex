@@ -156,7 +156,7 @@ ggplot(data = sim_data_2,
 
 In that plot, we can see many of the points within the uncertainty band are actually reliably different from their baseline score, and a small number of points outside it are actually not very convincingly reliably different from baseline. From the RCI's perspective, those latter few people are misclassified by the RTI. But the same can be said in reverse for the many others within the shaded area in the second plot.  
 
-A more RCI-centric plot would involve estimating the linear trend along with its uncertainty, much like a caterpillar plot, or a plot of the estimated confidence in Increase/Decrease
+A more RTI-centric plot would involve estimating the linear trend along with its uncertainty, much like a caterpillar plot, or a plot of the estimated confidence in Increase/Decrease directly. 
 
 ```{r}
 ggplot(sim_data_2, 
@@ -176,7 +176,7 @@ ggplot(sim_data_2,
 ```
 
 
-Compare to the RCI categories: 
+Compare that plot to the same observations colored by the corresponding RCI categories: 
 
 
 ```{r}
@@ -195,4 +195,69 @@ ggplot(sim_data_2,
         axis.ticks.x = element_blank())
 ```
 
-The differences are relatively minor in this case,  and mostly for those patients with small estimated changes. 
+Here we are showing the same RTI data only coloring it by the RCI determination. The differences are relatively minor in this case, and occur only in two cases: The first and more common case is when the RTI's CI excludes 0 but the RCI is not able to notice this (it always as as large or larger error).  
+
+The second cause is when the pre-post difference score is larger than the RTI's estimated slope over that time interval, and the increase in precision due to using the RTI does not compensate for the smaller estimate of change. This occurs seldom, and will be due to an unusually large pre-post difference score compared to the other observations for an individual - in this data, due entirely to measurement error. That is, the RCI detected a large change mostly due to measurement error, while the RTI detected a smaller or less consistent change based on more observations.  
+
+A confidence in change plot. 
+
+WIP::
+
+```{r}
+sim_data_3 <- sim_data_2 %>% 
+  ungroup() %>% 
+  mutate(diff_obs = last_obs - first_obs) %>% 
+  arrange(diff_obs)
+
+max(sim_data_3$diff_obs)
+class(sim_data_3$diff_obs)
+
+ggplot(sim_data_3, 
+       aes(x = diff_obs, 
+           y = pd.RTI)) +
+  geom_point(aes(color = true_change)) +
+  lims(y = c(0, 1)) +
+  theme_bw() +
+  labs(title = "RTI confidence in either change")
+
+ggplot(sim_data_3, 
+       aes(x = diff_obs, 
+           y = pd.RCI)) +
+  geom_point(aes(color = true_change)) +
+  lims(y = c(0, 1)) +
+  theme_bw() +
+  labs(title = "RCI confidence in either change")
+
+
+ggplot(sim_data_3 %>% 
+         arrange(diff_true), 
+       aes(x = diff_true, 
+           y = pd.RTI)) +
+  geom_point() +
+  lims(y = c(0, 1)) +
+  theme_bw() +
+  labs(title = "RTI confidence in either change")
+
+ggplot(sim_data_3 %>% 
+         arrange(diff_true), 
+       aes(x = diff_true, 
+           y = pd.RCI)) +
+  geom_point() +
+  lims(y = c(0, 1)) +
+  theme_bw() +
+  labs(title = "RCI confidence in either change")
+
+
+ggplot(sim_data_3 %>% 
+         arrange(diff_true), 
+       aes(x = pd.RTI, 
+           y = pd.RCI)) +
+  geom_point() +
+  # lims(y = c(0, 1), 
+  #      x = c(0, 1)) +
+  theme_bw() +
+  labs(title = "Confidence rather than correctness")
+
+
+```
+
