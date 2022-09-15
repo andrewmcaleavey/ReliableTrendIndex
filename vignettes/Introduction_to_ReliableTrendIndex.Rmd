@@ -32,20 +32,21 @@ The function `reliableTrend()` creates objects of class `reliableTrend`. This cl
 
 ### Meta-analysis backbone  
 
-The functions are mostly wrappers around functions from the `{metafor}` package, available on CRAN. The chief of these is `metafor::rma()`, which conducts simple univariate meta-analyses. Read about it at `?metafor::rma()`. It was worth developing wrapper functions for me because **A)** those functions are much more complex than the RCI/RTI I am working with here, and **B)** the variables in that package are named appropriately nonspecific things for meta-analysis, but overly complex things for this purpose. At the same time, any upstream changes to `{metafor}` will cause problems for this package.  
+The most central RTI functions are mostly wrappers around functions from the `{metafor}` package, available on CRAN. The chief of these is `metafor::rma()`, which conducts simple univariate meta-analyses. Read about it at `?metafor::rma()`. It was worth developing wrapper functions because **A)** those functions are much more complex than the RCI/RTI require, and **B)** the variables in that package are named appropriately nonspecific things for meta-analysis, but overly complex things for this purpose. At the same time, any upstream changes to `{metafor}` will cause problems for this package. This should not be a major problem, but may become an issue in the future. 
 
 ## Workflows  
 
-Some basic usage examples are provided in `?reliableTrend`, `?simple_rma`, `?rti_to_df` and others. 
+Some basic usage examples are provided in `?reliableTrend`, `?simple_rma`, `?rti_to_df` and others.  
+
 The two essential use cases are when you have one person, and when you have more than one person. 
 
-### One person workflows  
+### One person   
 
-Obviously, this is the simple case. See the README for examples.  
+Obviously, this is the simple case. See the README for examples. This is only relevant to specific clinical testing situations, and as educational material.    
 
-### Multi-person workflows  
+### Multiple people   
 
-In the case of analyzing a lot of data simultaneously (e.g., in a research project or simulation study), the simplest way to think about it is doing the previous case iteratively. However, you might have one, two, or five hundred observations for a given person - it would be ideal to have an analysis system that could handle all of those cases. 
+In the case of analyzing a lot of data simultaneously (e.g., in a research project, clinical administration/program evaluation, simulation study), the simplest way to think about it is doing the previous case iteratively. However, you might have one, two, or several hundred observations for a given person, that number of observations might differ across people, and there might be many hundreds of individuals in your data. It would be ideal to have an analysis system that could handle all of those cases without so much work.  
 
 We have a simulated data set available in the package. 
 
@@ -53,26 +54,41 @@ We have a simulated data set available in the package.
 simulated_data
 ```
 
-The data has 500 individuals (`id`) with true scores at varying number of observations. Each person was measured between 4-20 times. (If you have fewer than 4 observations per person, the RTI will return the same value as the RCI.) There is an average effect of increasing scores over time, and the true scores all follow a linear pattern, but there is noise added to the `obs_score` variable. Specifically, it has a random normal variable added with SD = .2.  
+The data has 500 individuals (`id`) with true scores at varying number of observations. Each person was measured between 4-20 times. (If you have fewer than 4 observations per person, the RTI will return the same value as the RCI as of version 0.1.)  
+
+This data was simulated with an average effect of increasing scores over time, and the true scores all follow a linear pattern, but there is noise added to the `obs_score` variable. Specifically, it has a random normal variable added with SD = .2.  
+
+We can use this information to compute the RCI and RTI categories across all the data. The code chunk below does this, and some additional work. It is commented 
 
 ```{r example of multiple ppl, warning=FALSE}
-sim_data_2 <- simulated_data %>%
+sim_data_2 <- simulated_data %>%  
+  # split the data by the id variable
   split(.$id) %>%
+  # compute the rti for each separate data set
   purrr::map(~ rti(values = .$obs_score, sem = .2)) %>%
-  # purrr::map(reliableTrend) %>%
+  # take the output and simplify it to data.frame-friendly columns
   purrr::map_dfr(rti_to_df) %>% 
+  # the data is made in a very simple form
+  # HOWEVER, it lost several key variables along the way
+  # here, we re-merge the old data (simulated_data) with the new
+  # first by re-integrating the id variable, which was dropped earlier
   mutate(id = simulated_data %>% 
            group_by(id) %>% 
            slice_tail(n = 1) %>% 
            pull(id)) %>% 
+  # then joining the data sets
   right_join(simulated_data) %>% 
+  # now computing first and last score values, which are not originally in the data
   group_by(id) %>% 
   mutate(first_obs = first(obs_score), 
          last_obs = last(obs_score)) %>% 
+  # and finally taking just the last observation per person. 
   slice_tail(n = 1)
 ```
 
-if we want to compare the RCI to RTI we could see how similar they are: 
+That code is not the easiest to understand, but it does work and would work for a range of data sets. 
+
+Since we only retained one row per patient, comparing the RCI and RTI is relatively straightforward: 
 
 ```{r}
 table(sim_data_2$category.RCI)
@@ -80,6 +96,8 @@ table(sim_data_2$category.RTI)
 ```
 
 In this data, the RTI identifies `r sum(sim_data_2$category.RCI != "Less than reliable")` people as "reliably" changed Compared to the `r sum(sim_data_2$category.RTI != "Less than reliable")` of the RCI. 
+
+But how does that compare to the "reality?" Meaning, the true score increase/decreases.  
 
 ```{r}
 table(sim_data_2$category.RCI, 
@@ -95,17 +113,19 @@ We can see that:
 
 Overall, other comparisons are in favor of the RTI in most cases.  
 
-RCI versus truth: 
+RCI versus truth:  
+
 ```{r example of multiple ppl2}
 table(sim_data_2$category.RCI, sim_data_2$true_change)
 ```
 
-RTI versus truth: 
+RTI versus truth:  
+
 ```{r example of multiple ppl3}
 table(sim_data_2$category.RTI, sim_data_2$true_change)
 ```
 
-This comparison is fairly favorable to the RCI, as it  allows the RCI to classify about 70% of individuals. In applied data, this would be unusual (though not unheard of), because the RCI generally  fails to classify 40-70% of individuals (largely as a function of the ratio of reliability and effect size). 
+This simulation is fairly favorable to the RCI, as it allows the RCI to classify about 70% of individuals. In applied data, this would be unusual (though not unheard of), because the RCI often fails to classify 40-70% of individuals in mental health treatments (as a function of the ratio of reliability to effect size). 
 
 ### Plotting the sample  
 
