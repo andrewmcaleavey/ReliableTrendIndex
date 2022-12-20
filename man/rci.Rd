@@ -17,7 +17,8 @@ rci(
   sdiff = NULL,
   sem = NULL,
   prob = 0.975,
-  verbose = FALSE
+  verbose = FALSE,
+  rc.type = "jt"
 )
 }
 \arguments{
