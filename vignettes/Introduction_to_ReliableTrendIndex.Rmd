@@ -19,12 +19,9 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(ReliableTrendIndex)
-library(ggplot2)
 ```
 
-I hope no one ever reads this. Except me, probably, when I want to do revisions to some paper later on. 
-
-The package `{ReliableTrendIndex}` is a way to contain a large group of disorganized analysis functions related to the malformed concept of reliable change. There are a few key functions. 
+The package `{ReliableTrendIndex}` is a way to contain a large group of disorganized analysis functions related to the concept of reliable change. There are a few key functions.  
 
 ### `reliableTrend()` and the `reliableTrend` class  
 
@@ -32,21 +29,35 @@ The function `reliableTrend()` creates objects of class `reliableTrend`. This cl
 
 ### Meta-analysis backbone  
 
-The most central RTI functions are mostly wrappers around functions from the `{metafor}` package, available on CRAN. The chief of these is `metafor::rma()`, which conducts simple univariate meta-analyses. Read about it at `?metafor::rma()`. It was worth developing wrapper functions because **A)** those functions are much more complex than the RCI/RTI require, and **B)** the variables in that package are named appropriately nonspecific things for meta-analysis, but overly complex things for this purpose. At the same time, any upstream changes to `{metafor}` will cause problems for this package. This should not be a major problem, but may become an issue in the future. 
+The most central RTI functions are wrappers around functions from the `{metafor}` package, available on CRAN. The chief of these is `metafor::rma()`, which conducts simple univariate meta-analyses. Read about it at `?metafor::rma()`. It was worth developing wrapper functions because **A)** those functions are much more complex than the RCI/RTI require, and **B)** the variables in that package are named appropriately for meta-analysis, but not for this purpose. 
 
-## Workflows  
+At present, any upstream changes to `{metafor}` will affect this package. This should not be a major problem, but may become an issue in the future. I have decided not to extract the functions directly from `{metafor}` at present.  
+
+## Conceptual differences between RTI and RCI  
+
+The RCI is a test for difference scores, and the RTI is a test for linear trends. The two are fundamentally different, but both can be informative about change. If there is a reliable change according to the RCI, the individual has provided scores that are not consistent with having the same true score at both occasions. If there is a reliable trend according to the RTI, the individual's series of scores is not consistent with a constant mean true score value. These are potentially different pieces of information. 
+
+Patients who have a reliable trend have experienced change. Patients who have a reliable change have a reliable difference between two points. Patients who have a reliable trend but no reliable change have experienced change but would not be reliably different if only two observations were available. Patients who have a reliable change but no reliable trend are reliably different, but may not be changing. 
+
+The differences are, admittedly, difficult to understand and circumstantially variable. Preference for one or the other can be justified. Both methods will create unnecessary Type II errors by failing to categorize some individuals with small-to-moderate changes. The RTI will resolve some of the Type II errors that the RCI creates. 
+
+Since both the RTI and the RCI assume the same error component, but the RTI includes more observations, it will have a higher signal-to-noise ratio than the RCI. However, nonlinear changes will reduce this effect.  
+
+I recommend using the RTI if you want a simple way to use multiple observations per person, and think that each observation includes information about their overall process of change. The RCI requires that you believe only two observations matter. 
+
+The solution that resolves these issues is to collect better data: more precise measurements with greater person-specificity and more frequent assessments during a change process. 
+
+## Workflow with multiple people  
 
 Some basic usage examples are provided in `?reliableTrend`, `?simple_rma`, `?rti_to_df` and others.  
 
 The two essential use cases are when you have one person, and when you have more than one person. 
 
-### One person   
+See the README for examples with a single person. That workflow is only relevant to specific clinical testing situations, and as educational material.    
 
-Obviously, this is the simple case. See the README for examples. This is only relevant to specific clinical testing situations, and as educational material.    
+In the case of analyzing a lot of data simultaneously (*e.g.*, in a research project, clinical administration/program evaluation, simulation study), the simplest way to think about it is doing the a single case iteratively.  
 
-### Multiple people   
-
-In the case of analyzing a lot of data simultaneously (e.g., in a research project, clinical administration/program evaluation, simulation study), the simplest way to think about it is doing the previous case iteratively. However, you might have one, two, or several hundred observations for a given person, that number of observations might differ across people, and there might be many hundreds of individuals in your data. It would be ideal to have an analysis system that could handle all of those cases without so much work.  
+However, you might have one, two, or several hundred observations for a given person, that number of observations might differ across people, and there might be many hundreds of individuals in your data. It would be ideal to have an analysis system that could handle all of those cases without so much work.  
 
 We have a simulated data set available in the package. 
 
@@ -58,7 +69,7 @@ The data has 500 individuals (`id`) with true scores at varying number of observ
 
 This data was simulated with an average effect of increasing scores over time, and the true scores all follow a linear pattern, but there is noise added to the `obs_score` variable. Specifically, it has a random normal variable added with SD = .2.  
 
-We can use this information to compute the RCI and RTI categories across all the data. The code chunk below does this, and some additional work. It is commented 
+We can use this information to compute the RCI and RTI categories across all the data. The code chunk below does this, and some additional work. It is commented to explain each step.  
 
 ```{r example of multiple ppl, warning=FALSE}
 sim_data_2 <- simulated_data %>%  
@@ -78,7 +89,7 @@ sim_data_2 <- simulated_data %>%
            pull(id)) %>% 
   # then joining the data sets
   right_join(simulated_data) %>% 
-  # now computing first and last score values, which are not originally in the data
+  # now computing first and last score values, which are not natively in the data
   group_by(id) %>% 
   mutate(first_obs = first(obs_score), 
          last_obs = last(obs_score)) %>% 
@@ -86,7 +97,7 @@ sim_data_2 <- simulated_data %>%
   slice_tail(n = 1)
 ```
 
-That code is not the easiest to understand, but it does work and would work for a range of data sets. 
+That code is not the easiest to understand, but it does work and would work for a range of data sets.  
 
 Since we only retained one row per patient, comparing the RCI and RTI is relatively straightforward: 
 
@@ -147,12 +158,16 @@ ggplot(data = sim_data_2,
               alpha = .1) +
   geom_point(aes(shape = category.RCI, 
                  color = category.RCI)) + 
+  scale_shape_discrete(name = "RCI") +
+  scale_color_discrete(name = "RCI") +
   labs(title = "RCI plot", 
        y = "Pre-treatment score", 
-       x = "Post-treatment score")
+       x = "Post-treatment score") + 
+  theme(legend.position = "bottom")
 ```
 
 That plot is similar to the Jacobson & Truax method, and shows the traditional effects. 
+We could construct an analogous plot with the RTI categories:  
 
 ```{r}
 ggplot(data = sim_data_2,
@@ -169,12 +184,15 @@ ggplot(data = sim_data_2,
               alpha = .1) +
   geom_point(aes(shape = category.RTI, 
                  color = category.RTI)) + 
+  scale_shape_discrete(name = "RTI") +
+  scale_color_discrete(name = "RTI") +
   labs(title = "RTI plot", 
        y = "Pre-treatment score", 
-       x = "Post-treatment score")
+       x = "Post-treatment score") +
+  theme(legend.position = "bottom")
 ```
 
-In that plot, we can see many of the points within the uncertainty band are actually reliably different from their baseline score, and a small number of points outside it are actually not very convincingly reliably different from baseline. From the RCI's perspective, those latter few people are misclassified by the RTI. But the same can be said in reverse for the many others within the shaded area in the second plot.  
+In that plot, we can see many of the points within the RCI's uncertainty band are actually reliably changing during the observation period, and a small number of points outside it are actually not reliably changing.  
 
 A more RTI-centric plot would involve estimating the linear trend along with its uncertainty, much like a caterpillar plot, or a plot of the estimated confidence in Increase/Decrease directly. 
 
@@ -191,7 +209,8 @@ ggplot(sim_data_2,
        x = "Patient", 
        y = "Estimated slope per observation") +
   theme(axis.text.x = element_blank(), 
-        axis.ticks.x = element_blank())
+        axis.ticks.x = element_blank(), 
+        legend.position = "bottom")
 
 ```
 
@@ -212,10 +231,11 @@ ggplot(sim_data_2,
        x = "Patient", 
        y = "Estimated slope per observation") +
   theme(axis.text.x = element_blank(), 
-        axis.ticks.x = element_blank())
+        axis.ticks.x = element_blank(), 
+        legend.position = "bottom")
 ```
 
-Here we are showing the same RTI data only coloring it by the RCI determination. The differences are relatively minor in this case, and occur only in two cases: The first and more common case is when the RTI's CI excludes 0 but the RCI is not able to notice this (it always as as large or larger error).  
+Here we are showing the same RTI data and error bars, only coloring it by the RCI. The differences are relatively minor in this case, and occur only in two cases: The first and more common case is when the RTI's CI excludes 0 but the RCI is not able to notice this (it always as as large or larger error).  
 
 The second cause is when the pre-post difference score is larger than the RTI's estimated slope over that time interval, and the increase in precision due to using the RTI does not compensate for the smaller estimate of change. This occurs seldom, and will be due to an unusually large pre-post difference score compared to the other observations for an individual - in this data, due entirely to measurement error. That is, the RCI detected a large change mostly due to measurement error, while the RTI detected a smaller or less consistent change based on more observations.  
 
