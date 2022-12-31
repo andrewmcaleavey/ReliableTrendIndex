@@ -6,11 +6,7 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-An R package for analysis of “reliable” changes.
-
-I should be clear with my opinion here: The idea of reliable change is
-extremely questionable, and there are almost certainly better ways to
-investigate the questions in which you are interested.
+An R package for analysis of the reliability of changes.
 
 The goal of this package is to provide a simple interface for computing
 the RCI and RTI given a data set. I intend it for my own personal use
@@ -72,12 +68,12 @@ library(ReliableTrendIndex)
 #> The following objects are masked from 'package:base':
 #> 
 #>     intersect, setdiff, setequal, union
+#> Loading required package: ggplot2
 #> Loading required package: magrittr
-#> Warning: package 'magrittr' was built under R version 4.0.5
 #> 
 #> You loaded ReliableTrendIndex
-#> Think about your choices: would you rather develop a meaningful clinical test?
-#> Or is reliability really the best possible idea?
+#> Did you know that change scores are potentially misleading and 
+#> end-state functioning is generally preferable as an evaluation of any treatment course?
 ```
 
 ### One person RCI
@@ -165,7 +161,8 @@ RCI and/or RTI - is `rti()`.
 
 ``` r
 mac_rti <- rti(mac_height$obs, sdiff = .707)
-#> [1] "More than two values provided, assuming they are evenly spaced in time."
+#> Warning in rti_calc_simple(values = values, variance = (sdiff/sqrt(2))^2, : More
+#> than two values provided, assuming they are evenly spaced in time.
 ```
 
 Note that it gave us this message on screen:
@@ -238,7 +235,7 @@ print(mac_rti)
 #> 
 #> Model Results:
 #> 
-#>              estimate      se      zval    pval    ci.lb    ci.ub     ​ 
+#>              estimate      se      zval    pval    ci.lb    ci.ub      
 #> intrcpt       97.6000  0.4654  209.7101  <.0001  96.6878  98.5122  *** 
 #> time_linear    0.2571  0.1195    2.1517  0.0314   0.0229   0.4914    * 
 #> 
@@ -298,7 +295,7 @@ plot(mac_rti) +
 More complete functions to analyze a complete data set are also provided
 in the function documentation and an initial
 `vignette("Introduction_to_ReliableTrendIndex")`. Complete documentation
-to come!
+to come.
 
 ## License
 

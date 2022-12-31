@@ -18,9 +18,7 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-An R package for analysis of "reliable" changes.
-
-I should be clear with my opinion here: The idea of reliable change is extremely questionable, and there are almost certainly better ways to investigate the questions in which you are interested. 
+An R package for analysis of the reliability of changes.
 
 The goal of this package is to provide a simple interface for computing the RCI and RTI given a data set. I intend it for my own personal use and as an educational/demonstration tool in this ongoing research endeavor. 
 
@@ -140,7 +138,7 @@ plot(mac_rti) +
 
 ## Analysis of complete data sets  
 
-More complete functions to analyze a complete data set are also provided in the function documentation and an initial `vignette("Introduction_to_ReliableTrendIndex")`. Complete documentation to come!
+More complete functions to analyze a complete data set are also provided in the function documentation and an initial `vignette("Introduction_to_ReliableTrendIndex")`. Complete documentation to come.
 
 ## License
 

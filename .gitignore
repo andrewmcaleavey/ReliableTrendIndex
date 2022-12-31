@@ -6,3 +6,6 @@ inst/doc
 *.icloud
 /doc/
 /Meta/
+.Rdata
+.httr-oauth
+.DS_Store
