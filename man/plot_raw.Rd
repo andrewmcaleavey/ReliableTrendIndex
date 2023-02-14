@@ -9,6 +9,12 @@ plot_raw(x)
 \arguments{
 \item{x}{}
 }
+\value{
+ggplot object
+}
 \description{
 Simple plot
+}
+\examples{
+plot_raw(generate_data())
 }

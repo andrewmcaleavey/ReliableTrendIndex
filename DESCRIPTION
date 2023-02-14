@@ -8,7 +8,7 @@ Description: You should not use this package because it makes RCI easy. The pack
 License: AGPL (>= 3) + file LICENSE.md
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Imports: 
     metafor,
     purrr,

@@ -217,10 +217,11 @@ RCIfunc <- function(rxx, s1 = 1, cut = 1.96){
 #'
 #' @param x 
 #'
-#' @return
+#' @return ggplot object
 #' @export
 #'
 #' @examples
+#' plot_raw(generate_data())
 plot_raw <- function(x){
   x %>% 
     ggplot(aes(x = time, 
@@ -234,16 +235,16 @@ plot_raw <- function(x){
          y = "Observed score (higher is worse)", 
          caption = "There is some range of starting places and outcomes")
 }
-plot_raw(generate_data())
 
 #' Simple raw histogram of observed difference scores
 #'
-#' @param x 
+#' @param x data containing columns labeled `time` and `obs_diff`.
 #'
-#' @return
+#' @return ggplot object
 #' @export
 #'
 #' @examples
+#' hist_obs_diff_raw(generate_data())
 hist_obs_diff_raw <- function(x){
   x %>% 
     filter(time == 1) %>% 
@@ -253,16 +254,16 @@ hist_obs_diff_raw <- function(x){
     labs(title = "Simulated data", 
          subtitle = "Observed difference scores")
 }
-hist_obs_diff_raw(generate_data())
 
 #' Compute reliability from known true and observed scores
 #'
-#' @param x 
+#' @param x data
 #'
-#' @return
+#' @return empirical reliability from a data set for simulation
 #' @export
 #'
 #' @examples
+#' rxx_empirical(generate_data())
 rxx_empirical <- function(x){
   sd(x %>% 
        filter(time == 0) %>% 
@@ -270,16 +271,16 @@ rxx_empirical <- function(x){
                            filter(time == 0) %>% 
                            pull(obs))^2 
 }
-rxx_empirical(generate_data())
 
 #' Line plot with RCI groups
 #'
-#' @param x 
+#' @param x data from simulation
 #'
-#' @return
+#' @return ggplot object
 #' @export
 #'
 #' @examples
+#' plot_rci_grps(generate_data())
 plot_rci_grps <- function(x){
   x %>% 
     ggplot(aes(x = time, 
@@ -299,20 +300,39 @@ plot_rci_grps <- function(x){
          y = "Observed score (higher is worse)", 
          caption = "Colors show RCI categories. Bands represent 95%CI for these groups.")
 }
-plot_rci_grps(generate_data())
 
+
+#' Generat a simple table of ReliableChange
+#'
+#' @param x data
+#' @param divideByTwo logical. Should the sample be divided by two (e.g., if
+#'   there are two lines per person)? Defaults to TRUE.
+#'
+#' @return A table. 
+#' @export
+#'
+#' @examples
+#' relChangeRaw_table(generate_data())
+#' relChangeRaw_table(generate_data(), divideByTwo = FALSE)
 relChangeRaw_table <- function(x, 
                                divideByTwo = TRUE){
   if(divideByTwo) return(table(x$ReliableChange) / 2)
   else return(table(x$ReliableChange))
 }
-relChangeRaw_table(generate_data())
-relChangeRaw_table(generate_data(), divideByTwo = FALSE)
 
+
+#' Make a ReliableChange table by percentages
+#'
+#' @param x data
+#'
+#' @return A table
+#' @export
+#'
+#' @examples
+#' relChangePct_table(generate_data())
 relChangePct_table <- function(x){
   100 * relChangeRaw_table(x) / nrow(x)
 }
-relChangePct_table(generate_data())
 
 
 #####
@@ -615,7 +635,7 @@ plotting_func <- function(comparison.data){
   # group-level accuracy
   plotGrpAccDet <- comparison.data %>% 
     select(rxx, PctTrueDet, PctRelDet, PctObsDet) %>% 
-    pivot_longer(cols = !rxx, 
+    tidyr::pivot_longer(cols = !rxx, 
                  values_to = "Proportion", 
                  names_to = "Metric") %>% 
     ggplot(aes(x = rxx, 
@@ -635,7 +655,7 @@ plotting_func <- function(comparison.data){
   
   plotGrpAccImp <- comparison.data %>% 
     select(rxx, PctTrueImp, PctRelImp, PctObsImp) %>% 
-    pivot_longer(cols = !rxx, 
+    tidyr::pivot_longer(cols = !rxx, 
                  values_to = "Proportion", 
                  names_to = "Metric") %>% 
     ggplot(aes(x = rxx, 
@@ -792,10 +812,13 @@ plotting_func <- function(comparison.data){
 #'
 #' @param comparison.data A data frame, likely generated from bind_rows(into_output_tbl()). 
 #'
-#' @return
+#' @return a list of objects
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' plotting_func_delta(generate_data())
+#' }
 plotting_func_delta <- function(comparison.data){
   # Total Accuracy
   plotAcc <- ggplot(comparison.data, 
@@ -860,7 +883,7 @@ plotting_func_delta <- function(comparison.data){
   # group-level accuracy
   plotGrpAccDet <- comparison.data %>% 
     select(delta, PctTrueDet, PctRelDet, PctObsDet) %>% 
-    pivot_longer(cols = !delta, 
+    tidyr::pivot_longer(cols = !delta, 
                  values_to = "Proportion", 
                  names_to = "Metric") %>% 
     ggplot(aes(x = delta, 
@@ -880,7 +903,7 @@ plotting_func_delta <- function(comparison.data){
   
   plotGrpAccImp <- comparison.data %>% 
     select(delta, PctTrueImp, PctRelImp, PctObsImp) %>% 
-    pivot_longer(cols = !delta, 
+    tidyr::pivot_longer(cols = !delta, 
                  values_to = "Proportion", 
                  names_to = "Metric") %>% 
     ggplot(aes(x = delta, 
@@ -1042,7 +1065,7 @@ compute_lm <- function(x){
     map(broom::tidy) %>% 
     map_dfr("p.value") %>% 
     .[2, ] %>% 
-    pivot_longer(cols = everything(), 
+    tidyr::pivot_longer(cols = everything(), 
                  names_to = "id", 
                  values_to = "lm.p.value") %>% 
     mutate(lm.Rel = case_when(lm.p.value < .05 ~ "lmRel", 
@@ -1055,7 +1078,7 @@ compute_lm <- function(x){
     map(broom::tidy) %>% 
     map_dfr("estimate") %>% 
     .[2, ] %>% 
-    pivot_longer(cols = everything(), 
+    tidyr::pivot_longer(cols = everything(), 
                  names_to = "id", 
                  values_to = "lm.est") %>% 
     mutate(lmDir = case_when(lm.est < 0 ~ "lmImp",
@@ -1084,7 +1107,7 @@ compute_rma <- function(x){
     map(broom::tidy) %>% 
     map_dfr("p.value") %>% 
     .[2, ] %>% 
-    pivot_longer(cols = everything(), 
+    tidyr::pivot_longer(cols = everything(), 
                  names_to = "id", 
                  values_to = "rma.p.value") %>% 
     mutate(rma.Rel = case_when(rma.p.value < .05 ~ "rmaRel", 
@@ -1101,7 +1124,7 @@ compute_rma <- function(x){
     map(broom::tidy) %>% 
     map_dfr("estimate") %>% 
     .[2, ] %>% 
-    pivot_longer(cols = everything(), 
+    tidyr::pivot_longer(cols = everything(), 
                  names_to = "id", 
                  values_to = "rma.est") %>% 
     mutate(rmaDir = case_when(rma.est < 0 ~ "rmaImp",
@@ -1159,3 +1182,4 @@ total_accuracy_lmDir <- function(x){
      sum(x$lmDir == "lmNoChange" & x$TrueChange == "TrueNo")) / 
     nrow(x)
 }
+

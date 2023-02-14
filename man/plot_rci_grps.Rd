@@ -7,8 +7,14 @@
 plot_rci_grps(x)
 }
 \arguments{
-\item{x}{}
+\item{x}{data from simulation}
+}
+\value{
+ggplot object
 }
 \description{
 Line plot with RCI groups
+}
+\examples{
+plot_rci_grps(generate_data())
 }

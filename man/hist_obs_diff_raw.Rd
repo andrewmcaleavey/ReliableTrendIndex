@@ -7,8 +7,14 @@
 hist_obs_diff_raw(x)
 }
 \arguments{
-\item{x}{}
+\item{x}{data containing columns labeled \code{time} and \code{obs_diff}.}
+}
+\value{
+ggplot object
 }
 \description{
 Simple raw histogram of observed difference scores
+}
+\examples{
+hist_obs_diff_raw(generate_data())
 }

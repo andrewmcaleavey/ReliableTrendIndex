@@ -7,8 +7,14 @@
 rxx_empirical(x)
 }
 \arguments{
-\item{x}{}
+\item{x}{data}
+}
+\value{
+empirical reliability from a data set for simulation
 }
 \description{
 Compute reliability from known true and observed scores
+}
+\examples{
+rxx_empirical(generate_data())
 }
