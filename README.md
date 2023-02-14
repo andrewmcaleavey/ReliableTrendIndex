@@ -15,14 +15,27 @@ endeavor.
 
 If you are interested in contributing to this work in any way (including
 by pointing out mistakes or providing counterarguments), please get in
-touch with me (probably best on twitter:
-[@andrewathan](https://twitter.com/andrewathan) or
-[GitHub](https://github.com/andrewmcaleavey/ReliableTrendIndex)).
+touch with me: [@andrewathan](https://twitter.com/andrewathan) or
+[@andrewathan@nerdculture.de](https://nerdculture.de/@andrewathan) or
+[GitHub](https://github.com/andrewmcaleavey/ReliableTrendIndex).
 
-I think the RTI is better than the RCI in almost any case with more than
-2 or 3 data points, but it is not my opinion that the RTI solves the
-RCI’s problems. There are many reasons not to be interested in reliable
-changes - but if you are, the RTI might be a usable solution.
+I think the RTI is demonstrably better as an operationalization of
+reliable change than the RCI in almost any case with more than 2 data
+points. With two data points, it simplifies to the RCI anyway. The added
+chief added assumption with more time points is that linear change is a
+reasonably approximation of the important change (not that the path of
+scores is linear per se). So you have to be interested in an overall
+tendency to increase or decrease during your observation period.
+Nonlinearity of observed scores will make the RTI less sensitive, but
+still more sensitive than the RCI. The RCI does not explicitly assume
+this, and pays no penalty for nonlinear changes, but only linear
+differences between two time points are detectable with the RCI, so in a
+way it does.
+
+However, it is not my opinion that the RTI solves all of the RCI’s
+problems. Most of those are simply philosophical. There are many reasons
+not to be interested in reliable changes. But if you are, the RTI should
+be a usable solution.
 
 ## Installation
 
@@ -72,8 +85,8 @@ library(ReliableTrendIndex)
 #> Loading required package: magrittr
 #> 
 #> You loaded ReliableTrendIndex
-#> Did you know that change scores are potentially misleading and 
-#> end-state functioning is generally preferable as an evaluation of any treatment course?
+#> Think about your choices: would you rather develop a meaningful clinical test?
+#> Or is reliability really the best possible idea?
 ```
 
 ### One person RCI
