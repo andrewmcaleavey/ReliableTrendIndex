@@ -810,7 +810,8 @@ plotting_func <- function(comparison.data){
 
 #' Plotting simulation results from effect size simulation
 #'
-#' @param comparison.data A data frame, likely generated from bind_rows(into_output_tbl()). 
+#' @param comparison.data A data frame, likely generated from
+#'   bind_rows(into_output_tbl()).
 #'
 #' @return a list of objects
 #' @export

@@ -1,43 +1,43 @@
 # new S3 class: reliableTrend
 
-
 #' Basing on S3, following [Advanced R](https://adv-r.hadley.nz/s3.html#s3-classes). 
-
-# 
-
 
 #' Constructor function for reliableTrend class objects
 #' 
 #' Internal function to create objects that are of class `reliableTrend`.
 #' This is an S3 class from the package `ReliableTrendIndex`.
 #' Following [Advanced R](https://adv-r.hadley.nz/s3.html#s3-classes).
+#' All reliableTrend objects use this (internally).
 #'
 #' @param RCI Numeric. Jacobson & Truax RCI, a transformed difference score.
-#' @param RTI Numeric. Reliable Trend Index, the z-value of a linear trend considering a
-#' fixed measurement error at each observation. 
-#' @param pd.RCI Numeric. 
-#' @param pd.RTI Numeric. 
-#' @param category.RTI Character. Default is "Less than reliable". One of "Less than reliable", 
-#' "Reliable Increase", or "Reliable Decrease".
-#' @param category.RCI Character. Default is "Less than reliable". One of "Less than reliable", 
-#' "Reliable Increase", or "Reliable Decrease".
-#' @param sign.RTI Character. Indicates whether the RTI estimates the trend to be 
-#' most likely increasing, decreasing or flat, regardless of confidence level. 
-#' Possible values are `"Not calculated"` (the default), `"Increase"`, `"Decrease"`, or `"Flat"`.
-#' @param sign.difference Character. Indicates whether the pre-post comparison 
-#' is increasing, decreasing or flat, based on simple subtraction of observed scores. 
-#' Possible values are `"Not calculated"` (the default), `"Increase"`, `"Decrease"`, or `"Flat"`.
-#' @param rmaObj An object of type `rma` and/or `rma.uni`, derived from the `{metafor}`
-#' package. 
+#' @param RTI Numeric. Reliable Trend Index, the z-value of a linear trend
+#'   considering a fixed measurement error at each observation.
+#' @param pd.RCI Numeric.
+#' @param pd.RTI Numeric.
+#' @param category.RTI Character. Default is "Less than reliable". One of "Less
+#'   than reliable", "Reliable Increase", or "Reliable Decrease".
+#' @param category.RCI Character. Default is "Less than reliable". One of "Less
+#'   than reliable", "Reliable Increase", or "Reliable Decrease".
+#' @param sign.RTI Character. Indicates whether the RTI estimates the trend to
+#'   be most likely increasing, decreasing or flat, regardless of confidence
+#'   level. Possible values are `"Not calculated"` (the default), `"Increase"`,
+#'   `"Decrease"`, or `"Flat"`.
+#' @param sign.difference Character. Indicates whether the pre-post comparison
+#'   is increasing, decreasing or flat, based on simple subtraction of observed
+#'   scores. Possible values are `"Not calculated"` (the default), `"Increase"`,
+#'   `"Decrease"`, or `"Flat"`.
+#' @param rmaObj An object of type `rma` and/or `rma.uni`, derived from the
+#'   `{metafor}` package.
 #' @param values Numeric vector. The values used to compute the RTI.
 #' @param values.prepost Numeric vector of length 2. The first and last values.
-#' @param error_var Numeric. The error variance used to compute the RCI and RTI. 
-#' This is on the variance scale, so is the squared standard error of the difference. 
-#' @param cutpoint Numeric. Z-scale cutpoint to use for reliability categorization. 
-#' Default is 1.96.
-#' @param scale_RCI Numeric. The "RCI for a scale," meaning how many scale points
-#' need to be observed in a difference score for that difference to be considered
-#' "reliable" under J&T.
+#' @param error_var Numeric. The error variance used to compute the RCI and RTI.
+#'   This is on the variance scale, so is the squared standard error of the
+#'   difference.
+#' @param cutpoint Numeric. Z-scale cutpoint to use for reliability
+#'   categorization. Default is 1.96.
+#' @param scale_RCI Numeric. The "RCI for a scale," meaning how many scale
+#'   points need to be observed in a difference score for that difference to be
+#'   considered "reliable" under J&T.
 #'
 #' @export
 #' @return An object of type `reliableTrend`. 
