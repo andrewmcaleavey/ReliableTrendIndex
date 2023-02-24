@@ -129,19 +129,13 @@ new_reliableTrend <- function(RCI = double(),
 #' validate_reliableTrend(new_reliableTrend())
 validate_reliableTrend <- function(x) {
   # x is a reliableTrend
+  # this should really check that each element is the type it should be. 
   content <- unclass(x)
   names_vals <- names(x)
   
   if(!identical(names_vals, names(new_reliableTrend()))) {
     stop(
       "Based on the names, I am guessing this isn't an object of type `reliableTrend`.",
-      call. = FALSE
-    )
-  }
-  
-  if(length(x) != length(new_reliableTrend())) {
-    stop(
-      "Based on the length, I am guessing this isn't an object of type `reliableTrend`.",
       call. = FALSE
     )
   }
