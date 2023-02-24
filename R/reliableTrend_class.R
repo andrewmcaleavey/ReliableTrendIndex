@@ -227,8 +227,19 @@ reliableTrend <- function(x = NULL,
     if(exists("sign.RTI", x))               sign.RTI <- x$sign.RTI
     if(exists("sign.difference", x))        sign.difference <- x$sign.difference
     if(exists("rmaObj", x))                 rmaObj <- x$rmaObj 
-    if(exists("values", x))                 values <- x$values 
-    if(exists("values.prepost", x))         values.prepost <- x$values.prepost 
+    # these two rely on each other
+    if(exists("values", x) & !exists("values.prepost", x)){
+      values <- x$values 
+      values.prepost <- c(values[1], values[length(values)])
+    }                
+    if(exists("values.prepost", x)  & !exists("values", x)){
+      values.prepost <- x$values.prepost 
+      values <- x$values.prepost 
+    }         
+    if(exists("values", x) & exists("values.prepost", x)){
+      values <- x$values 
+      values.prepost <- x$values.prepost 
+    } 
     if(exists("error_var", x))              error_var <- x$error_var 
     if(exists("cutpoint", x))               cutpoint <- x$cutpoint 
     if(exists("scale_RCI", x))              scale_RCI <- x$scale_RCI
