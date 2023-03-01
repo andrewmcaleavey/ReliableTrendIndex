@@ -2,6 +2,8 @@
 
 # reliableTrend()
 # other tests cover the case when x is NULL
+# this covers when it exists but is NOT an rmaObj
+# need to expand to include that case
 test_that("reliableTrend() works with non-standard input", {
   test_rmaObj <- readRDS(test_path("fixtures", 
                                    "mac_RTI_good.rds"))$rmaObj
@@ -23,15 +25,15 @@ test_that("reliableTrend() works with non-standard input", {
   expect_equal(8, reliableTrend(x = list(scale_RCI = 8))$scale_RCI)
 })
 
+
+# DONE
+
 # print.reliableTrend(): 
 #  Does it print something, does it return something
 test_that("print.reliableTrend() works", {
   expect_true(is.reliableTrend(print(readRDS(test_path("fixtures", 
                                                        "mac_RTI_good.rds")))))
 })
-
-
-# DONE
 
 # summary.reliableTrend()
 #   does it fail when it should, does it work when it should?
