@@ -71,7 +71,41 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
                 values = values,
                 variance = variance,
                 cutpoint = cutpoint))
+  } else if(length(values) == 3){
+    # case when exactly three observations
+    warning("Three values provided, assuming they are evenly spaced in time and using a fixed intercept.")
+    difs <- values[-1] - values[1]
+    values.prepost <- c(values[1], values[length(values)])
+    time_linear <- seq(from = 1, 
+                       to = length(values), 
+                       by = 1)
+    rmaobj <- metafor::rma.uni(yi = values - vals_temp[1], 
+                               mods = ~ 0 + time_linear,
+                               vi = variance, 
+                               intercept = FALSE, 
+                               method = "FE")
+    # rmaobj.rci <- metafor::rma.uni(yi = values.prepost  - values.prepost[1], 
+    #                                mods = ~ c(0,1), 
+    #                                vi  = variance, 
+    #                                method = "FE")
+    # RTI <-  rmaobj$zval[length(rmaobj$zval)]
+    # RCI <- rmaobj.rci$zval[length(rmaobj.rci$zval)]
+    # RTI_classification <-  ifelse(RTI > cutpoint, 
+    #                             "Reliable Increase", 
+    #                             ifelse(RTI < -cutpoint, 
+    #                                    "Reliable Decrease", 
+    #                                    "Less than reliable"))
+    # return(reliableTrend(RCI = RCI,
+    #                      RTI = RTI, 
+    #                      category.RTI = RTI_classification,
+    #                      rmaObj = rmaobj,
+    #                      values = values, 
+    #                      error_var = variance, 
+    #                      cutpoint = cutpoint))
+    # changing in the three-timepoint case
+    return(reliableTrend(rmaobj))
   } else {
+    # case when more than three observations
     warning("More than two values provided, assuming they are evenly spaced in time.")
     difs <- values[-1] - values[1]
     values.prepost <- c(values[1], values[length(values)])
@@ -89,10 +123,10 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
     RTI <-  rmaobj$zval[length(rmaobj$zval)]
     RCI <- rmaobj.rci$zval[length(rmaobj.rci$zval)]
     RTI_classification <-  ifelse(RTI > cutpoint, 
-                                "Reliable Increase", 
-                                ifelse(RTI < -cutpoint, 
-                                       "Reliable Decrease", 
-                                       "Less than reliable"))
+                                  "Reliable Increase", 
+                                  ifelse(RTI < -cutpoint, 
+                                         "Reliable Decrease", 
+                                         "Less than reliable"))
     return(reliableTrend(RCI = RCI,
                          RTI = RTI, 
                          category.RTI = RTI_classification,
@@ -276,7 +310,7 @@ simple_rma <- function(x, error_var = .5,
 
 #' Compute RTI in a simple way
 #' 
-#' Given 
+#' Given only values, compute a reliableTrend object
 #'
 #' @param values Numeric. Either a vector of observed scores that contain measurement error 
 #' or a single difference score. 
