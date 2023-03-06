@@ -279,7 +279,7 @@ reliableTrend <- function(x = NULL,
                        "rma" %in% class(x[[1]]))){
     # print("Inferring reliableTrend values from rma object.")
     # in this case x is an rma object. So need to extract the values from it.
-    #if they are not provided by the arguments, for some of them
+    # if they are not provided by the arguments, for some of them
     RTI = x$zval[length(x$zval)] 
     # RCI = NA_real_,
     # pd.RCI = NA_real_, 
@@ -385,7 +385,7 @@ summary.reliableTrend <- function(x){
   if(is.na(x$RCI)) {
     warning("Only parts of this reliableTrend object are valid. Do not trust the summary.")
   }
-  
+  # these are articles for use in a text description
   article.RTI <- ifelse(x$category.RTI == "Less than reliable", 
                         " a ", 
                         " a ")

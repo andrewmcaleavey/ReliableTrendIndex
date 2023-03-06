@@ -1,27 +1,46 @@
 ## RTI calculators
 
-#' Compute the RCI and RTI for a single person's observations..
-#' 
-#' This is essentially a wrapper for \code{metafor::rma()} with some specific behavior. 
-#' It takes one or more observations with an indication of error variance, and computes
-#' the RCI and/or RTI as applicable.  
+#' Compute the RCI and RTI for a single person's observations.
 #'
-#' @param values Numeric. Either a single difference value, two observations, or more 
-#' than two observations of the same variable for one person. While the three cases are 
-#' treated separately under the hood and return slightly different values and text, 
-#' the computation is the same and all involve primarily \code{metafor::rma.uni()}.
-#' @param variance Numeric. The  SEm!!!!! The error variance of a given observation. 
-#' NOT the Sdiff directly, but if you have
-#' the Sdiff previously computed, you can divide it by the square root of 2. 
-#' @param digits Integer. Number of digits to print for metafor::rma(). Defaults to 2.
-#' @param cutpoint Cutpoint on z-scale to use for "reliability." Defaults to 1.96.
+#' This is essentially a wrapper for \code{metafor::rma()} with some specific
+#' behavior. It takes one or more observations with an indication of error
+#' variance, and computes the RCI and/or RTI as applicable.
+#'
+#' If only one value is provided, it assumes this is a difference score, and the
+#' `variance` should be the square of Sdiff. If two or more values are provided,
+#' it is assumed that these are raw observations, so `variance` should be the
+#' square of SEm.
+#'
+#' In all cases, this will assume observations are evenly spaced in time.
+#'
+#' @param values Numeric. Either a single difference value, two observations, or
+#'   more than two observations of the same variable for one person. While the
+#'   three cases are treated separately under the hood and return slightly
+#'   different values and text, the computation is the same and all involve
+#'   primarily \code{metafor::rma.uni()}.
+#' @param variance Numeric. In most cases, this should be the squared standard
+#'   error of measurement (SEm). This is the error variance of a given
+#'   observation. NOT the Sdiff directly, but if you have the Sdiff previously
+#'   computed, you can divide it by the square root of 2. However, if only
+#'   providing a single observation, this is assumed to be a difference score,
+#'   so in that case, `variance` should be the square of Sdiff.
+#' @param digits Integer. Number of digits to print for metafor::rma(). Defaults
+#'   to 2.
+#' @param cutpoint Cutpoint on z-scale to use for "reliability." Defaults to
+#'   1.96.
+#' @param fixIntWhen3 Logical. Should the intercept be fixed when three
+#'   observations are provided? Defaults to true, which is similar to the
+#'   two-timepoint RCI solution (which assumes both observations are fixed).
+#'   Setting to false will mean the RTI and RCI are identical to each other with
+#'   3 observations, since there are no degrees of freedom in this model, so the
+#'   linear trend cannot be estimated.
 #' @param ... Additional arguments passed on.
 #'
-#' @return A list including the JT RCI value per observation in difs, 
-#' A classification per observation in difs
+#' @return A list including the JT RCI value per observation in difs, A
+#'   classification per observation in difs
 #' @export
 #'
-#' @examples output <- rti_calc_simple(c(47.5, 32.5), 4.74^2)
+#' @examples output <- rti_calc_simple(c(47.5, 32.5), 3.35^2)
 #' output
 #' metafor::forest(output$rmaObj)
 #' output2 <- rti_calc_simple(c(5, 4, 3, 2), 1)
@@ -30,7 +49,8 @@
 #' summary(output2$rmaObj)
 #' forest_to_reg_plot(output2$rmaObj, StError = output2$variance)
 #' 
-rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
+rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, 
+                            fixIntWhen3 = TRUE, ...){
   # if values is 2 or longer, should make sure it's a trend, otherwise the RCI works. 
   if(length(values) == 1){
     rmaobj <- metafor::rma.uni(yi = values, 
@@ -42,48 +62,67 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
                                    ifelse(JT_rci < -cutpoint, 
                                           "Reliable Decrease", 
                                           "Less than reliable"))
-    return(list(JT_rci = JT_rci, 
-                RTI = JT_rci, 
-                category.RCI = JT_rci_classification,
-                category.RTI = JT_rci_classification,
-                rmaObj = rmaobj,
-                values = values, 
-                variance = variance, 
-                cutpoint = cutpoint))
+    # return(list(JT_rci = JT_rci, 
+    #             RTI = JT_rci, 
+    #             category.RCI = JT_rci_classification,
+    #             category.RTI = JT_rci_classification,
+    #             rmaObj = rmaobj,
+    #             values = values, 
+    #             variance = variance, 
+    #             cutpoint = cutpoint))
+    return(reliableTrend(rmaobj))
+    
   } else if(length(values) == 2) {
+    # case with two timepoints
+    # one challenge is that removing the intercept causes changes 
+    # like needing to use difference scores and a different scale for measurement error
     difs <- values[-1] - values[1]
     values.prepost <- c(values[1], values[length(values)])
     time_linear <- c(0, 1)
     rmaobj <- metafor::rma.uni(yi = values, 
                                mods = ~ time_linear, 
                                vi  = variance, 
-                               method = "FE")
+                               method = "FE", 
+                               intercept = TRUE)
     RTI = rmaobj$zval[length(rmaobj$zval)]
     RTI_classification = ifelse(RTI > cutpoint,
                                 "Reliable Increase",
                                 ifelse(RTI < -cutpoint,
                                        "Reliable Decrease",
                                        "Less than reliable"))
-    return(list(JT_rci = RTI,
-                RTI = RTI,
-                category.RTI = RTI_classification,
-                rmaObj = rmaobj,
-                values = values,
-                variance = variance,
-                cutpoint = cutpoint))
+    # return(list(JT_rci = RTI,
+    #             RTI = RTI,
+    #             category.RTI = RTI_classification,
+    #             rmaObj = rmaobj,
+    #             values = values,
+    #             variance = variance,
+    #             cutpoint = cutpoint))
+    return(reliableTrend(rmaobj))
   } else if(length(values) == 3){
+    
     # case when exactly three observations
     warning("Three values provided, assuming they are evenly spaced in time and using a fixed intercept.")
     difs <- values[-1] - values[1]
     values.prepost <- c(values[1], values[length(values)])
-    time_linear <- seq(from = 1, 
-                       to = length(values), 
+    time_linear <- seq(from = 0, 
+                       to = length(values) - 1, 
                        by = 1)
-    rmaobj <- metafor::rma.uni(yi = values - vals_temp[1], 
-                               mods = ~ 0 + time_linear,
-                               vi = variance, 
-                               intercept = FALSE, 
-                               method = "FE")
+    if(fixIntWhen3){
+      rmaobj <- metafor::rma.uni(yi = values - values[1], 
+                                 mods = ~ 0 + time_linear,
+                                 vi = variance, 
+                                 method = "FE")
+    } else {
+      rmaobj <- metafor::rma.uni(yi = values, 
+                                 mods = ~ time_linear,
+                                 vi = variance, 
+                                 method = "FE")
+      
+    }
+    rmaobj.rci <- metafor::rma.uni(yi = values.prepost  - values.prepost[1], 
+                                   mods = ~ c(0,1), 
+                                   vi  = variance, 
+                                   method = "FE")
     # rmaobj.rci <- metafor::rma.uni(yi = values.prepost  - values.prepost[1], 
     #                                mods = ~ c(0,1), 
     #                                vi  = variance, 
@@ -103,7 +142,14 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, ...){
     #                      error_var = variance, 
     #                      cutpoint = cutpoint))
     # changing in the three-timepoint case
-    return(reliableTrend(rmaobj))
+    first_rma <- reliableTrend(rmaobj)
+    rci_rma <- reliableTrend(rmaobj.rci)
+    combined_rma <- first_rma
+    combined_rma$RCI <- rci_rma$RCI
+    combined_rma$pd.RCI <- rci_rma$pd.RCI
+    combined_rma$category.RCI <- rci_rma$category.RCI
+    
+    return(combined_rma)
   } else {
     # case when more than three observations
     warning("More than two values provided, assuming they are evenly spaced in time.")
