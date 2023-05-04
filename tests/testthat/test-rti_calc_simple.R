@@ -1,6 +1,3 @@
-test_that("multiplication works", {
-  expect_equal(2 * 2, 4)
-})
 
 test_that("rti_calc_simple() returns reliableTrend objects", {
   #' The important cases to test: 
@@ -13,15 +10,15 @@ test_that("rti_calc_simple() returns reliableTrend objects", {
   
   #' three values
   #' should throw a warning about even spacing
-  expect_reliableTrend(suppressWarnings(rti_calc_simple(values = c(47.5, 45, 32.5), 
+  expect_reliableTrend(rti_calc_simple(values = c(47.5, 45, 32.5), 
                                        variance = 3.35^2, 
-                                       fixIntWhen3 = TRUE)))
-  expect_reliableTrend(suppressWarnings(rti_calc_simple(values = c(47.5, 45, 32.5), 
+                                       fixIntWhen3 = TRUE))
+  expect_reliableTrend(rti_calc_simple(values = c(47.5, 45, 32.5), 
                                                         variance = 3.35^2, 
-                                                        fixIntWhen3 = FALSE)))
+                                                        fixIntWhen3 = FALSE))
   #' four or more values
   #' should throw a warning about even spacing
-  expect_reliableTrend(suppressWarnings(rti_calc_simple(values = c(47.5, 45, 36, 32.5), 
-                                                        variance = 3.35^2)))
+  expect_reliableTrend(rti_calc_simple(values = c(47.5, 45, 36, 32.5), 
+                                                        variance = 3.35^2))
 })
 

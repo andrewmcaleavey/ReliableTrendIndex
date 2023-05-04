@@ -11,7 +11,8 @@
 #' it is assumed that these are raw observations, so `variance` should be the
 #' square of SEm.
 #'
-#' In all cases, this will assume observations are evenly spaced in time.
+#' In all cases with three or more observations, this will assume observations
+#' are evenly spaced in time (with a message).
 #'
 #' @param values Numeric. Either a single difference value, two observations, or
 #'   more than two observations of the same variable for one person. While the
@@ -56,12 +57,12 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96,
     rmaobj <- metafor::rma.uni(yi = values, 
                                vi = variance, 
                                method = "FE")
-    JT_rci = rmaobj$zval
-    JT_rci_classification = ifelse(JT_rci > cutpoint, 
-                                   "Reliable Increase", 
-                                   ifelse(JT_rci < -cutpoint, 
-                                          "Reliable Decrease", 
-                                          "Less than reliable"))
+    # JT_rci = rmaobj$zval
+    # JT_rci_classification = ifelse(JT_rci > cutpoint, 
+    #                                "Reliable Increase", 
+    #                                ifelse(JT_rci < -cutpoint, 
+    #                                       "Reliable Decrease", 
+    #                                       "Less than reliable"))
     # return(list(JT_rci = JT_rci, 
     #             RTI = JT_rci, 
     #             category.RCI = JT_rci_classification,
@@ -76,20 +77,20 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96,
     # case with two timepoints
     # one challenge is that removing the intercept causes changes 
     # like needing to use difference scores and a different scale for measurement error
-    difs <- values[-1] - values[1]
-    values.prepost <- c(values[1], values[length(values)])
+    # difs <- values[-1] - values[1]
+    # values.prepost <- c(values[1], values[length(values)])
     time_linear <- c(0, 1)
     rmaobj <- metafor::rma.uni(yi = values, 
                                mods = ~ time_linear, 
                                vi  = variance, 
                                method = "FE", 
                                intercept = TRUE)
-    RTI = rmaobj$zval[length(rmaobj$zval)]
-    RTI_classification = ifelse(RTI > cutpoint,
-                                "Reliable Increase",
-                                ifelse(RTI < -cutpoint,
-                                       "Reliable Decrease",
-                                       "Less than reliable"))
+    # RTI = rmaobj$zval[length(rmaobj$zval)]
+    # RTI_classification = ifelse(RTI > cutpoint,
+    #                             "Reliable Increase",
+    #                             ifelse(RTI < -cutpoint,
+    #                                    "Reliable Decrease",
+    #                                    "Less than reliable"))
     # return(list(JT_rci = RTI,
     #             RTI = RTI,
     #             category.RTI = RTI_classification,
@@ -101,18 +102,25 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96,
   } else if(length(values) == 3){
     
     # case when exactly three observations
-    warning("Three values provided, assuming they are evenly spaced in time and using a fixed intercept.")
+    # message("Three values provided, assuming they are evenly spaced in time and using a fixed intercept.")
     difs <- values[-1] - values[1]
     values.prepost <- c(values[1], values[length(values)])
     time_linear <- seq(from = 0, 
                        to = length(values) - 1, 
                        by = 1)
     if(fixIntWhen3){
+      message("Three values provided, assuming they are evenly spaced in time 
+              and using a fixed intercept. Set fixIntWhen3 = FALSE if you want 
+              to change this.")
       rmaobj <- metafor::rma.uni(yi = values - values[1], 
                                  mods = ~ 0 + time_linear,
                                  vi = variance, 
                                  method = "FE")
     } else {
+      
+      message("Three values provided, estimating with a free intercept. 
+              The RTI and RCI are identical with this specification. 
+              Set fixIntWhen3 = TRUE if you want to change this.")
       rmaobj <- metafor::rma.uni(yi = values, 
                                  mods = ~ time_linear,
                                  vi = variance, 
@@ -152,7 +160,7 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96,
     return(combined_rma)
   } else {
     # case when more than three observations
-    warning("More than two values provided, assuming they are evenly spaced in time.")
+    message("More than two values provided, assuming they are evenly spaced in time.")
     difs <- values[-1] - values[1]
     values.prepost <- c(values[1], values[length(values)])
     time_linear <- seq(from = 1, 
@@ -270,31 +278,36 @@ compute_rti_data <- function(data,
 }
 # compute_rti_data(data = simdata1, id_var = "id", obs_var = value, error_value = .5)
 
-#' A wrapper for `metafor::rma()` with some convenient defaults for my personal use
-#' 
-#' Not for external use.
+#' A wrapper for `metafor::rma()` with some convenient defaults for my personal
+#' use
 #'
-#' @param x A data.frame, vector, or single value. If not a single value, will be
-#' converted into difference scores!
+#' Not for external use. `time_var` not operational at present. 
+#' 
+#' @param x A data.frame, vector, or single value. If not a single value, will
+#'   be converted into difference scores.
 #' @param error_var Variance of the error, not SD or Sdiff
-#' @param observed Name of the variable used for observations in `x`. Must be a character. 
-#' @param time_var Name of the variable use for time in `x`. Must be a character.
+#' @param observed Name of the variable used for observations in `x`. Must be a
+#'   character.
+#' @param time_var Name of the variable use for time in `x`. Must be a
+#'   character. NOT FUNCTIONAL AT PRESENT, LEAVE NULL.
 #'
 #' @return A single object of class `rma`.
-#' @export
 #'
-#' @examples 
-#' # simple entry: 
+#' @examples
+#' # simple entry:
 #' simple_rma(15, 4.74^2)
 #' simple_rma(c(47.5, 32.5), 4.74^2)
-#' # Data.frame entry: 
+#' # Data.frame entry:
 #' simple_rma(jt_data, error_var = 4.74^2, observed = "obs", time_var = "time")
 simple_rma <- function(x, error_var = .5, 
                        observed = "obs_score", 
                        time_var = NULL){
+  # if x is a data.frame, need to compute differences and the appropriate 
+  # time variables
   if(is.data.frame(x)){
     difs <- x[[ observed ]][-1] - x[[ observed ]][1]
     if(!is.null(time_var)){
+      # doesn't work! Need to fix for time_var
       time_difs <- x[[ time_var ]][-1] - x[[ time_var ]][1]
     } else {
       time_var <- seq(1, length(difs), by = 1)
@@ -318,9 +331,6 @@ simple_rma <- function(x, error_var = .5,
   return(output)
 }
 # simple_rma(simdata1)
-
-
-
 
 # how about a function that takes a dataset and outputs another dataset with the 
 # reliableTrend objects as required?

@@ -61,12 +61,27 @@ levels of stability on a per-project basis.
 
 I repeat, however, that *this package should be used with caution*. The
 idea of “reliable” change is questionably justified and has a strong
-tendency to confuse or mislead users. Plus, I may have made mistakes, so
-it is provided as-is.
+tendency to confuse or mislead. Plus, I may have made mistakes, so it is
+provided as-is.
 
 Bugs and issues can be reported at [the GitHub
 repo](https://github.com/andrewmcaleavey/ReliableTrendIndex). If anyone
 would like to contribute, please be in touch!
+
+## Definition
+
+The RTI is defined as b / Se, where b is the slope estimate from an OLS
+regression of all available data points and Se is the appropriate
+standard error for that slope, estimated from external data. This
+package uses three different definitions of this, depending on how many
+observations are included.
+
+- For 2 observations, the RTI is the same as the RCI (treats both
+  observations and the difference score as fixed).  
+- For 3 observations, the RTI treats the intercept as fixed but
+  estimates a slope using the other observations.  
+- For 4 or more observations, the RTI estimates both a slope and
+  intercept.
 
 ## Example
 
@@ -85,8 +100,8 @@ library(ReliableTrendIndex)
 #> Loading required package: magrittr
 #> 
 #> You loaded ReliableTrendIndex
-#> Think about your choices: would you rather develop a meaningful clinical test?
-#> Or is reliability really the best possible idea?
+#> Loading the ReliableTrendIndex package is not recommended, because you're probably not 
+#> going to find a situation in which the reliability of change scores matters.
 ```
 
 ### One person RCI
@@ -174,8 +189,7 @@ RCI and/or RTI - is `rti()`.
 
 ``` r
 mac_rti <- rti(mac_height$obs, sdiff = .707)
-#> Warning in rti_calc_simple(values = values, variance = (sdiff/sqrt(2))^2, : More
-#> than two values provided, assuming they are evenly spaced in time.
+#> More than two values provided, assuming they are evenly spaced in time.
 ```
 
 Note that it gave us this message on screen:

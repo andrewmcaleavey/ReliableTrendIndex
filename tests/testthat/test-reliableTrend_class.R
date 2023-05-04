@@ -72,6 +72,6 @@ test_that("rti_to_stripped_list() does the basics", {
 test_that("rti_to_df works", {
   expect_true(is.data.frame(rti_to_df(readRDS(test_path("fixtures", 
                                                         "mac_RTI_good.rds")))))
-  expect_warning(is.data.frame(rti_to_df(rti(mac_height$obs, scale_rci = 1.39))))
+  expect_message(is.data.frame(rti_to_df(rti(mac_height$obs, scale_rci = 1.39))))
 })
 
