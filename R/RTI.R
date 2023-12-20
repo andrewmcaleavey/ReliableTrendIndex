@@ -48,7 +48,7 @@
 #' output2
 #' metafor::forest(output2$rmaObj)
 #' summary(output2$rmaObj)
-#' forest_to_reg_plot(output2$rmaObj, StError = output2$variance)
+#' forest_to_reg_plot(output2$rmaObj, StError = output2$error_var)
 #' 
 rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96, 
                             fixIntWhen3 = TRUE, ...){
@@ -200,7 +200,7 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96,
 # output2
 # metafor::forest(output2$rmaObj)
 # summary(output2$rmaObj)
-# forest_to_reg_plot(output2$rmaObj, StError = output2$variance)
+# forest_to_reg_plot(output2$rmaObj, StError = output2$error_var)
 # 
 
 # now would like a way to do it for a lot of people in a long-format dataset. 
@@ -294,11 +294,13 @@ compute_rti_data <- function(data,
 #' @return A single object of class `rma`.
 #'
 #' @examples
+#' \dontrun{
 #' # simple entry:
 #' simple_rma(15, 4.74^2)
 #' simple_rma(c(47.5, 32.5), 4.74^2)
 #' # Data.frame entry:
 #' simple_rma(jt_data, error_var = 4.74^2, observed = "obs", time_var = "time")
+#' }
 simple_rma <- function(x, error_var = .5, 
                        observed = "obs_score", 
                        time_var = NULL){
@@ -409,15 +411,15 @@ rti <- function(values,
                 cutpoint = 1.96,
                 sd = NULL, 
                 rxx = NULL){
-  #' Given a single difference, should add a leading 0
+  # Given a single difference, should add a leading 0
   if(length(values) == 1){
     values <- c(0, values)
   }
-  #' need one of these:
-  #' 1 sdiff
-  #' 2 sem
-  #' 3 scale_rci
-  #' 4 sd and rxx
+  # need one of these:
+  # 1 sdiff
+  # 2 sem
+  # 3 scale_rci
+  # 4 sd and rxx
   if(!is.null(sdiff)){
     temp <- rti_calc_simple(values = values, 
                             variance = (sdiff / sqrt(2))^2, 

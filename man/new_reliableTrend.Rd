@@ -26,43 +26,49 @@ new_reliableTrend(
 \arguments{
 \item{RCI}{Numeric. Jacobson & Truax RCI, a transformed difference score.}
 
-\item{RTI}{Numeric. Reliable Trend Index, the z-value of a linear trend considering a
-fixed measurement error at each observation.}
+\item{RTI}{Numeric. Reliable Trend Index, the z-value of a linear trend
+considering a fixed measurement error at each observation.}
 
 \item{pd.RCI}{Numeric.}
 
 \item{pd.RTI}{Numeric.}
 
-\item{category.RTI}{Character. Default is "Less than reliable". One of "Less than reliable",
-"Reliable Increase", or "Reliable Decrease".}
+\item{category.RTI}{Character. Default is "Less than reliable". One of "Less
+than reliable", "Reliable Increase", or "Reliable Decrease".}
 
-\item{category.RCI}{Character. Default is "Less than reliable". One of "Less than reliable",
-"Reliable Increase", or "Reliable Decrease".}
+\item{category.RCI}{Character. Default is "Less than reliable". One of "Less
+than reliable", "Reliable Increase", or "Reliable Decrease".}
 
-\item{sign.RTI}{Character. Indicates whether the RTI estimates the trend to be
-most likely increasing, decreasing or flat, regardless of confidence level.
-Possible values are \code{"Not calculated"} (the default), \code{"Increase"}, \code{"Decrease"}, or \code{"Flat"}.}
+\item{sign.RTI}{Character. Indicates whether the RTI estimates the trend to
+be most likely increasing, decreasing or flat, regardless of confidence
+level. Possible values are \code{"Not calculated"} (the default), \code{"Increase"},
+\code{"Decrease"}, or \code{"Flat"}.}
 
 \item{sign.difference}{Character. Indicates whether the pre-post comparison
-is increasing, decreasing or flat, based on simple subtraction of observed scores.
-Possible values are \code{"Not calculated"} (the default), \code{"Increase"}, \code{"Decrease"}, or \code{"Flat"}.}
+is increasing, decreasing or flat, based on simple subtraction of observed
+scores. Possible values are \code{"Not calculated"} (the default), \code{"Increase"},
+\code{"Decrease"}, or \code{"Flat"}.}
 
-\item{rmaObj}{An object of type \code{rma} and/or \code{rma.uni}, derived from the \code{{metafor}}
-package.}
+\item{rmaObj}{An object of type \code{rma} and/or \code{rma.uni}, derived from the
+\code{{metafor}} package.}
 
 \item{values}{Numeric vector. The values used to compute the RTI.}
 
 \item{values.prepost}{Numeric vector of length 2. The first and last values.}
 
 \item{error_var}{Numeric. The error variance used to compute the RCI and RTI.
-This is on the variance scale, so is the squared standard error of the difference.}
+This is on the variance scale, so is the squared standard error of the
+difference.}
 
-\item{cutpoint}{Numeric. Z-scale cutpoint to use for reliability categorization.
-Default is 1.96.}
+\item{cutpoint}{Numeric. Z-scale cutpoint to use for reliability
+categorization. Default is 1.96.}
 
-\item{scale_RCI}{Numeric. The "RCI for a scale," meaning how many scale points
-need to be observed in a difference score for that difference to be considered
-"reliable" under J&T.}
+\item{observed}{Character. Name of the observed variable. Defaults to
+\code{"obs_score"}.}
+
+\item{scale_RCI}{Numeric. The "RCI for a scale," meaning how many scale
+points need to be observed in a difference score for that difference to be
+considered "reliable" under J&T.}
 }
 \value{
 An object of type \code{reliableTrend}.
@@ -72,6 +78,7 @@ This object is a glorified list with the above-defined parameters as values.
 Internal function to create objects that are of class \code{reliableTrend}.
 This is an S3 class from the package \code{ReliableTrendIndex}.
 Following \href{https://adv-r.hadley.nz/s3.html#s3-classes}{Advanced R}.
+All reliableTrend objects use this (internally).
 }
 \examples{
 new_reliableTrend()

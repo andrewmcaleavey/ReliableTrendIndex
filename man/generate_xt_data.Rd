@@ -39,5 +39,5 @@ A tibble. Side effects: creates variables in the parent environment for RCI and 
 Generate X timepoint data for RCI analysis
 }
 \examples{
-generate_xt_data()
+generate_xt_data(n_obs = 10)
 }

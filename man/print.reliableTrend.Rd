@@ -4,10 +4,12 @@
 \alias{print.reliableTrend}
 \title{Print a \code{reliableTrend} object}
 \usage{
-\method{print}{reliableTrend}(x)
+\method{print}{reliableTrend}(x, ...)
 }
 \arguments{
 \item{x}{An object of class \code{reliableTrend}.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 (invisibly) \code{x}.

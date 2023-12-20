@@ -14,11 +14,14 @@
 #' @param r1 Numeric.  First (or only) reliability coefficient to use in calculation
 #' @param r2 Numeric.  Optional second reliability coefficient to use in calculation
 #' @param sd1 Numeric. Standard deviation 1. Should be a group representative of the target group. Calculated/assumed if not provided. 
-#' @param sd1 Numeric. Optional standard deviation 2. Should be a group representative of the target group. Calculated if not provided. 
+#' @param sd2 Numeric. Optional standard deviation 2. Should be a group representative of the target group. Calculated if not provided. 
 #' @param sdiff Numeric.  Standard error of the difference score. If provided, sem, rxx, sd1 are all ignored. Calculated if not provided.
 #' @param sem Numeric. Standard error of measurement. Calculated if not provided.
 #' @param prob Numeric 0-1. Defaults to .975 to provide 95% two-sided confidence.  
 #' @param verbose Logical. If TRUE, will return additional information about the calculation. 
+#' @param rc.type Version of RCI to compute. Defaults to `"jt"`, the Jacobson &
+#' Truax (1991) standard. Also can be `"maassen"` (which requires `sd1` and 
+#' `sd2`) or `"mcnemar"` (which additionally requires `r2`). 
 #'
 #' @return Individual RCI value per difference score provided.
 #' @export
@@ -78,6 +81,7 @@ rci <- function(difference = NULL,
   }
   
   # if only the scale_rci is provided, need to compute sdiff
+  # uses J&T method
   if(!is.null(scale_rci) & is.null(sdiff)){
     sdiff <- scale_rci / qnorm(prob)
   }

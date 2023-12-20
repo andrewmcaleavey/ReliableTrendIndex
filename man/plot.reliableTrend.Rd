@@ -4,10 +4,12 @@
 \alias{plot.reliableTrend}
 \title{Plot a reliableTrend object}
 \usage{
-\method{plot}{reliableTrend}(x)
+\method{plot}{reliableTrend}(x, ...)
 }
 \arguments{
 \item{x}{An object of class \code{reliableTrend}.}
+
+\item{...}{Additional arguments.}
 }
 \value{
 A ggplot2 object

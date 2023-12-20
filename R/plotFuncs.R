@@ -14,7 +14,7 @@
 #' @export
 #'
 #' @examples test <- rti_calc_simple(c(47.5, 32.5), 3.35)
-#' forest_to_reg_plot(test$rmaObj, StError = sqrt(test$variance)) +
+#' forest_to_reg_plot(test$rmaObj, StError = sqrt(test$error_var)) +
 #'   labs(title = "The example data from J&T")
 #' 
 #' output2 <- rti_calc_simple(c(98,98,98,99,99,99), .5)
@@ -91,6 +91,7 @@ forest_to_reg_plot <- function(x,
 #' Plot a reliableTrend object
 #'
 #' @param x An object of class `reliableTrend`.
+#' @param ... Additional arguments.
 #'
 #' @return A ggplot2 object
 #' @export
@@ -98,6 +99,6 @@ forest_to_reg_plot <- function(x,
 #' @examples 
 #' mac_rti <- rti(mac_height$obs, sdiff = .707)
 #' plot(mac_rti)
-plot.reliableTrend <- function(x){
+plot.reliableTrend <- function(x, ...){
   forest_to_reg_plot(x)
 }

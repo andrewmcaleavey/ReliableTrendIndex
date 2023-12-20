@@ -7,7 +7,7 @@
 plot_raw(x)
 }
 \arguments{
-\item{x}{}
+\item{x}{data.frame}
 }
 \value{
 ggplot object

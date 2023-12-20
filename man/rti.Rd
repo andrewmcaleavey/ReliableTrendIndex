@@ -46,7 +46,7 @@ parameter.}
 An object of class \code{reliableTrend}.
 }
 \description{
-Given
+Given only values, compute a reliableTrend object
 }
 \examples{
 rti(jt_example_data_1$obs, sdiff = 4.74)
@@ -58,10 +58,4 @@ rti(mac_height$obs, scale_rci = 1.385)
 rti(jt_example_data_1$obs, sd = 7.5, rxx = .8)
 rti(mac_height$obs, sd = 1.02, rxx = .77)
 rti(15, sdiff = 4.74)
-Given a single difference, should add a leading 0
-need one of these:
-1 sdiff
-2 sem
-3 scale_rci
-4 sd and rxx
 }

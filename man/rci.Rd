@@ -34,7 +34,9 @@ rci(
 
 \item{r2}{Numeric.  Optional second reliability coefficient to use in calculation}
 
-\item{sd1}{Numeric. Optional standard deviation 2. Should be a group representative of the target group. Calculated if not provided.}
+\item{sd1}{Numeric. Standard deviation 1. Should be a group representative of the target group. Calculated/assumed if not provided.}
+
+\item{sd2}{Numeric. Optional standard deviation 2. Should be a group representative of the target group. Calculated if not provided.}
 
 \item{sdiff}{Numeric.  Standard error of the difference score. If provided, sem, rxx, sd1 are all ignored. Calculated if not provided.}
 
@@ -43,6 +45,10 @@ rci(
 \item{prob}{Numeric 0-1. Defaults to .975 to provide 95\% two-sided confidence.}
 
 \item{verbose}{Logical. If TRUE, will return additional information about the calculation.}
+
+\item{rc.type}{Version of RCI to compute. Defaults to \code{"jt"}, the Jacobson &
+Truax (1991) standard. Also can be \code{"maassen"} (which requires \code{sd1} and
+\code{sd2}) or \code{"mcnemar"} (which additionally requires \code{r2}).}
 }
 \value{
 Individual RCI value per difference score provided.

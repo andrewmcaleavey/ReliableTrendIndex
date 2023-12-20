@@ -4,13 +4,15 @@
 \alias{summary.reliableTrend}
 \title{Text summary of a \code{reliableTrend} object}
 \usage{
-\method{summary}{reliableTrend}(x)
+\method{summary}{reliableTrend}(object, ...)
 }
 \arguments{
-\item{x}{A \code{reliableTrend} object}
+\item{object}{A \code{reliableTrend} object}
+
+\item{...}{Additional arguments.}
 }
 \value{
-(invisibly) \code{x}.
+(invisibly) \code{object}.
 }
 \description{
 Text summary of a \code{reliableTrend} object

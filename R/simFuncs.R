@@ -124,7 +124,7 @@ generate_data <- function(n_sims = 1,
 #' @export
 #'
 #' @examples 
-#' generate_xt_data()
+#' generate_xt_data(n_obs = 10)
 generate_xt_data <- function(n_sims = 1, 
                              n_ppl = 500, 
                              sd_tot = 1, 
@@ -215,7 +215,7 @@ RCIfunc <- function(rxx, s1 = 1, cut = 1.96){
 
 #' Simple plot
 #'
-#' @param x 
+#' @param x data.frame
 #'
 #' @return ggplot object
 #' @export

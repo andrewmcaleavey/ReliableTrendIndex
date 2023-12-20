@@ -35,6 +35,8 @@
 #'   difference.
 #' @param cutpoint Numeric. Z-scale cutpoint to use for reliability
 #'   categorization. Default is 1.96.
+#' @param observed Character. Name of the observed variable. Defaults to 
+#' `"obs_score"`.
 #' @param scale_RCI Numeric. The "RCI for a scale," meaning how many scale
 #'   points need to be observed in a difference score for that difference to be
 #'   considered "reliable" under J&T.
@@ -369,9 +371,10 @@ reliableTrend <- function(x = NULL,
 
 #' Text summary of a `reliableTrend` object
 #'
-#' @param x A `reliableTrend` object
+#' @param object A `reliableTrend` object
+#' @param ... Additional arguments. 
 #'
-#' @return (invisibly) `x`.
+#' @return (invisibly) `object`.
 #' @export
 #'
 #' @examples output <- rti_calc_simple(c(98,98,98,99,99,99), .7071068^2)
@@ -381,51 +384,52 @@ reliableTrend <- function(x = NULL,
 #' output2 <- reliableTrend(output$rmaObj)
 #' # no warning:
 #' summary(output2)
-summary.reliableTrend <- function(x){
-  if(is.na(x$RCI)) {
+summary.reliableTrend <- function(object, ...){
+  if(is.na(object$RCI)) {
     warning("Only parts of this reliableTrend object are valid. Do not trust the summary.")
   }
   # these are articles for use in a text description
-  article.RTI <- ifelse(x$category.RTI == "Less than reliable", 
+  article.RTI <- ifelse(object$category.RTI == "Less than reliable", 
                         " a ", 
                         " a ")
-  article.RCI <- ifelse(x$category.RCI == "Less than reliable", 
+  article.RCI <- ifelse(object$category.RCI == "Less than reliable", 
                         " a ", 
                         " a ")
   cat("\nReliable Trend Analysis:\n\n")
   cat(paste0("This sequence of ", 
-             length(x$values), 
+             length(object$values), 
              " values has",
              article.RTI,
-             x$category.RTI, 
+             object$category.RTI, 
              " using the RTI.\nThe likelihood of an overall ", 
-             x$sign.RTI, 
+             object$sign.RTI, 
              " in true score is ", 
-             round(x$pd.RTI, 5), 
+             round(object$pd.RTI, 5), 
              " using the RTI.\n"))
   cat(paste0("\nA pre-post analysis would have", 
              article.RCI,
-             x$category.RCI, 
+             object$category.RCI, 
              " change using the RCI.\nThe likelihood of ", 
-             x$sign.difference, 
+             object$sign.difference, 
              " given just the pre-post values is ", 
-             round(x$pd.RCI, 5), 
+             round(object$pd.RCI, 5), 
              ".\n"))
   cat("\n")
-  invisible(x)
+  invisible(object)
 }
 
 
 #' Print a `reliableTrend` object
 #'
 #' @param x An object of class `reliableTrend`.
+#' @param ... Additional arguments.
 #'
 #' @return (invisibly) `x`.
 #' @export 
 #'
 #' @examples output <- rti_calc_simple(c(98,98,98,99,99,99), .7071068^2)
 #' print(output)
-print.reliableTrend <- function(x){
+print.reliableTrend <- function(x, ...){
   print.default(unclass(x))
   invisible(x)
 }
