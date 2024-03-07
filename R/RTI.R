@@ -258,24 +258,25 @@ rti_calc_simple <- function(values, variance, digits = 2, cutpoint = 1.96,
 
 
 # this is horrible coding, is brittle as hell, but works. 
-compute_rti_data <- function(data, 
-                             id_var, 
-                             obs_var, 
-                             error_value){
-  ppl <- unique(data[[id_var]])
-  # print(ppl)
-  output <- list(rep(NA, length(ppl)))
-  for(i in 1:length(ppl)){
-    data_use <- data %>% 
-      filter(id == ppl[i])
-    # output[[i]] <- rti_calc_simple(values = data_use$obs_score, variance = .2)
-    output[[i]] <- reliableTrend(metafor::rma(yi = data_use$obs_score, 
-                                              vi = error_value, 
-                                              method = "FE", 
-                                              data = data_use))
-  }
-  return(output)
-}
+# making it a comment now because I am not sure it was ever put into use
+# compute_rti_data <- function(data, 
+#                              id_var, 
+#                              obs_var, 
+#                              error_value){
+#   ppl <- unique(data[[id_var]])
+#   # print(ppl)
+#   output <- list(rep(NA, length(ppl)))
+#   for(i in 1:length(ppl)){
+#     data_use <- data %>% 
+#       filter(id == ppl[i])
+#     # output[[i]] <- rti_calc_simple(values = data_use$obs_score, variance = .2)
+#     output[[i]] <- reliableTrend(metafor::rma(yi = data_use$obs_score, 
+#                                               vi = error_value, 
+#                                               method = "FE", 
+#                                               data = data_use))
+#   }
+#   return(output)
+# }
 # compute_rti_data(data = simdata1, id_var = "id", obs_var = value, error_value = .5)
 
 #' A wrapper for `metafor::rma()` with some convenient defaults for my personal

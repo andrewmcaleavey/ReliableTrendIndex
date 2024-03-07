@@ -228,6 +228,7 @@ reliableTrend <- function(x = NULL,
     if(exists("category.RTI", x))           category.RTI <- x$category.RTI 
     if(exists("sign.RTI", x))               sign.RTI <- x$sign.RTI
     if(exists("sign.difference", x))        sign.difference <- x$sign.difference
+    # do I need this line?
     if(exists("rmaObj", x))                 rmaObj <- x$rmaObj 
     # these two rely on each other
     if(exists("values", x) & !exists("values.prepost", x)){
@@ -246,11 +247,9 @@ reliableTrend <- function(x = NULL,
     if(exists("cutpoint", x))               cutpoint <- x$cutpoint 
     if(exists("scale_RCI", x))              scale_RCI <- x$scale_RCI
   }
-  # Now all PROVIDED arguments are available as environment variables
-  # as long as x is not "rma" class.
-  
+  # Now all PROVIDED arguments are available as environment variables. 
 
-  # what if x is a data frome?
+  # what if x is a data frame?
   # if(missing(rmaObj) & is.null(x$rmaObj)) {
   #   # determine if x or x[1] or x[[1]] is a data.frame.
   #   if(is.data.frame(x[1])){

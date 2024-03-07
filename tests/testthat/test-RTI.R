@@ -6,3 +6,12 @@ test_that("simple_rma() provides rma objects", {
                                           error_var = 4.74^2, 
                                           observed = "obs")))
 })
+
+# tests for compute_rti_data
+# obsolete?
+
+# tests for rti()
+test_that("rti() works with a single numeric input", {
+  expect_equal(rti(values = c(0, 15), sdiff = 4.74), 
+               rti(values = 15, sdiff = 4.74))
+})

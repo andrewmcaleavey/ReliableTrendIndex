@@ -7,6 +7,7 @@
 test_that("reliableTrend() works with non-standard input", {
   test_rmaObj <- readRDS(test_path("fixtures", 
                                    "mac_RTI_good.rds"))$rmaObj
+  
   expect_true(is.reliableTrend(reliableTrend(x = list(RCI = 8))))
   expect_equal(8, reliableTrend(x = list(RCI = 8))$RCI)
   expect_equal(8, reliableTrend(x = list(RTI = 8))$RTI)
@@ -23,6 +24,12 @@ test_that("reliableTrend() works with non-standard input", {
   expect_equal(8, reliableTrend(x = list(error_var = 8))$error_var)
   expect_equal(8, reliableTrend(x = list(cutpoint = 8))$cutpoint)
   expect_equal(8, reliableTrend(x = list(scale_RCI = 8))$scale_RCI)
+  # if x includes something called "rmaObj" the code wants to set it explicitly
+  I
+  test <- rti_calc_simple(c(47.5, 32.5), 3.35)
+  test2 <- list("rmaObj" = test$rmaObj)
+  # works: 
+  expect_true(identical(reliableTrend(test), reliableTrend(x = test2$rmaObj)))
 })
 
 
