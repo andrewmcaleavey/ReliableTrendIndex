@@ -36,7 +36,7 @@ Both the RCI and RTI ask the question: "How likely is this sequence of scores if
 
 The goal of this package is to provide a simple interface for computing the RCI and RTI given a data set. I intend it for my own personal use and as an educational/demonstration tool in this ongoing research endeavor. 
 
-If you are interested in contributing to this work in any way (including by pointing out mistakes or providing counterarguments), please get in touch with me: [@andrewathan](https://twitter.com/andrewathan) or 
+If you are interested in contributing to this work in any way (including by pointing out mistakes or providing counterarguments), please get in touch with me: [@andrewathan](https://andrewathan.bsky.social) or 
 [GitHub](https://github.com/andrewmcaleavey/ReliableTrendIndex).
 
 I think the RTI is demonstrably better as an operationalization of reliable change than the RCI in almost any case with more than 2 data points. With two data points, it simplifies to the RCI. The chief added assumption with more time points is that linear change is a reasonably approximation of the true change (not that the path of scores is linear *per se*). So you have to be interested in an overall tendency to increase or decrease over the course of your observation period. 

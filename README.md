@@ -4,6 +4,7 @@
 # ReliableTrendIndex
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
 An R package for analysis of the reliability of changes.
@@ -53,7 +54,7 @@ endeavor.
 
 If you are interested in contributing to this work in any way (including
 by pointing out mistakes or providing counterarguments), please get in
-touch with me: [@andrewathan](https://twitter.com/andrewathan) or
+touch with me: [@andrewathan](https://andrewathan.bsky.social) or
 [GitHub](https://github.com/andrewmcaleavey/ReliableTrendIndex).
 
 I think the RTI is demonstrably better as an operationalization of
@@ -170,10 +171,6 @@ library(ReliableTrendIndex)
 #>     intersect, setdiff, setequal, union
 #> Loading required package: ggplot2
 #> Loading required package: magrittr
-#> 
-#> You loaded ReliableTrendIndex
-#> Think about your choices: would you rather develop a meaningful clinical test?
-#> Or is reliability really the best possible idea?
 ```
 
 ### One person RCI
