@@ -39,7 +39,7 @@ The goal of this package is to provide a simple interface for computing the RCI 
 If you are interested in contributing to this work in any way (including by pointing out mistakes or providing counterarguments), please get in touch with me: [@andrewathan](https://andrewathan.bsky.social) or 
 [GitHub](https://github.com/andrewmcaleavey/ReliableTrendIndex).
 
-I think the RTI is demonstrably better as an operationalization of reliable change than the RCI in almost any case with more than 2 data points. With two data points, it simplifies to the RCI. The chief added assumption with more time points is that linear change is a reasonably approximation of the true change (not that the path of scores is linear *per se*). So you have to be interested in an overall tendency to increase or decrease over the course of your observation period. 
+I think the RTI is a demonstrably better operationalization of reliable change than the RCI in almost any case with more than 2 data points. With two data points, it simplifies to the RCI. The chief added assumption with more time points is that linear change is a reasonable approximation of the true change or that a linear trend is of interest for the data regardless of any curvilinear aspects. So, the RTI assumes you are interested in an overall tendency to increase or decrease over the course of the observation period. 
 
 Nonlinearity of the true change process will make the RTI less sensitive, but still more accurate than the RCI. The RCI does not explicitly pay a penalty for nonlinear changes, it also fails to identify them either. If nonlinearity is a serious concern, the RCI will not be useful due to this reason.   
 
@@ -63,6 +63,97 @@ You could use this package just to have a standard way to access RCI and RTI-lik
 However, *this package should be used with caution*. The idea of "reliable" change is questionably justified and has a strong tendency to confuse or mislead. Plus, mistakes may exist, so it is provided as-is.    
 
 Bugs and issues can be reported at [the GitHub repo](https://github.com/andrewmcaleavey/ReliableTrendIndex). If anyone would like to contribute, please be in touch!  
+
+## Theory: Reliable Trend Index (RTI)
+
+### Motivation
+In clinical and psychological measurement, we often ask whether an observed *change* in scores is larger than what could be expected from measurement error. The **Reliable Change Index (RCI; Jacobson & Truax, 1991)** addresses this for a **two-timepoint difference score**.  
+
+However, in many contexts we observe a *series* of measurements from a single person (e.g., weekly or daily assessments). In such cases, it is natural to ask whether there is a **reliable linear trend** over time, not just a reliable change between two occasions.  
+
+The **Reliable Trend Index (RTI)** extends the logic of the RCI to this setting: it is a standardized test statistic for the within-person slope in a regression of scores on time, using a reliability-adjusted estimate of the slope’s standard error.
+
+---
+
+### Regression framework
+Suppose one person has $n$ observations $y_1,\dots,y_n$ at equally spaced times $t=1,\dots,n$. We fit a simple regression model
+
+$$
+y_t = \beta_0 + \beta_1 t + \varepsilon_t,
+$$
+
+and test whether the slope $\beta_1$ differs from zero.  
+
+The OLS slope estimate is
+
+$$
+\hat\beta_1 = \frac{\sum_{t=1}^n (t-\bar t)(y_t-\bar y)}{\sum_{t=1}^n (t-\bar t)^2}.
+$$
+
+Its standard error is
+
+$$
+SE(\hat\beta_1) = \frac{\sigma_e}{\sqrt{\sum_{t=1}^n (t-\bar t)^2}},
+$$
+
+where $\sigma_e$ is the standard deviation of the residuals.  
+
+---
+
+### Plugging in reliability
+If the measurement has reliability $r$ and single-occasion standard deviation $SD$, then the standard deviation of measurement error is
+
+$$
+\sigma_e = SD \sqrt{1-r}.
+$$
+
+For equally spaced times, the denominator simplifies to
+
+$$
+\sum_{t=1}^n (t-\bar t)^2 = \frac{n(n^2-1)}{12}.
+$$
+
+Thus,
+
+$$
+SE(\hat\beta_1) = SD \sqrt{1-r} \;\sqrt{\frac{12}{n(n^2-1)}}.
+$$
+
+---
+
+### Definition of the RTI
+The **Reliable Trend Index (RTI)** is defined as the slope estimate divided by this reliability-adjusted standard error:
+
+$$
+\text{RTI} = \frac{\hat\beta_1}{SD \sqrt{1-r}\,\sqrt{\tfrac{12}{n(n^2-1)}}}.
+$$
+
+This statistic can be interpreted analogously to a $t$-test: values beyond $\pm 1.96$ (approx.) suggest a trend unlikely to be explained by measurement error alone, at the $\alpha=0.05$ level.
+
+---
+
+### Relationship to the Reliable Change Index (RCI)
+When $n=2$, the regression slope reduces to the difference between the two observations:
+
+$$
+\hat\beta_1 = y_2 - y_1,
+$$
+
+and the denominator simplifies to
+
+$$
+SE(\hat\beta_1) = SD \sqrt{2(1-r)}.
+$$
+
+Therefore,
+
+$$
+\text{RTI}_{n=2} = \frac{y_2 - y_1}{SD\sqrt{2(1-r)}},
+$$
+
+which is exactly the classical **Reliable Change Index (RCI)**.  
+
+The RCI is thus a special case of the RTI for two timepoints. The RTI generalizes the logic to an arbitrary number of repeated measures, testing whether a *trend* in scores is reliably greater than chance, given the measure’s reliability.  
 
 ## Definition  
 
