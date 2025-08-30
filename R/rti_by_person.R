@@ -98,6 +98,12 @@
 #' Jacobson, N. S., & Truax, P. (1991). Clinical significance: A statistical
 #' approach to defining meaningful change in psychotherapy research.
 #' \emph{Journal of Consulting and Clinical Psychology}, 59(1), 12–19.
+#' \doi{10.1037/0022-006X.59.1.12}
+#' 
+#' McAleavey, A. A. (2024). When (not) to rely on the reliable change index: A 
+#' critical appraisal and alternatives to consider in clinical psychology. 
+#' \emph{Clinical Psychology: Science and Practice}, 31(3), 351–366. 
+#' \doi{10.1037/cps0000203}
 #'
 #' @seealso \code{\link[stats]{lm}}, \code{\link[stats]{sd}}
 #'

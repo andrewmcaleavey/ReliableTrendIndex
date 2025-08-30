@@ -33,6 +33,10 @@ The most central RTI functions are wrappers around functions from the `{metafor}
 
 At present, any upstream changes to `{metafor}` will affect this package. This should not be a major problem, but may become an issue in the future. I have decided not to extract the functions directly from `{metafor}` at present.  
 
+### Base R backbone
+
+As of August 2025, I am in the process of adding more basic functions that implement the simplest versions of RTI using base R. This should be easier to use for many purposes. Full support is not available yet. Functions in this family include `slope_se_reliability()` and `rti_by_person()`. These are not fully developed yet and are still untested.
+
 ## Conceptual differences between RTI and RCI  
 
 The RCI is a test for difference scores, and the RTI is a test for linear trends. The two are fundamentally different, but both can be informative about change. If there is a reliable change according to the RCI, the individual has provided scores that are not consistent with having the same true score at both occasions. If there is a reliable trend according to the RTI, the individual's series of scores is not consistent with a constant mean true score value. These are potentially different pieces of information. 
