@@ -13,6 +13,8 @@ rti_by_person(
   sd_single = NULL,
   sd_method = c("global", "per_person", "baseline"),
   baseline_time = NULL,
+  p = 0.05,
+  verbose = FALSE,
   na_rm = TRUE
 )
 }
@@ -36,29 +38,43 @@ each person’s time is set to \eqn{1{:}n_i} in their observed order.}
 \code{"baseline"}. Only used when \code{sd_single = NULL}. See Details.}
 
 \item{baseline_time}{A single value of \code{time} indicating the baseline
-occasion when \code{sd_method = "baseline"}. Ignored otherwise.}
+occasion when \code{sd_method = "baseline"}. Ignored when \code{time} is omitted.}
+
+\item{p}{Two-sided significance level for the RTI threshold (default \code{0.05}).
+Internally uses \eqn{z_{1-p/2}} for all persons.}
+
+\item{verbose}{Logical; if \code{FALSE} (default) return a compact table with
+\code{id}, \code{n}, \code{slope_hat}, \code{RTI}, \code{crit}, and \code{RTI_cat}. If
+\code{TRUE}, return all components as well.}
 
 \item{na_rm}{Logical; if \code{TRUE}, drop rows with missing \code{id}, \code{y},
 or \code{time} (if supplied). If \code{FALSE}, \code{NA}s will trigger an error.}
 }
 \value{
-A \code{data.frame} with one row per person containing:
+If \code{verbose = FALSE}, a \code{data.frame} with per-person:
 \describe{
 \item{\code{id}}{Person identifier.}
 \item{\code{n}}{Number of observations used for that person.}
-\item{\code{S_xx}}{\eqn{\sum (t-\bar t)^2} for that person.}
-\item{\code{slope_hat}}{OLS slope \eqn{\hat\beta_1} from \code{lm(y ~ time)}.}
-\item{\code{sd_single_used}}{Single-occasion SD used for that person.}
+\item{\code{slope_hat}}{OLS slope \eqn{\hat\beta_1}.}
+\item{\code{RTI}}{\eqn{\hat\beta_1 / SE_{\text{reliability}}}.}
+\item{\code{crit}}{Critical value \eqn{z_{1-p/2}} used for classification.}
+\item{\code{RTI_cat}}{"Reliable increase", "Reliable decrease", or "No reliable trend".}
+}
+If \code{verbose = TRUE}, also includes:
+\describe{
+\item{\code{S_xx}}{\eqn{\sum (t-\bar t)^2}.}
+\item{\code{sd_single_used}}{Single-occasion SD used.}
 \item{\code{sigma_e}}{\eqn{SD \sqrt{1-r}}.}
 \item{\code{SE_reliability}}{\eqn{SD \sqrt{1-r} / \sqrt{S_{xx}}}.}
-\item{\code{RTI}}{\eqn{\hat\beta_1 / SE_{\text{reliability}}}.}
 }
 }
 \description{
 Computes the \strong{Reliable Trend Index (RTI)} for each person in a long-format
 data frame containing a person identifier, an outcome/score, and (optionally)
-a time variable. The RTI is a reliability-adjusted t-like statistic for the
-within-person linear trend (slope) of \code{y} on \code{time}.
+a time variable. The RTI is a reliability-adjusted z-like statistic for the
+within-person linear trend (slope) of \code{y} on \code{time}. Adds a
+classification of the trend's reliability given a user-set two-sided
+significance level \code{p} (default 0.05).
 }
 \details{
 Reliable Trend Index (RTI) by person
@@ -84,18 +100,22 @@ the slope reduces to \eqn{\hat\beta_1 = y_2 - y_1}, and
 \deqn{SE(\hat\beta_1) = SD \sqrt{2(1-r)}, \quad
 \mathrm{RTI} = \frac{y_2 - y_1}{SD \sqrt{2(1-r)}},}
 which is exactly the \emph{Reliable Change Index} (RCI; Jacobson & Truax, 1991).
-Thus, the RCI is the \eqn{n=2} special case of the RTI.
+Thus, the RCI is the \eqn{n=2} special case of the RTI, and—given the same
+\eqn{SD} and \eqn{r}—the magnitude of RTI can coincide with RCI when the
+three-point series is perfectly linear (e.g., first and last points define the line).
 
-\strong{What this function does.}
-For each person (identified by \code{id}), the function:
-\enumerate{
-\item sorts by \code{time} if supplied; otherwise uses the observed order and
-defines time as \eqn{1{:}n_i},
-\item fits \code{lm(y ~ time)} to obtain \eqn{\hat\beta_1},
-\item computes \eqn{S_{xx} = \sum (t-\bar t)^2},
-\item constructs \eqn{SE_{\text{reliability}} = SD \sqrt{1-r} / \sqrt{S_{xx}}},
-\item returns \eqn{\mathrm{RTI} = \hat\beta_1 / SE_{\text{reliability}}} and components.
+\strong{Threshold and classification.}
+To interpret the magnitude of \code{RTI}, this function compares it to a
+two-sided \strong{standard normal} critical value \eqn{z_{1-p/2}} (default \code{p = 0.05}
+gives \eqn{\pm 1.96}). The categorical variable \code{RTI_cat} is:
+\itemize{
+\item \code{"Reliable increase"} if \eqn{RTI \ge z_{1-p/2}},
+\item \code{"Reliable decrease"} if \eqn{RTI \le -z_{1-p/2}},
+\item \code{"No reliable trend"} otherwise.
 }
+The z reference is used because the denominator is a plug-in standard error
+derived from external reliability and a single-occasion SD, rather than an
+SD estimated from the same series; a t reference would be unjustifiably conservative.
 
 \strong{Supplying the single-occasion SD.}
 You can provide \code{sd_single} as a scalar for all persons (e.g., from a manual).
@@ -103,8 +123,12 @@ If \code{sd_single = NULL}, choose \code{sd_method}:
 \itemize{
 \item \code{"global"}: uses the SD of all available \code{y} across persons.
 \item \code{"per_person"}: uses each person’s SD of \code{y}.
-\item \code{"baseline"}: uses the SD of \code{y} across persons at a specified
-\code{baseline_time} (requires a \code{time} column).
+\item \code{"baseline"}: uses the SD of one \emph{baseline} observation per person.
+If a \code{time} column is supplied and \code{baseline_time} is set, the
+baseline is \code{time == baseline_time}. If \code{time} is supplied and
+\code{baseline_time} is missing, the baseline is each person’s earliest
+time. If \code{time} is not supplied, the baseline is the \emph{first
+observed} measurement per person.
 }
 
 \strong{Assumptions & cautions.}
@@ -128,13 +152,14 @@ df <- data.frame(
 )
 
 # Reliability r and global SD (computed automatically)
+# Compact output with classification at p = 0.05 (z = 1.96)
 rti_by_person(df, id, y, time, r = 0.90, sd_single = NULL, sd_method = "global")
 
 # Provide a manual SD for the instrument (same for everyone)
 rti_by_person(df, id, y, time, r = 0.90, sd_single = 8)
 
-# Per-person SDs
-rti_by_person(df, id, y, time, r = 0.85, sd_method = "per_person")
+# Per-person SDs, verbose output to see components
+rti_by_person(df, id, y, time, r = 0.85, sd_method = "per_person", verbose = TRUE)
 
 # Baseline SD across persons at time == 1
 rti_by_person(df, id, y, time, r = 0.85, sd_method = "baseline", baseline_time = 1)
@@ -142,6 +167,34 @@ rti_by_person(df, id, y, time, r = 0.85, sd_method = "baseline", baseline_time =
 # Without an explicit time column: uses 1:n_i in observed order
 df2 <- df[, c("id","y")]
 rti_by_person(df2, id, y, r = 0.9, sd_method = "global")
+
+# Baseline SD without a time column: first observed measurement per person
+rti_by_person(df2, id, y, r = 0.9, sd_method = "baseline")
+
+# Three-point linear example; RTI equals the two-point RCI in magnitude
+df3 <- data.frame(id = "A", time = 1:3, y = c(47.5, 40, 32.5))
+rti_by_person(df3, id, y, time, r = 0.80, sd_single = 7.5, p = 0.05)
+# This is due to lack of leverage for the middle point. Altering time changes this: 
+# Here we alter the slope with the same y values
+df3a <- data.frame(id = "A", time = c(1, 5, 6), y = c(47.5, 40, 32.5))
+rti_by_person(df3a, id, y, time, r = 0.80, sd_single = 7.5, p = 0.05)
+# Here we keep the same slope but space observations out
+df3b <- data.frame(id = "A", time = c(1, 5, 6), y = c(47.5, 17.5, 10))
+rti_by_person(df3b, id, y, time, r = 0.80, sd_single = 7.5, p = 0.05)
+# and here we do the same within the same y-value range:
+df3c <- data.frame(id = "A", time = c(1, 1.25, 3), y = c(47.5, 45.625, 32.5))
+rti_by_person(df3c, id, y, time, r = 0.80, sd_single = 7.5, p = 0.05)
+
+# Two-point RCI example from Jacobson & Truax (1991)
+rti_by_person(df3[c(1,3),], id, y, time, r = 0.80, sd_single = 7.5, p = 0.05)
+# See the same value in their paper
+
+# Four points
+df4 <- data.frame(id = "A", time = 1:4, y = c(47.5, 40, 32.5, 25))
+rti_by_person(df4, id, y, time, r = 0.80, sd_single = 7.5, p = 0.05)
+
+# Stricter threshold (e.g., p = 0.01 -> z = 2.576)
+rti_by_person(df, id, y, time, r = 0.90, sd_method = "global", p = 0.01)
 
 }
 \references{
@@ -156,5 +209,5 @@ critical appraisal and alternatives to consider in clinical psychology.
 \doi{10.1037/cps0000203}
 }
 \seealso{
-\code{\link[stats]{lm}}, \code{\link[stats]{sd}}
+\code{\link[stats]{lm}}, \code{\link[stats]{sd}}, \code{\link[stats]{qnorm}}
 }
