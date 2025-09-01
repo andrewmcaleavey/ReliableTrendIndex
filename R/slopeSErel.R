@@ -92,7 +92,7 @@
 #' \emph{Clinical Psychology: Science and Practice}, 31(3), 351–366.
 #' \doi{10.1037/cps0000203}
 #'
-#' @seealso \code{\link[stats]{lm}}, \code{\link[stats]{sd}}, \code{\link[stats]{coef}}, \code{\link[stats]{qnorm}}, \code{\link[stats]{pnorm}}
+#' @seealso \code{\link[stats]{lm}}, \code{\link[stats]{sd}}, \code{\link[stats]{coef}}, \code{\link[stats]{qnorm}}, \code{\link[stats]{pnorm}}, \code{\link[ReliableTrendIndex]{plot.slopeSErel}}, \code{\link[ReliableTrendIndex]{print.slopeSErel}}
 #'
 #' @examples
 #' # Five equally spaced observations with r = 0.90
@@ -214,8 +214,7 @@ slope_se_reliability <- function(y, r, time = NULL, sd_single = NULL, p = 0.05) 
 #' @param ... Further arguments (unused).
 #'
 #' @return Invisibly returns \code{x}.
-#' @export
-#' @method print slopeSErel
+#' @exportS3Method print slopeSErel
 print.slopeSErel <- function(x, digits = 4, ...) {
   cat("Within-person slope SE (reliability-based)\n")
   cat(sprintf("n = %d | r = %.3f | equal spacing: %s\n",
@@ -289,8 +288,7 @@ print.slopeSErel <- function(x, digits = 4, ...) {
 #'      band_args = list(alpha = 0.2)) +
 #'   ggplot2::labs(title = "Customized RTI plot")
 #'
-#' @export
-#' @method plot slopeSErel
+#' @exportS3Method plot slopeSErel
 plot.slopeSErel <- function(x,
                             annotate = TRUE,
                             digits = 2,

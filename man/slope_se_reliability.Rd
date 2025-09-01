@@ -121,5 +121,5 @@ A critical appraisal and alternatives to consider in clinical psychology.
 \doi{10.1037/cps0000203}
 }
 \seealso{
-\code{\link[stats]{lm}}, \code{\link[stats]{sd}}, \code{\link[stats]{coef}}, \code{\link[stats]{qnorm}}, \code{\link[stats]{pnorm}}
+\code{\link[stats]{lm}}, \code{\link[stats]{sd}}, \code{\link[stats]{coef}}, \code{\link[stats]{qnorm}}, \code{\link[stats]{pnorm}}, \code{\link[ReliableTrendIndex]{plot.slopeSErel}}, \code{\link[ReliableTrendIndex]{print.slopeSErel}}
 }
