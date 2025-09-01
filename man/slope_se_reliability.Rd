@@ -4,7 +4,7 @@
 \alias{slope_se_reliability}
 \title{Reliable Trend components for a single time series}
 \usage{
-slope_se_reliability(y, r, time = NULL, sd_single = NULL)
+slope_se_reliability(y, r, time = NULL, sd_single = NULL, p = 0.05)
 }
 \arguments{
 \item{y}{Numeric vector of observations for one person (length \eqn{n \ge 2}).}
@@ -16,6 +16,8 @@ slope_se_reliability(y, r, time = NULL, sd_single = NULL)
 
 \item{sd_single}{Optional single-occasion SD for the instrument (e.g., known
 baseline or population SD). If \code{NULL}, uses \code{sd(y)} as a proxy.}
+
+\item{p}{Two-sided significance level for z-based inference (default \code{0.05}).}
 }
 \value{
 An object of class \code{"slopeSErel"}: a named \code{list} with elements
@@ -32,7 +34,11 @@ An object of class \code{"slopeSErel"}: a named \code{list} with elements
 \item{\code{sigma_e}}{\eqn{SD \sqrt{1-r}} (measurement-error SD).}
 \item{\code{SE_reliability}}{\eqn{SD\sqrt{1-r} / \sqrt{S_{xx}}}.}
 \item{\code{slope_hat}}{OLS slope estimate \eqn{\hat\beta_1}.}
-\item{\code{t_reliability}}{RTI: \eqn{\hat\beta_1 / SE_{\mathrm{rel}}(\hat\beta_1)}.}
+\item{\code{RTI}}{\eqn{\hat\beta_1 / SE_{\mathrm{rel}}(\hat\beta_1)} (z-like index).}
+\item{\code{crit}}{Two-sided z critical value \eqn{z_{1-p/2}}.}
+\item{\code{p_value}}{Two-sided p-value based on \code{RTI} under \eqn{z}.}
+\item{\code{RTI_cat}}{"Reliable increase", "Reliable decrease", or "No reliable trend".}
+\item{\code{t_reliability}}{Deprecated alias for \code{RTI} (for backward compatibility).}
 \item{\code{call}}{Matched call.}
 }
 }
@@ -41,7 +47,9 @@ Computes the pieces needed for a reliability-adjusted test of a linear trend
 for a single person’s time series. Given a vector of observations \code{y},
 a reliability coefficient \code{r}, and (optionally) a time vector, this
 function returns the OLS slope, the reliability-based standard error of that
-slope, and the corresponding t-like statistic (the Reliable Trend Index; RTI).
+slope, and the corresponding z-like statistic (the Reliable Trend Index; RTI).
+It also provides a two-sided \code{z} critical value, a p-value, and a simple
+categorical interpretation using the \code{z}-criterion.
 }
 \details{
 Within-person slope SE using reliability (RTI components for one series)
@@ -62,6 +70,9 @@ Hence the reliability-based SE of the slope is
 
 The corresponding Reliable Trend Index (RTI) is
 \deqn{\mathrm{RTI} = \frac{\hat\beta_1}{SE_{\mathrm{rel}}(\hat\beta_1)}.}
+Because the denominator is a plug-in standard error derived from external
+reliability and a single-occasion SD (not estimated from the same series),
+inference uses the \emph{standard normal} (\eqn{z}) reference, not \eqn{t}.
 
 When times are equally spaced \eqn{t = 1, \dots, n}, \eqn{S_{xx}} has the
 closed form \eqn{S_{xx} = n(n^2-1)/12}. For \eqn{n=2}, the slope reduces to
@@ -69,6 +80,16 @@ closed form \eqn{S_{xx} = n(n^2-1)/12}. For \eqn{n=2}, the slope reduces to
 \deqn{SE_{\mathrm{rel}}(\hat\beta_1) = SD \sqrt{2(1-r)},}
 making \eqn{\mathrm{RTI}} identical to the classical Reliable Change Index
 (RCI; Jacobson & Truax, 1991).
+
+\strong{Inference and categorization.}
+Given a two-sided significance level \code{p} (default \code{0.05}),
+the critical value is \eqn{z_{1-p/2}} (e.g., \eqn{\pm 1.96} at \code{p=0.05}).
+The function returns the p-value \eqn{2(1-\Phi(|\mathrm{RTI}|))} and a label:
+\itemize{
+\item \code{"Reliable increase"} if \eqn{\mathrm{RTI} \ge z_{1-p/2}},
+\item \code{"Reliable decrease"} if \eqn{\mathrm{RTI} \le -z_{1-p/2}},
+\item \code{"No reliable trend"} otherwise.
+}
 }
 \examples{
 # Five equally spaced observations with r = 0.90
@@ -84,12 +105,21 @@ t_custom <- c(0, 1, 3, 7, 10)
 y2 <- c(12, 11, 10, 9, 8)
 slope_se_reliability(y2, r = 0.85, time = t_custom)
 
+# Three-point linear example equals endpoint RCI in magnitude
+y3 <- c(47.5, 40, 32.5); t3 <- 1:3
+slope_se_reliability(y3, r = 0.80, time = t3, sd_single = 7.5, p = 0.05)
+
 }
 \references{
 Jacobson, N. S., & Truax, P. (1991). Clinical significance: A statistical
 approach to defining meaningful change in psychotherapy research.
 \emph{Journal of Consulting and Clinical Psychology}, 59(1), 12–19.
+
+McAleavey, A. A. (2024). When (not) to rely on the reliable change index:
+A critical appraisal and alternatives to consider in clinical psychology.
+\emph{Clinical Psychology: Science and Practice}, 31(3), 351–366.
+\doi{10.1037/cps0000203}
 }
 \seealso{
-\code{\link[stats]{lm}}, \code{\link[stats]{sd}}, \code{\link[stats]{coef}}
+\code{\link[stats]{lm}}, \code{\link[stats]{sd}}, \code{\link[stats]{coef}}, \code{\link[stats]{qnorm}}, \code{\link[stats]{pnorm}}
 }
