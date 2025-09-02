@@ -19,6 +19,8 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(ReliableTrendIndex)
+library(dplyr)
+library(ggplot2)
 ```
 
 The package `{ReliableTrendIndex}` is a way to contain a large group of disorganized analysis functions related to the concept of reliable change. There are a few key functions.  
@@ -87,18 +89,18 @@ sim_data_2 <- simulated_data %>%
   # HOWEVER, it lost several key variables along the way
   # here, we re-merge the old data (simulated_data) with the new
   # first by re-integrating the id variable, which was dropped earlier
-  mutate(id = simulated_data %>% 
-           group_by(id) %>% 
-           slice_tail(n = 1) %>% 
-           pull(id)) %>% 
+  dplyr::mutate(id = simulated_data %>% 
+           dplyr::group_by(id) %>% 
+           dplyr::slice_tail(n = 1) %>% 
+           dplyr::pull(id)) %>% 
   # then joining the data sets
-  right_join(simulated_data) %>% 
+  dplyr::right_join(simulated_data) %>% 
   # now computing first and last score values, which are not natively in the data
-  group_by(id) %>% 
-  mutate(first_obs = first(obs_score), 
-         last_obs = last(obs_score)) %>% 
+  dplyr::group_by(id) %>% 
+  dplyr::mutate(first_obs = dplyr::first(obs_score), 
+         last_obs = dplyr::last(obs_score)) %>% 
   # and finally taking just the last observation per person. 
-  slice_tail(n = 1)
+  dplyr::slice_tail(n = 1)
 ```
 
 That code is not the easiest to understand, but it does work and would work for a range of data sets.  

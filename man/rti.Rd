@@ -4,51 +4,52 @@
 \alias{rti}
 \title{Reliable Trend Index (RTI)}
 \usage{
-rti(y, sd, r, t = NULL, na.rm = FALSE, level = 0.95)
+rti(
+  y = NULL,
+  sd = NULL,
+  r = NULL,
+  t = NULL,
+  na.rm = FALSE,
+  level = 0.95,
+  values = NULL,
+  time = NULL,
+  sem = NULL
+)
 }
 \arguments{
-\item{y}{Numeric vector of within-person observations (length \code{n} >= 2).}
+\item{y, values}{Numeric vector of within-person observations (length \eqn{n\ge2}).
+\code{values} is a legacy alias for \code{y}; if both are supplied, \code{y} is used.}
 
 \item{sd}{Positive numeric. Single-occasion standard deviation (external).}
 
 \item{r}{Numeric in \link{0, 1}. Reliability (external).}
 
-\item{t}{Optional numeric vector of time indices. If \code{NULL} (default),
-equal spacing \code{t = 1:n} is used.}
+\item{t, time}{Optional numeric vector of time indices (same length as \code{y}).
+\code{time} is a legacy alias for \code{t}. If both are missing, uses \code{t = 1:n}.}
 
-\item{na.rm}{Logical. If \code{TRUE}, drop incomplete pairs of \code{(y, t)} with a warning.}
+\item{na.rm}{Logical. Drop incomplete \code{(y, t)} pairs? Default \code{FALSE}.}
 
-\item{level}{Confidence level for slope intervals (used by \code{summary} and plots).}
+\item{level}{Confidence level for slope intervals (default \code{0.95}).}
+
+\item{sem}{Optional positive numeric. Standard error of measurement (external).
+If provided, it takes precedence and sets \eqn{\sigma^2 = \mathrm{sem}^2}.}
 }
 \value{
 An object of class \code{"reliableTrend"} with elements:
 \itemize{
-\item \code{estimate} – \eqn{\hat\beta_1} (slope with centered time)
-\item \code{intercept} – \eqn{\hat\beta_0} at \eqn{\bar t} (equals \code{mean(y)})
-\item \code{se} – \eqn{\mathrm{SE}(\hat\beta_1)}
-\item \code{z}, \code{p} – Z statistic and two-sided p-value
-\item \code{ci} – numeric length-2 vector for slope at \code{level}
-\item \code{sigma2} – \eqn{\mathrm{sd}^2 (1-r)}
-\item \code{t}, \code{t_centered}, \code{y}, \code{Sxx}, \code{n}, \code{sd}, \code{r}, \code{level}
+\item \code{estimate}, \code{intercept}, \code{se}, \code{z}, \code{p}, \code{ci}
+\item \code{sigma2}, \code{t}, \code{t_centered}, \code{y}, \code{Sxx}, \code{n}
+\item \code{sd}, \code{r}, \code{sem}, \code{level}, \code{call}
 }
 }
 \description{
-Compute a reliability-based test of linear trend (slope) within a person
-using external single-occasion \code{sd} and \code{r} to define the error
-variance. For equal spacing \eqn{t = 1,\dots,n}, \eqn{S_{xx} = n(n^2-1)/12};
-for custom spacing, \eqn{S_{xx} = \sum (t - \bar t)^2}.
-}
-\details{
-The test statistic is \eqn{Z = \hat\beta_1 / \mathrm{SE}(\hat\beta_1)} with
-\eqn{\mathrm{SE}(\hat\beta_1) = \sqrt{\mathrm{sd}^2 (1-r) / S_{xx}}}. This mirrors
-the Jacobson–Truax logic used in the RCI (the \eqn{n=2} special case) but
-generalizes it to \eqn{n\ge2} via \eqn{S_{xx}}.
+Compute a reliability-based test of within-person linear trend.
+Backward compatible with older code that passed \code{values}/\code{time}
+and/or \code{sem} instead of \code{sd}/\code{r}.
 }
 \examples{
-y <- c(12, 11, 13, 16, 17, 19)
-fit <- rti(y, sd = 8, r = 0.85)
-fit$estimate
-fit$p
-plot(fit)  # see plot.reliableTrend
-
+# New style (sd & r)
+rti(y = c(12, 11, 13, 16), sd = 8, r = 0.85)
+# Legacy style (values & sem)
+rti(values = c(12, 11, 13, 16), sem = 3)
 }

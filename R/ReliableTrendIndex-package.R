@@ -3,5 +3,6 @@
 
 ## usethis namespace: start
 #' @importFrom metafor rma
+#' @importFrom stats predict
 ## usethis namespace: end
 NULL

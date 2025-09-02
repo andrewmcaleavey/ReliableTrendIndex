@@ -34,12 +34,15 @@
 rti_by <- function(data, id, time, y, sd, r, na.rm = FALSE, level = 0.95) {
   if (!is.data.frame(data)) stop("`data` must be a data.frame.", call. = FALSE)
   
+  # capture the caller env so bare symbols like sd_ext/r_ext can be resolved
+  caller <- parent.frame()
+  
   id_vec   <- .col_from_data(data, substitute(id),  required = TRUE)
   time_vec <- .col_from_data(data, substitute(time), required = TRUE)
   y_vec    <- .col_from_data(data, substitute(y),    required = TRUE)
   
-  sd_input <- .maybe_col_or_scalar(data, substitute(sd))
-  r_input  <- .maybe_col_or_scalar(data, substitute(r))
+  sd_input <- .maybe_col_or_scalar(data, substitute(sd), env = caller)
+  r_input  <- .maybe_col_or_scalar(data, substitute(r),  env = caller)
   
   # Split indices by id
   idx_list <- split(seq_len(nrow(data)), f = id_vec, drop = TRUE)
@@ -128,19 +131,21 @@ rti_by <- function(data, id, time, y, sd, r, na.rm = FALSE, level = 0.95) {
 }
 
 # For sd/r: accept a scalar, a bare symbol bound to a scalar, or a column name.
-.maybe_col_or_scalar <- function(data, expr) {
+# For sd/r: accept a scalar, a bare symbol bound to a scalar in the caller env,
+# or a column name in `data`.
+.maybe_col_or_scalar <- function(data, expr, env = parent.frame()) {
   if (is.symbol(expr)) {
     nm <- as.character(expr)
-    # 1) Column path
+    # 1) data column?
     if (nm %in% names(data)) {
       return(list(type = "column", values = data[[nm]]))
     }
-    # 2) Scalar-from-environment path (do NOT evaluate arbitrary expressions)
-    val <- tryCatch(get(nm, envir = parent.frame()), error = function(e) NULL)
+    # 2) scalar in the caller's environment?
+    val <- tryCatch(get(nm, envir = env, inherits = TRUE), error = function(e) NULL)
     if (is.numeric(val) && length(val) == 1L && is.finite(val)) {
       return(list(type = "scalar", value = as.numeric(val)))
     }
-    stop("Column or scalar expected; `", nm, "` not found in `data`.", call. = FALSE)
+    stop("Column or scalar expected; `", nm, "` not found in `data` or calling environment.", call. = FALSE)
   }
   
   if (is.character(expr) && length(expr) == 1L) {
@@ -155,4 +160,3 @@ rti_by <- function(data, id, time, y, sd, r, na.rm = FALSE, level = 0.95) {
   
   stop("`sd`/`r` must be a single number or a column name (bare or string).", call. = FALSE)
 }
-

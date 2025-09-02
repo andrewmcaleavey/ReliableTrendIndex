@@ -24,6 +24,7 @@
 #' `sd2`) or `"mcnemar"` (which additionally requires `r2`). 
 #'
 #' @return Individual RCI value per difference score provided.
+#' @rdname rci
 #' @export
 #' 
 #' @details 

@@ -11,16 +11,17 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Imports: 
     broom,
+    ggplot2,
     metafor,
-    purrr,
+    stats,
     tidyr
 Depends: 
-    dplyr,
-    ggplot2,
     magrittr,
     R (>= 2.10)
 Suggests: 
+    dplyr,
     knitr,
+    purrr,
     rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

@@ -65,3 +65,13 @@ test_that("rti_by accepts bare symbols bound to scalars for sd/r", {
   expect_equal(nrow(out), 2L)
   expect_true(all(is.finite(out$z)))
 })
+
+test_that("rti accepts legacy `values` and `sem`", {
+  sem <- 2
+  y <- c(10, 12, 11, 15)
+  t <- 1:4
+  fit <- rti(values = y, time = t, sem = sem)
+  expect_true(is.reliableTrend(fit))
+  Sxx <- sum((t - mean(t))^2)
+  expect_equal(fit$se, sqrt(sem^2 / Sxx))
+})

@@ -1,7 +1,7 @@
-# ---- legacy.R : Back-compat helpers and metafor-based utilities ----------------
+# ---- legacy.R : Back-compat helpers and metafor-based utilities --------------
 
-#' @title Legacy Compatibility Layer (metafor + RCI/SDiff helpers)
-#' @description
+#' Legacy Compatibility Layer (metafor + RCI/SDiff helpers)
+#'
 #' Functions retained for backward compatibility with older versions of the
 #' package and materials. Prefer the new API:
 #' - Use [rti()] for single-case RTI.
@@ -15,6 +15,8 @@
 #' - A thin `simple_rma()` wrapper around metafor (optional backend).
 #'
 #' @keywords internal
+#' @name legacy_compat
+#' @noRd
 NULL
 
 # ---- SDiff / SEM / RCI utilities ---------------------------------------------
@@ -74,7 +76,10 @@ jt_rci_calc <- function(difference, sdiff) {
 #' @param sd,r optional to compute SDiff via \code{sdiff_from_sd_r()}.
 #' @param sem,sdiff optional direct error terms; precedence: \code{sdiff} > \code{sem} > (\code{sd},\code{r}).
 #' @return numeric RCI
-#' @export
+#'
+#' @name rci               # <<—— canonical page name
+#' @aliases rci_from_scores rci
+#' #' @export
 rci_from_scores <- function(x1 = NULL, x2 = NULL, difference = NULL,
                             sd = NULL, r = NULL, sem = NULL, sdiff = NULL) {
   if (is.null(difference)) {
@@ -94,8 +99,9 @@ rci_from_scores <- function(x1 = NULL, x2 = NULL, difference = NULL,
   stop("Need one of: `sdiff`, `sem`, or both `sd` & `r`.", call. = FALSE)
 }
 
-#' Convenience RCI wrapper
-#' @inheritParams rci_from_scores
+#' RCI convenience wrapper
+#'
+#' @rdname rci
 #' @export
 rci <- function(x1 = NULL, x2 = NULL, difference = NULL,
                 sd = NULL, r = NULL, sem = NULL, sdiff = NULL) {
@@ -122,13 +128,11 @@ rci <- function(x1 = NULL, x2 = NULL, difference = NULL,
 reliableTrend <- function(values = NULL, y = NULL, time = NULL, t = NULL,
                           sd = NULL, r = NULL, sem = NULL,
                           na.rm = FALSE, level = 0.95) {
-  # prefer `values`/`time` if given
   if (!is.null(values) && is.null(y)) y <- values
   if (!is.null(time)   && is.null(t)) t <- time
   if (is.null(y)) stop("Provide `values` or `y`.", call. = FALSE)
   if (is.null(t)) t <- seq_along(y)
   
-  # handle missingness
   keep <- is.finite(y) & is.finite(t)
   if (!all(keep)) {
     if (!na.rm) stop("Missing or non-finite values in `y`/`t`. Set `na.rm = TRUE` to drop.", call. = FALSE)
@@ -138,7 +142,6 @@ reliableTrend <- function(values = NULL, y = NULL, time = NULL, t = NULL,
   n <- length(y)
   if (n < 2L) stop("Need at least 2 finite observations.", call. = FALSE)
   
-  # center time and compute OLS slope
   tbar <- mean(t)
   tc   <- t - tbar
   Sxx  <- sum(tc^2)
@@ -147,7 +150,6 @@ reliableTrend <- function(values = NULL, y = NULL, time = NULL, t = NULL,
   beta1 <- sum(tc * y) / Sxx
   beta0 <- mean(y)
   
-  # choose sigma^2 source
   sigma2 <- if (!is.null(sem)) {
     if (!is.numeric(sem) || length(sem) != 1L || sem <= 0 || !is.finite(sem))
       stop("`sem` must be a single positive number.", call. = FALSE)
@@ -193,25 +195,76 @@ reliableTrend <- function(values = NULL, y = NULL, time = NULL, t = NULL,
 # ---- Legacy summarizer used in old pipelines ----------------------------------
 
 #' Coerce a reliableTrend to a (legacy) one-row data frame
+#'
+#' Adds legacy fields expected by older vignettes:
+#' - category.RTI (from slope CI)
+#' - category.RCI (from pre-post RCI using SEM or sd/r)
+#' - pd.RTI, pd.RCI (simple "confidence in either change" = 1 - p_two_sided)
+#'
 #' @param x reliableTrend object
-#' @return data.frame with slope estimate, CI, test stats and convenience fields
+#' @return data.frame with slope estimate, CI, test stats and legacy fields
 #' @export
 rti_to_df <- function(x) {
   if (!inherits(x, "reliableTrend")) stop("`x` must be a reliableTrend.", call. = FALSE)
+  
+  # RTI pieces
+  slope.est <- x$estimate
+  slope.lb  <- x$ci[1L]
+  slope.ub  <- x$ci[2L]
+  z_rti     <- x$z
+  p_rti     <- x$p
+  category.RTI <- if (slope.lb > 0) "Reliable Increase" else if (slope.ub < 0) "Reliable Decrease" else "Less than reliable"
+  pd.RTI <- 1 - p_rti  # "confidence" in either change (legacy plots used this)
+  
+  # -- RCI pieces from pre vs post (order by time) --
+  ord <- order(x$t, method = "radix")
+  y_ord <- x$y[ord]
+  if (length(y_ord) >= 2L && all(is.finite(y_ord))) {
+    diff_prepost <- y_ord[length(y_ord)] - y_ord[1L]
+    
+    # prefer SEM if available; else compute from sd & r; else NA
+    if (!is.null(x$sem) && is.finite(x$sem)) {
+      sem  <- x$sem
+      sdiff <- sqrt(2) * sem
+    } else if (!is.null(x$sd) && is.finite(x$sd) && !is.null(x$r) && is.finite(x$r)) {
+      sem  <- x$sd * sqrt(1 - x$r)
+      sdiff <- sqrt(2) * sem
+    } else {
+      sem <- NA_real_; sdiff <- NA_real_
+    }
+    
+    if (is.finite(sdiff) && sdiff > 0) {
+      rci_val <- diff_prepost / sdiff
+      p_rci   <- 2 * stats::pnorm(-abs(rci_val))
+      pd.RCI  <- 1 - p_rci
+      category.RCI <- if (rci_val >  1.96) "Reliable Increase"
+      else if (rci_val < -1.96) "Reliable Decrease"
+      else "Less than reliable"
+    } else {
+      rci_val <- NA_real_; p_rci <- NA_real_; pd.RCI <- NA_real_; category.RCI <- NA_character_
+    }
+  } else {
+    rci_val <- NA_real_; p_rci <- NA_real_; pd.RCI <- NA_real_; category.RCI <- NA_character_
+  }
+  
   data.frame(
-    slope.est = x$estimate,
-    slope.lb  = x$ci[1L],
-    slope.ub  = x$ci[2L],
-    z         = x$z,
-    p         = x$p,
+    slope.est = slope.est,
+    slope.lb  = slope.lb,
+    slope.ub  = slope.ub,
+    z         = z_rti,
+    p         = p_rti,
     n         = x$n,
     Sxx       = x$Sxx,
     sigma2    = x$sigma2,
-    # legacy categorical label used in examples
-    category.RTI = if (x$ci[1L] > 0) "Reliable Increase" else if (x$ci[2L] < 0) "Reliable Decrease" else "Less than reliable",
+    # legacy classification + "confidence" columns expected in old vignettes
+    category.RTI = category.RTI,
+    category.RCI = category.RCI,
+    pd.RTI = pd.RTI,
+    pd.RCI = pd.RCI,
     stringsAsFactors = FALSE
   )
 }
+
 
 # ---- Optional metafor shim ----------------------------------------------------
 
@@ -224,7 +277,7 @@ rti_to_df <- function(x) {
 #' @param vi,sei sampling variances or standard errors (one of them)
 #' @param method estimation method (default "FE")
 #' @param ... passed to \code{metafor::rma()}
-#' @return the \code{metafor::rma} fit object (invisible if metafor not available)
+#' @return the \code{metafor::rma} fit object
 #' @export
 simple_rma <- function(yi, vi = NULL, sei = NULL, method = "FE", ...) {
   if (!requireNamespace("metafor", quietly = TRUE)) {
@@ -236,7 +289,7 @@ simple_rma <- function(yi, vi = NULL, sei = NULL, method = "FE", ...) {
   metafor::rma(yi = yi, vi = vi, method = method, ...)
 }
 
-# ---- Very small adapter for older grouped helper names ------------------------
+# ---- Adapter for older grouped helper names -----------------------------------
 
 #' Legacy alias: rti_by_person()
 #'
@@ -251,7 +304,6 @@ simple_rma <- function(yi, vi = NULL, sei = NULL, method = "FE", ...) {
 #' @export
 rti_by_person <- function(data, id, time, y, sd = NULL, r = NULL, sem = NULL, ..., na.rm = FALSE, level = 0.95) {
   if (!is.null(sem) && (is.null(sd) || is.null(r))) {
-    # SEM provided; compute per-id via reliableTrend() with sem
     id_sym   <- substitute(id)
     time_sym <- substitute(time)
     y_sym    <- substitute(y)
@@ -269,15 +321,12 @@ rti_by_person <- function(data, id, time, y, sd = NULL, r = NULL, sem = NULL, ..
     })
     out <- do.call(rbind, rows)
     out$fit <- lapply(seq_len(nrow(out)), function(i) {
-      # reconstruct minimal fit for convenience
       reliableTrend(values = y_vec[idx_list[[ out$id[i] ]]], time = time_vec[idx_list[[ out$id[i] ]]], sem = sem, na.rm = na.rm, level = level)
     })
-    # order minimal columns
     out <- out[, c("id","slope.est","slope.lb","slope.ub","z","p","n","Sxx","sigma2","category.RTI","fit")]
     rownames(out) <- NULL
     return(out)
   }
-  # else: just defer to the modern helper
   rti_by(data, id = id, time = time, y = y, sd = sd, r = r, na.rm = na.rm, level = level)
 }
 
@@ -295,5 +344,96 @@ rti_by_person <- function(data, id, time, y, sd = NULL, r = NULL, sem = NULL, ..
   }
   stop("Provide a column name (bare or string).", call. = FALSE)
 }
+
+#' Legacy helper: rti_calc_simple
+#'
+#' Minimal wrapper used in old examples and vignettes. Computes an RTI fit
+#' from a vector of scores and a single SEM (standard error of measurement).
+#' Returns a list containing fields older examples expect:
+#' - rmaObj: the model object (here we store the reliableTrend fit)
+#' - error_var: sigma^2 used (i.e., sem^2)
+#'
+#' @param values Numeric vector of within-person observations (length >= 2).
+#' @param sem Positive numeric scalar: standard error of measurement.
+#' @param time Optional numeric vector of time indices (same length as \code{values});
+#'   if omitted, uses \code{1:length(values)}.
+#' @param level Confidence level for slope intervals (default 0.95).
+#' @param na.rm Logical; drop non-finite \code{(values, time)} pairs? Default \code{FALSE}.
+#'
+#' @return A list with \code{rmaObj} (the reliableTrend fit), \code{error_var} (sem^2),
+#'   and \code{fit} (alias to the reliableTrend), for legacy compatibility.
+#' @examples
+#' rti_calc_simple(c(47.5, 32.5), sem = 3.35)
+#' @export
+rti_calc_simple <- function(values, sem, time = NULL, level = 0.95, na.rm = FALSE) {
+  if (is.null(time)) time <- seq_along(values)
+  fit <- rti(values = values, time = time, sem = sem, level = level, na.rm = na.rm)
+  out <- list(
+    rmaObj    = fit,            # legacy name expected by examples
+    error_var = fit$sigma2,     # sem^2
+    fit       = fit             # convenient alias
+  )
+  class(out) <- "rti_calc_simple"
+  out
+}
+
+#' Turning metafor-style forest results into a regression-style plot
+#'
+#' Works with either a \strong{metafor} \code{rma*} object (if metafor is installed)
+#' or a \code{reliableTrend} object (from \code{rti()} / \code{reliableTrend()}).
+#'
+#' @param x A \code{reliableTrend} or a \code{metafor::rma*} object.
+#' @param StError Optional standard error input used by some legacy calls; ignored
+#'   when \code{x} is a \code{reliableTrend}.
+#' @param level Confidence level for intervals (default 0.95).
+#' @param ... Ignored.
+#' @return A \code{ggplot} object.
+#' @examples
+#' test <- rti_calc_simple(c(47.5, 32.5), 3.35)
+#' forest_to_reg_plot(test$rmaObj, StError = sqrt(test$error_var))
+#' @export
+forest_to_reg_plot <- function(x, StError = NULL, level = 0.95, ...) {
+  # reliableTrend path (new backend; predict.reliableTrend handles intervals)
+  if (inherits(x, "reliableTrend")) {
+    preds <- predict(x, interval = "mean", level = level, include_intercept_uncertainty = TRUE)
+    df <- data.frame(
+      t   = x$t,
+      y   = x$y,
+      fit = preds$fit,
+      lwr = preds$lwr,
+      upr = preds$upr
+    )
+    p <- ggplot2::ggplot(df, ggplot2::aes(x = t, y = y)) +
+      ggplot2::geom_ribbon(ggplot2::aes(ymin = lwr, ymax = upr), alpha = 0.15) +
+      ggplot2::geom_line(ggplot2::aes(y = fit)) +
+      ggplot2::geom_point() +
+      ggplot2::labs(x = "Time", y = "Outcome") +
+      ggplot2::theme_minimal()
+    return(p)
+  }
+  
+  # metafor path (legacy backend)
+  if (inherits(x, c("rma", "rma.uni", "rma.mv"))) {
+    if (!requireNamespace("metafor", quietly = TRUE)) {
+      stop("`metafor` not installed but an rma object was provided.", call. = FALSE)
+    }
+    pr <- as.data.frame(stats::predict(x, level = level))
+    # If predict() provides 'cr.lb'/'cr.ub' or other names, fall back sensibly
+    lwr <- if ("ci.lb" %in% names(pr)) pr$ci.lb else if ("cr.lb" %in% names(pr)) pr$cr.lb else pr[, grep("\\.lb$", names(pr))[1]]
+    upr <- if ("ci.ub" %in% names(pr)) pr$ci.ub else if ("cr.ub" %in% names(pr)) pr$cr.ub else pr[, grep("\\.ub$", names(pr))[1]]
+    df <- data.frame(idx = seq_len(nrow(pr)), fit = pr$pred, lwr = lwr, upr = upr)
+    
+    p <- ggplot2::ggplot(df, ggplot2::aes(x = idx, y = fit)) +
+      ggplot2::geom_hline(yintercept = 0, linetype = "dashed") +
+      ggplot2::geom_pointrange(ggplot2::aes(ymin = lwr, ymax = upr)) +
+      ggplot2::labs(x = "Study / Time", y = "Effect") +
+      ggplot2::theme_minimal()
+    return(p)
+  }
+  
+  stop("Unsupported object for forest_to_reg_plot(): provide a 'reliableTrend' or a 'metafor' rma object.", call. = FALSE)
+}
+
+
 
 # ---- End legacy.R -------------------------------------------------------------
