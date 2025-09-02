@@ -6,11 +6,13 @@
 \usage{
 \method{plot}{slopeSErel}(
   x,
+  y = NULL,
   annotate = TRUE,
   digits = 2,
   point_args = list(),
   line_args = list(),
   band = FALSE,
+  band_type = c("slope", "mean", "prediction"),
   band_args = list(alpha = 0.15),
   grid_n = 200,
   ...
@@ -19,22 +21,23 @@
 \arguments{
 \item{x}{A \code{slopeSErel} object from \code{\link{slope_se_reliability}}.}
 
+\item{y}{Ignored (kept for S3 signature compatibility with \code{plot()}).}
+
 \item{annotate}{Logical; if \code{TRUE}, adds a label with RTI, z-crit, and p.}
 
 \item{digits}{Integer; rounding for numeric labels.}
 
 \item{point_args}{Named list of args for \code{ggplot2::geom_point()} (e.g., \code{list(size=2)}).}
 
-\item{line_args}{Named list of args for \code{ggplot2::geom_line()} for the fitted line
-(e.g., \code{list(linewidth=0.9)}).}
+\item{line_args}{Named list of args for \code{ggplot2::geom_line()} (e.g., \code{list(linewidth=0.9)}).}
 
-\item{band}{Logical; if \code{TRUE}, adds a \code{geom_ribbon()} confidence band
-for the linear trend using the reliability-based slope SE.}
+\item{band}{Logical; if \code{TRUE}, adds a \code{geom_ribbon()} band.}
 
-\item{band_args}{Named list of args for \code{ggplot2::geom_ribbon()}
-(e.g., \code{list(alpha=0.15)}). Defaults to a light, semi-transparent band.}
+\item{band_type}{One of \code{c("slope","mean","prediction")}; default \code{"slope"}.}
 
-\item{grid_n}{Integer; number of points in the time grid used to draw the line/band.}
+\item{band_args}{Named list of args for \code{ggplot2::geom_ribbon()} (e.g., \code{list(alpha=0.15)}).}
+
+\item{grid_n}{Integer; number of time points in the grid for line/band.}
 
 \item{...}{Unused; included for S3 compatibility.}
 }
@@ -43,36 +46,21 @@ A \code{ggplot} object.
 }
 \description{
 Creates a ggplot showing the observed series and the fitted line from
-\code{slope_se_reliability()}. Optionally adds a confidence band
-for the linear trend based on the reliability-derived slope SE
-(slope-only uncertainty: half-width = z_crit * |t - tbar| * SE_slope).
+\code{slope_se_reliability()}. Optionally adds a confidence band using
+the reliability-based error model (\eqn{\sigma_e = SD\sqrt{1-r}}).
 
-The returned object is a standard \code{ggplot} that you can modify
-(e.g., add themes, scales, and layers).
+\strong{Band types}
+\itemize{
+\item \code{"slope"}: slope-only band (half-width = \eqn{z_{1-p/2}\,|t-\bar t|\,SE(\hat\beta_1)})
+\item \code{"mean"}: mean curve band (includes intercept variance and slope–intercept covariance)\\
+half-width = \eqn{z_{1-p/2}\,\sigma_e\,\sqrt{1/n + (t-\bar t)^2/S_{xx}}}
+\item \code{"prediction"}: prediction band (mean band plus residual)\\
+half-width = \eqn{z_{1-p/2}\,\sigma_e\,\sqrt{1 + 1/n + (t-\bar t)^2/S_{xx}}}
 }
-\details{
-\strong{What the band represents.} The band reflects uncertainty in the \strong{slope}
-only, using \code{SE(beta1) = SD*sqrt(1-r)/sqrt(S_xx)} and your z critical value.
-The half-width at time \eqn{t} is \eqn{z_{1-p/2}\,|t-\bar t|\,SE(\hat\beta_1)}.
-It does \strong{not} include uncertainty in the intercept or residual scatter, so it is
-a “trend-rate” band rather than a mean-curve CI or prediction interval.
-
-Requires the \strong{ggplot2} package. This method expects the \code{slopeSErel}
-object to include \code{y}, \code{time_vec}, and \code{intercept_hat}; if missing,
-recompute with the updated \code{slope_se_reliability()}.
+All bands use the z reference because the SEs are based on a plug-in \eqn{\sigma_e}
+from reliability (see McAleavey, 2024).
 }
-\examples{
-y <- c(20, 18, 17, 16, 15)
-fit <- slope_se_reliability(y, r = 0.90)     # stores y/time/intercept
-p <- plot(fit, band = TRUE)                  # returns a ggplot with ribbon
-p + ggplot2::theme_bw()
-
-# Customize aesthetics
-plot(fit,
-     point_args = list(size = 2),
-     line_args  = list(linewidth = 1),
-     band = TRUE,
-     band_args = list(alpha = 0.2)) +
-  ggplot2::labs(title = "Customized RTI plot")
-
+\references{
+Jacobson & Truax (1991). \emph{JCCP}, 59, 12–19.
+McAleavey (2024). \emph{Clinical Psychology: Science and Practice}, 31(3), 351–366. doi:10.1037/cps0000203
 }

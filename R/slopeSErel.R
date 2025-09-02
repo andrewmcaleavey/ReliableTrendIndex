@@ -111,6 +111,21 @@
 #' # Three-point linear example equals endpoint RCI in magnitude
 #' y3 <- c(47.5, 40, 32.5); t3 <- 1:3
 #' slope_se_reliability(y3, r = 0.80, time = t3, sd_single = 7.5, p = 0.05)
+#' 
+#' # Plotting  
+#' 
+#' y <- c(20, 18, 17, 16, 15)
+#' fit <- slope_se_reliability(y, r = 0.90)  # stores y/time/intercept etc.
+#' 
+#' # Slope-only band (as before)
+#' plot(fit, band = TRUE, band_type = "slope")
+#' 
+#' # Mean-curve band (includes intercept uncertainty)
+#' plot(fit, band = TRUE, band_type = "mean")
+#' 
+#' # Prediction band (mean band + residual)
+#' plot(fit, band = TRUE, band_type = "prediction", band_args = list(alpha = 0.12))
+#' 
 #'
 #' @importFrom stats lm coef sd qnorm pnorm
 #' @export
@@ -241,132 +256,161 @@ print.slopeSErel <- function(x, digits = 4, ...) {
 #' @title Plot method for slopeSErel (returns a ggplot)
 #' @description
 #' Creates a ggplot showing the observed series and the fitted line from
-#' \code{slope_se_reliability()}. Optionally adds a confidence band
-#' for the linear trend based on the reliability-derived slope SE
-#' (slope-only uncertainty: half-width = z_crit * |t - tbar| * SE_slope).
+#' \code{slope_se_reliability()}. Optionally adds a confidence band using
+#' the reliability-based error model (\eqn{\sigma_e = SD\sqrt{1-r}}).
 #'
-#' The returned object is a standard \code{ggplot} that you can modify
-#' (e.g., add themes, scales, and layers).
+#' \strong{Band types}
+#' \itemize{
+#'   \item \code{"slope"}: slope-only band (half-width = \eqn{z_{1-p/2}\,|t-\bar t|\,SE(\hat\beta_1)})
+#'   \item \code{"mean"}: mean curve band (includes intercept variance and slope–intercept covariance)\\
+#'         half-width = \eqn{z_{1-p/2}\,\sigma_e\,\sqrt{1/n + (t-\bar t)^2/S_{xx}}}
+#'   \item \code{"prediction"}: prediction band (mean band plus residual)\\
+#'         half-width = \eqn{z_{1-p/2}\,\sigma_e\,\sqrt{1 + 1/n + (t-\bar t)^2/S_{xx}}}
+#' }
+#' All bands use the z reference because the SEs are based on a plug-in \eqn{\sigma_e}
+#' from reliability (see McAleavey, 2024).
 #'
 #' @param x A \code{slopeSErel} object from \code{\link{slope_se_reliability}}.
+#' @param y Ignored (kept for S3 signature compatibility with \code{plot()}).
 #' @param annotate Logical; if \code{TRUE}, adds a label with RTI, z-crit, and p.
 #' @param digits Integer; rounding for numeric labels.
 #' @param point_args Named list of args for \code{ggplot2::geom_point()} (e.g., \code{list(size=2)}).
-#' @param line_args  Named list of args for \code{ggplot2::geom_line()} for the fitted line
-#'   (e.g., \code{list(linewidth=0.9)}).
-#' @param band Logical; if \code{TRUE}, adds a \code{geom_ribbon()} confidence band
-#'   for the linear trend using the reliability-based slope SE.
-#' @param band_args Named list of args for \code{ggplot2::geom_ribbon()}
-#'   (e.g., \code{list(alpha=0.15)}). Defaults to a light, semi-transparent band.
-#' @param grid_n Integer; number of points in the time grid used to draw the line/band.
+#' @param line_args  Named list of args for \code{ggplot2::geom_line()} (e.g., \code{list(linewidth=0.9)}).
+#' @param band Logical; if \code{TRUE}, adds a \code{geom_ribbon()} band.
+#' @param band_type One of \code{c("slope","mean","prediction")}; default \code{"slope"}.
+#' @param band_args Named list of args for \code{ggplot2::geom_ribbon()} (e.g., \code{list(alpha=0.15)}).
+#' @param grid_n Integer; number of time points in the grid for line/band.
 #' @param ... Unused; included for S3 compatibility.
 #'
 #' @return A \code{ggplot} object.
 #'
-#' @details
-#' **What the band represents.** The band reflects uncertainty in the **slope**
-#' only, using \code{SE(beta1) = SD*sqrt(1-r)/sqrt(S_xx)} and your z critical value.
-#' The half-width at time \eqn{t} is \eqn{z_{1-p/2}\,|t-\bar t|\,SE(\hat\beta_1)}.
-#' It does **not** include uncertainty in the intercept or residual scatter, so it is
-#' a “trend-rate” band rather than a mean-curve CI or prediction interval.
+#' @references
+#' Jacobson & Truax (1991). \emph{JCCP}, 59, 12–19.
+#' McAleavey (2024). \emph{Clinical Psychology: Science and Practice}, 31(3), 351–366. doi:10.1037/cps0000203
 #'
-#' Requires the \strong{ggplot2} package. This method expects the \code{slopeSErel}
-#' object to include \code{y}, \code{time_vec}, and \code{intercept_hat}; if missing,
-#' recompute with the updated \code{slope_se_reliability()}.
-#'
-#' @examples
-#' y <- c(20, 18, 17, 16, 15)
-#' fit <- slope_se_reliability(y, r = 0.90)     # stores y/time/intercept
-#' p <- plot(fit, band = TRUE)                  # returns a ggplot with ribbon
-#' p + ggplot2::theme_bw()
-#'
-#' # Customize aesthetics
-#' plot(fit,
-#'      point_args = list(size = 2),
-#'      line_args  = list(linewidth = 1),
-#'      band = TRUE,
-#'      band_args = list(alpha = 0.2)) +
-#'   ggplot2::labs(title = "Customized RTI plot")
-#'
-#' @exportS3Method plot slopeSErel
-plot.slopeSErel <- function(x,
+#' @export
+#' @method plot slopeSErel
+plot.slopeSErel <- function(x, y = NULL,
                             annotate = TRUE,
                             digits = 2,
                             point_args = list(),
                             line_args  = list(),
                             band = FALSE,
+                            band_type = c("slope","mean","prediction"),
                             band_args = list(alpha = 0.15),
                             grid_n = 200,
                             ...) {
-  # Validate presence of raw vectors/intercept for plotting
+  
+  band_type <- match.arg(band_type)
+  
+  # Ensure object contains what we need (slope_se_reliability stores these)
   if (is.null(x$time_vec) || is.null(x$y) || is.null(x$intercept_hat)) {
     stop("This slopeSErel object lacks `time_vec`, `y`, and/or `intercept_hat`.\n",
          "Recompute with the updated slope_se_reliability() that stores these fields.")
   }
+  if (!is.finite(x$S_xx) || x$S_xx <= 0) {
+    stop("S_xx must be positive to plot a line/band.")
+  }
   
-  # Prepare data
-  df <- data.frame(time = x$time_vec, y = x$y)
-  tbar <- mean(df$time, na.rm = TRUE)
+  # Data
+  df_pts <- data.frame(time = as.numeric(x$time_vec),
+                       score = as.numeric(x$y))
+  n    <- length(df_pts$time)
+  tbar <- mean(df_pts$time, na.rm = TRUE)
   
   # Dense grid for smooth line/band
-  time_grid <- seq(min(df$time, na.rm = TRUE),
-                   max(df$time, na.rm = TRUE),
+  time_grid <- seq(min(df_pts$time, na.rm = TRUE),
+                   max(df_pts$time, na.rm = TRUE),
                    length.out = max(2L, grid_n))
   df_fit <- data.frame(time = time_grid)
   df_fit$y_hat <- x$intercept_hat + x$slope_hat * df_fit$time
   
-  # Base plot
-  p <- ggplot2::ggplot(df, ggplot2::aes(x = time, y = y))
-  
-  # Points
-  p <- p + do.call(ggplot2::geom_point, point_args)
-  
-  # Optional band (slope-only uncertainty)
+  # Compute half-width if band requested
+  df_band <- NULL
   if (isTRUE(band)) {
-    if (!is.finite(x$SE_reliability) || !is.finite(x$crit)) {
-      warning("Band not added: SE_reliability or crit is not finite.")
+    if (!is.finite(x$sigma_e) || !is.finite(x$crit)) {
+      warning("Band not added: `sigma_e` or `crit` is not finite.")
     } else {
-      halfwidth <- x$crit * abs(df_fit$time - tbar) * x$SE_reliability
-      df_band <- transform(df_fit,
-                           y_lower = y_hat - halfwidth,
-                           y_upper = y_hat + halfwidth)
-      default_ribbon <- list(data = df_band,
-                             mapping = ggplot2::aes(x = time, ymin = y_lower, ymax = y_upper))
-      p <- p + do.call(ggplot2::geom_ribbon,
-                       utils::modifyList(default_ribbon, band_args))
+      if (band_type == "slope") {
+        # slope-only band: z * |t - tbar| * SE(beta1); SE(beta1) = sigma_e / sqrt(S_xx)
+        halfwidth <- x$crit * abs(df_fit$time - tbar) * (x$sigma_e / sqrt(x$S_xx))
+      } else if (band_type == "mean") {
+        # mean band: z * sigma_e * sqrt(1/n + (t - tbar)^2 / S_xx)
+        halfwidth <- x$crit * x$sigma_e * sqrt(1/n + (df_fit$time - tbar)^2 / x$S_xx)
+      } else { # prediction
+        # prediction band: z * sigma_e * sqrt(1 + 1/n + (t - tbar)^2 / S_xx)
+        halfwidth <- x$crit * x$sigma_e * sqrt(1 + 1/n + (df_fit$time - tbar)^2 / x$S_xx)
+      }
+      df_band <- data.frame(
+        time   = df_fit$time,
+        ymin   = df_fit$y_hat - halfwidth,
+        ymax   = df_fit$y_hat + halfwidth
+      )
     }
   }
   
+  # Build plot with no global aes; each layer sets its own mapping; never inherit
+  p <- ggplot2::ggplot()
+  
+  # Points
+  args_points <- utils::modifyList(
+    list(
+      data        = df_pts,
+      mapping     = ggplot2::aes(x = time, y = score),
+      inherit.aes = FALSE
+    ),
+    point_args
+  )
+  p <- p + do.call(ggplot2::geom_point, args_points)
+  
+  # Ribbon (optional)
+  if (!is.null(df_band)) {
+    args_ribbon <- utils::modifyList(
+      list(
+        data        = df_band,
+        mapping     = ggplot2::aes(x = time, ymin = ymin, ymax = ymax),
+        inherit.aes = FALSE
+      ),
+      band_args
+    )
+    p <- p + do.call(ggplot2::geom_ribbon, args_ribbon)
+  }
+  
   # Fitted line
-  default_line <- list(data = df_fit,
-                       mapping = ggplot2::aes(x = time, y = y_hat))
-  p <- p + do.call(ggplot2::geom_line, utils::modifyList(default_line, line_args))
+  args_line <- utils::modifyList(
+    list(
+      data        = df_fit,
+      mapping     = ggplot2::aes(x = time, y = y_hat),
+      inherit.aes = FALSE
+    ),
+    line_args
+  )
+  p <- p + do.call(ggplot2::geom_line, args_line)
   
   # Labels / theme
   p <- p +
     ggplot2::labs(
       x = "Time",
       y = "Score",
-      title = "Reliable Trend (reliability-based slope)",
+      title    = "Reliable Trend (reliability-based slope)",
       subtitle = sprintf("Slope = %.*f, RTI = %.*f (z_crit = %.*f, p = %.*g)",
                          digits, x$slope_hat, digits, x$RTI, digits, x$crit, digits, x$p_value),
-      caption = sprintf("r = %.2f, SD = %.2f; SE = SD*sqrt(1-r)/sqrt(S_xx); S_xx = %.*f",
-                        x$reliability_r, x$sd_single, digits, x$S_xx)
+      caption  = sprintf("r = %.2f, SD = %.2f; SE = SD*sqrt(1-r)/sqrt(S_xx); S_xx = %.*f",
+                         x$reliability_r, x$sd_single, digits, x$S_xx)
     ) +
     ggplot2::theme_minimal(base_size = 12)
   
-  # Optional on-plot annotation label
+  # Optional annotation
   if (isTRUE(annotate)) {
     lab <- sprintf("RTI = %.*f\nz_crit = %.*f\np = %.*g",
                    digits, x$RTI, digits, x$crit, digits, x$p_value)
     p <- p + ggplot2::annotate(
       "label",
-      x = max(df$time, na.rm = TRUE),
-      y = max(df$y,   na.rm = TRUE),
+      x = max(df_pts$time, na.rm = TRUE),
+      y = max(df_pts$score, na.rm = TRUE),
       label = lab, hjust = 1, vjust = 1
     )
   }
   
   p
 }
-

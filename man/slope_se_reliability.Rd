@@ -109,6 +109,21 @@ slope_se_reliability(y2, r = 0.85, time = t_custom)
 y3 <- c(47.5, 40, 32.5); t3 <- 1:3
 slope_se_reliability(y3, r = 0.80, time = t3, sd_single = 7.5, p = 0.05)
 
+# Plotting  
+
+y <- c(20, 18, 17, 16, 15)
+fit <- slope_se_reliability(y, r = 0.90)  # stores y/time/intercept etc.
+
+# Slope-only band (as before)
+plot(fit, band = TRUE, band_type = "slope")
+
+# Mean-curve band (includes intercept uncertainty)
+plot(fit, band = TRUE, band_type = "mean")
+
+# Prediction band (mean band + residual)
+plot(fit, band = TRUE, band_type = "prediction", band_args = list(alpha = 0.12))
+
+
 }
 \references{
 Jacobson, N. S., & Truax, P. (1991). Clinical significance: A statistical
