@@ -2,60 +2,53 @@
 % Please edit documentation in R/RTI.R
 \name{rti}
 \alias{rti}
-\title{Compute RTI in a simple way}
+\title{Reliable Trend Index (RTI)}
 \usage{
-rti(
-  values,
-  sdiff = NULL,
-  sem = NULL,
-  scale_rci = NULL,
-  cutpoint = 1.96,
-  sd = NULL,
-  rxx = NULL
-)
+rti(y, sd, r, t = NULL, na.rm = FALSE, level = 0.95)
 }
 \arguments{
-\item{values}{Numeric. Either a vector of observed scores that contain measurement error
-or a single difference score.}
+\item{y}{Numeric vector of within-person observations (length \code{n} >= 2).}
 
-\item{sdiff}{Numeric. Standard error of the difference score. Represents the SD of observed
-difference scores if there is no true score change.}
+\item{sd}{Positive numeric. Single-occasion standard deviation (external).}
 
-\item{sem}{Numeric. Standard error of measurement. Represents the SD of observed scores
-derived from the same true score.}
+\item{r}{Numeric in \link{0, 1}. Reliability (external).}
 
-\item{scale_rci}{Numeric. The "scale's RCI," meaning the number of scale points required
-to change in order to declare a change is "reliable."}
+\item{t}{Optional numeric vector of time indices. If \code{NULL} (default),
+equal spacing \code{t = 1:n} is used.}
 
-\item{cutpoint}{Numeric, default is 1.96. Cutpoint on standard normal curve above
-which difference scores are considered reliable.}
+\item{na.rm}{Logical. If \code{TRUE}, drop incomplete pairs of \code{(y, t)} with a warning.}
 
-\item{sd}{Numeric. SD to use in calculations.
-Required if \code{sdiff}, \code{sem}, and \code{scale_rci}
-are not provided, and them must be accompanied by \code{rxx}.
-J&T suggest this is the SD of a normal
-population. this is probably what is done most commonly.}
-
-\item{rxx}{Numeric. Reliability coefficient of the observed scores.
-Required if \code{sdiff}, \code{sem}, and \code{scale_rci}
-are not provided, and them must be accompanied by \code{sd}.
-This should always be a test-retest reliability coefficient, not an internal consistency
-parameter.}
+\item{level}{Confidence level for slope intervals (used by \code{summary} and plots).}
 }
 \value{
-An object of class \code{reliableTrend}.
+An object of class \code{"reliableTrend"} with elements:
+\itemize{
+\item \code{estimate} – \eqn{\hat\beta_1} (slope with centered time)
+\item \code{intercept} – \eqn{\hat\beta_0} at \eqn{\bar t} (equals \code{mean(y)})
+\item \code{se} – \eqn{\mathrm{SE}(\hat\beta_1)}
+\item \code{z}, \code{p} – Z statistic and two-sided p-value
+\item \code{ci} – numeric length-2 vector for slope at \code{level}
+\item \code{sigma2} – \eqn{\mathrm{sd}^2 (1-r)}
+\item \code{t}, \code{t_centered}, \code{y}, \code{Sxx}, \code{n}, \code{sd}, \code{r}, \code{level}
+}
 }
 \description{
-Given only values, compute a reliableTrend object
+Compute a reliability-based test of linear trend (slope) within a person
+using external single-occasion \code{sd} and \code{r} to define the error
+variance. For equal spacing \eqn{t = 1,\dots,n}, \eqn{S_{xx} = n(n^2-1)/12};
+for custom spacing, \eqn{S_{xx} = \sum (t - \bar t)^2}.
+}
+\details{
+The test statistic is \eqn{Z = \hat\beta_1 / \mathrm{SE}(\hat\beta_1)} with
+\eqn{\mathrm{SE}(\hat\beta_1) = \sqrt{\mathrm{sd}^2 (1-r) / S_{xx}}}. This mirrors
+the Jacobson–Truax logic used in the RCI (the \eqn{n=2} special case) but
+generalizes it to \eqn{n\ge2} via \eqn{S_{xx}}.
 }
 \examples{
-rti(jt_example_data_1$obs, sdiff = 4.74)
-rti(mac_height$obs, sdiff = .707)
-rti(jt_example_data_1$obs, sem = 3.35)
-rti(mac_height$obs, sem = .5)
-rti(jt_example_data_1$obs, scale_rci = 9.2904)
-rti(mac_height$obs, scale_rci = 1.385)
-rti(jt_example_data_1$obs, sd = 7.5, rxx = .8)
-rti(mac_height$obs, sd = 1.02, rxx = .77)
-rti(15, sdiff = 4.74)
+y <- c(12, 11, 13, 16, 17, 19)
+fit <- rti(y, sd = 8, r = 0.85)
+fit$estimate
+fit$p
+plot(fit)  # see plot.reliableTrend
+
 }

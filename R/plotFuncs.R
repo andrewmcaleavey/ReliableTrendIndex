@@ -86,19 +86,3 @@ forest_to_reg_plot <- function(x,
   }
 }
 
-# S3 generic plot.reliableTrend() that just calls the forest_to_reg_plot() function. 
-
-#' Plot a reliableTrend object
-#'
-#' @param x An object of class `reliableTrend`.
-#' @param ... Additional arguments.
-#'
-#' @return A ggplot2 object
-#' @export
-#'
-#' @examples 
-#' mac_rti <- rti(mac_height$obs, sdiff = .707)
-#' plot(mac_rti)
-plot.reliableTrend <- function(x, ...){
-  forest_to_reg_plot(x)
-}
