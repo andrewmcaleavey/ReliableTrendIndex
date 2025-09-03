@@ -52,7 +52,7 @@
 #' }
 #'
 #' @param y Numeric vector of observations for one person (length \eqn{n \ge 2}).
-#' @param r Reliability coefficient in \code{[0, 1]} (treated as known).
+#' @param r Reliability coefficient in \eqn{\eqn{\eqn{[0, 1]}}} (treated as known).
 #' @param time Optional numeric vector of the same length as \code{y}. If
 #'   \code{NULL}, time is set to \code{1:length(y)} (equally spaced).
 #' @param sd_single Optional single-occasion SD for the instrument (e.g., known

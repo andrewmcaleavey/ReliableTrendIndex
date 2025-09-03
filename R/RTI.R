@@ -7,7 +7,7 @@
 #' @param y,values Numeric vector of within-person observations (length \eqn{n\ge2}).
 #'   \code{values} is a legacy alias for \code{y}; if both are supplied, \code{y} is used.
 #' @param sd Positive numeric. Single-occasion standard deviation (external).
-#' @param r Numeric in [0, 1]. Reliability (external).
+#' @param r Numeric in \eqn{\eqn{\eqn{[0, 1]}}}. Reliability (external).
 #' @param sem Optional positive numeric. Standard error of measurement (external).
 #'   If provided, it takes precedence and sets \eqn{\sigma^2 = \mathrm{sem}^2}.
 #' @param t,time Optional numeric vector of time indices (same length as \code{y}).

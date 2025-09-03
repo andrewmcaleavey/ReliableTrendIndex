@@ -5,3 +5,8 @@
 ^README\.Rmd$
 ^doc$
 ^Meta$
+^\.Rbuildignore$
+^\.git$
+^\.github$
+^CODE_OF_CONDUCT\.md$
+^ReliableTrendIndex$

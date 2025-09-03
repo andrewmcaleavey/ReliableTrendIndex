@@ -23,7 +23,7 @@ NULL
 
 #' Standard Error of Measurement from sd & r
 #' @param sd single-occasion SD
-#' @param r reliability in [0,1]
+#' @param r reliability in \eqn{\eqn{\eqn{[0, 1]}}}
 #' @return SEM = sd * sqrt(1 - r)
 #' @export
 sem_from_sd_r <- function(sd, r) {
@@ -56,48 +56,34 @@ sdiff_from_sd_r <- function(sd, r) {
   sd * sqrt(2 * (1 - r))
 }
 
-#' Jacobson–Truax RCI from difference & SDiff
-#' @param difference observed pre–post difference (x2 - x1)
-#' @param sdiff standard error of the difference score
-#' @return numeric RCI = difference / sdiff
+#' @rdname rci
 #' @export
-jt_rci_calc <- function(difference, sdiff) {
-  if (!is.numeric(difference) || length(difference) != 1L || !is.finite(difference))
-    stop("`difference` must be a single finite number.", call. = FALSE)
-  if (!is.numeric(sdiff) || length(sdiff) != 1L || sdiff <= 0 || !is.finite(sdiff))
-    stop("`sdiff` must be a single positive number.", call. = FALSE)
-  difference / sdiff
+jt_rci_calc <- function(difference = NULL, t1 = NULL, t2 = NULL,
+                        scale_rci = NULL, r1 = NULL, r2 = NULL,
+                        sd1 = NULL, sd2 = NULL, sdiff = NULL, sem = NULL,
+                        prob = 0.975, verbose = FALSE, rc.type = "jt") {
+  .Deprecated("rci", package = "ReliableTrendIndex",
+              msg = "jt_rci_calc() is deprecated; use rci().")
+  rci(difference = difference, t1 = t1, t2 = t2,
+      scale_rci = scale_rci, r1 = r1, r2 = r2,
+      sd1 = sd1, sd2 = sd2, sdiff = sdiff, sem = sem,
+      prob = prob, verbose = verbose, rc.type = rc.type)
 }
 
-#' Flexible RCI helper
-#' @param x1,x2 optional two raw scores; if provided and \code{difference} is NULL,
-#'   then \code{difference = x2 - x1}.
-#' @param difference optional pre–post difference (used if provided).
-#' @param sd,r optional to compute SDiff via \code{sdiff_from_sd_r()}.
-#' @param sem,sdiff optional direct error terms; precedence: \code{sdiff} > \code{sem} > (\code{sd},\code{r}).
-#' @return numeric RCI
-#'
-#' @name rci               # <<—— canonical page name
-#' @aliases rci_from_scores rci
-#' #' @export
+
+#' @rdname rci
+#' @export
 rci_from_scores <- function(x1 = NULL, x2 = NULL, difference = NULL,
-                            sd = NULL, r = NULL, sem = NULL, sdiff = NULL) {
-  if (is.null(difference)) {
-    if (is.null(x1) || is.null(x2))
-      stop("Provide either `difference` or both `x1` and `x2`.", call. = FALSE)
-    difference <- x2 - x1
-  }
-  if (!is.null(sdiff)) {
-    return(jt_rci_calc(difference, sdiff))
-  }
-  if (!is.null(sem)) {
-    return(jt_rci_calc(difference, d <- sdiff_from_sem(sem)))
-  }
-  if (!is.null(sd) && !is.null(r)) {
-    return(jt_rci_calc(difference, d <- sdiff_from_sd_r(sd, r)))
-  }
-  stop("Need one of: `sdiff`, `sem`, or both `sd` & `r`.", call. = FALSE)
+                            sd = NULL, r = NULL, sem = NULL, sdiff = NULL,
+                            prob = 0.975, verbose = FALSE, rc.type = "jt") {
+  if (is.null(difference) && !is.null(x1) && !is.null(x2)) difference <- x2 - x1
+  rci(difference = difference,
+      t1 = x1, t2 = x2,
+      sd1 = sd, r1 = r,
+      sem = sem, sdiff = sdiff,
+      prob = prob, verbose = verbose, rc.type = rc.type)
 }
+
 
 #' RCI convenience wrapper
 #'
@@ -289,48 +275,11 @@ simple_rma <- function(yi, vi = NULL, sei = NULL, method = "FE", ...) {
   metafor::rma(yi = yi, vi = vi, method = method, ...)
 }
 
-# ---- Adapter for older grouped helper names -----------------------------------
 
-#' Legacy alias: rti_by_person()
-#'
-#' Older materials referred to a grouped helper named \code{rti_by_person()}.
-#' This adapter calls [rti_by()]. If you supply a scalar \code{sem}, it will be
-#' used for all ids (equivalent to \eqn{\sigma^2=\mathrm{SEM}^2}).
-#'
-#' @param data,id,time,y see [rti_by()]
-#' @param sd,r per-id error parameters (scalars or columns)
-#' @param sem optional scalar SEM (ignored if \code{sd}/\code{r} are supplied)
-#' @param ... ignored
-#' @export
-rti_by_person <- function(data, id, time, y, sd = NULL, r = NULL, sem = NULL, ..., na.rm = FALSE, level = 0.95) {
-  if (!is.null(sem) && (is.null(sd) || is.null(r))) {
-    id_sym   <- substitute(id)
-    time_sym <- substitute(time)
-    y_sym    <- substitute(y)
-    id_vec   <- .legacy_get_col(data, id_sym)
-    time_vec <- .legacy_get_col(data, time_sym)
-    y_vec    <- .legacy_get_col(data, y_sym)
-    
-    idx_list <- split(seq_len(nrow(data)), id_vec, drop = TRUE)
-    rows <- lapply(names(idx_list), function(k) {
-      idx <- idx_list[[k]]
-      fit <- reliableTrend(values = y_vec[idx], time = time_vec[idx], sem = sem, na.rm = na.rm, level = level)
-      df  <- rti_to_df(fit)
-      df$id <- k
-      df
-    })
-    out <- do.call(rbind, rows)
-    out$fit <- lapply(seq_len(nrow(out)), function(i) {
-      reliableTrend(values = y_vec[idx_list[[ out$id[i] ]]], time = time_vec[idx_list[[ out$id[i] ]]], sem = sem, na.rm = na.rm, level = level)
-    })
-    out <- out[, c("id","slope.est","slope.lb","slope.ub","z","p","n","Sxx","sigma2","category.RTI","fit")]
-    rownames(out) <- NULL
-    return(out)
-  }
-  rti_by(data, id = id, time = time, y = y, sd = sd, r = r, na.rm = na.rm, level = level)
-}
 
 # internal: bare/character column accessor without evaluation
+#' @noRd
+#' @keywords internal
 .legacy_get_col <- function(data, expr) {
   if (is.symbol(expr)) {
     nm <- as.character(expr)

@@ -21,6 +21,10 @@ knitr::opts_chunk$set(
 library(ReliableTrendIndex)
 library(dplyr)
 library(ggplot2)
+library(tibble)
+library(broom)
+library(purrr)
+
 ```
 
 The package `{ReliableTrendIndex}` is a way to contain a large group of disorganized analysis functions related to the concept of reliable change. There are a few key functions.  
@@ -78,29 +82,30 @@ This data was simulated with an average effect of increasing scores over time, a
 We can use this information to compute the RCI and RTI categories across all the data. The code chunk below does this, and some additional work. It is commented to explain each step.  
 
 ```{r example of multiple ppl, warning=FALSE}
-sim_data_2 <- simulated_data %>%  
+sim_data_2 <- simulated_data |>
   # split the data by the id variable
-  split(.$id) %>%
+  (\(d) split(d, d$id))() |>
   # compute the rti for each separate data set
-  purrr::map(~ rti(values = .$obs_score, sem = .2)) %>%
+  purrr::map(\(df) rti(values = df$obs_score, sem = 0.2)) |>
   # take the output and simplify it to data.frame-friendly columns
-  purrr::map_dfr(rti_to_df) %>% 
-  # the data is made in a very simple form
-  # HOWEVER, it lost several key variables along the way
-  # here, we re-merge the old data (simulated_data) with the new
-  # first by re-integrating the id variable, which was dropped earlier
-  dplyr::mutate(id = simulated_data %>% 
-           dplyr::group_by(id) %>% 
-           dplyr::slice_tail(n = 1) %>% 
-           dplyr::pull(id)) %>% 
-  # then joining the data sets
-  dplyr::right_join(simulated_data) %>% 
-  # now computing first and last score values, which are not natively in the data
-  dplyr::group_by(id) %>% 
-  dplyr::mutate(first_obs = dplyr::first(obs_score), 
-         last_obs = dplyr::last(obs_score)) %>% 
-  # and finally taking just the last observation per person. 
+  purrr::map_dfr(rti_to_df) |>
+  # re-add id (one per group, ordered like split())
+  dplyr::mutate(
+    id = simulated_data |>
+      dplyr::group_by(id) |>
+      dplyr::slice_tail(n = 1) |>
+      dplyr::pull(id)
+  ) |>
+  # join back to original data
+  dplyr::right_join(simulated_data, by = "id") |>
+  # compute first/last score per person and keep last row
+  dplyr::group_by(id) |>
+  dplyr::mutate(
+    first_obs = dplyr::first(obs_score),
+    last_obs  = dplyr::last(obs_score)
+  ) |>
   dplyr::slice_tail(n = 1)
+
 ```
 
 That code is not the easiest to understand, but it does work and would work for a range of data sets.  
@@ -250,9 +255,9 @@ A confidence in change plot.
 WIP::
 
 ```{r}
-sim_data_3 <- sim_data_2 %>% 
-  ungroup() %>% 
-  mutate(diff_obs = last_obs - first_obs) %>% 
+sim_data_3 <- sim_data_2 |> 
+  ungroup() |> 
+  mutate(diff_obs = last_obs - first_obs) |> 
   arrange(diff_obs)
 
 max(sim_data_3$diff_obs)
@@ -275,7 +280,7 @@ ggplot(sim_data_3,
   labs(title = "RCI confidence in either change")
 
 
-ggplot(sim_data_3 %>% 
+ggplot(sim_data_3 |> 
          arrange(diff_true), 
        aes(x = diff_true, 
            y = pd.RTI)) +
@@ -284,7 +289,7 @@ ggplot(sim_data_3 %>%
   theme_bw() +
   labs(title = "RTI confidence in either change")
 
-ggplot(sim_data_3 %>% 
+ggplot(sim_data_3 |> 
          arrange(diff_true), 
        aes(x = diff_true, 
            y = pd.RCI)) +
@@ -294,7 +299,7 @@ ggplot(sim_data_3 %>%
   labs(title = "RCI confidence in either change")
 
 
-ggplot(sim_data_3 %>% 
+ggplot(sim_data_3 |> 
          arrange(diff_true), 
        aes(x = pd.RTI, 
            y = pd.RCI)) +

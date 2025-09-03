@@ -19,7 +19,7 @@ rti_by(data, id, time, y, sd, r, na.rm = FALSE, level = 0.95)
 name of a column in \code{data} providing per-row \code{sd}. If a column is
 supplied, it must be constant within each \code{id}.}
 
-\item{r}{Either a single numeric in \link{0,1} (applied to all groups) or the
+\item{r}{Either a single numeric in \eqn{\eqn{\eqn{[0, 1]}}} (applied to all groups) or the
 name of a column in \code{data} providing per-row \code{r}. If a column is
 supplied, it must be constant within each \code{id}.}
 

@@ -1,116 +1,133 @@
-# rci() fucntion def, which should  deprecate jt_rci_calc(). 
-
-
-#' Compute the RCI value as in Jacobson & Truax (1991) and/or alternative 
-#' two-observation estimands.
-#' 
-#' This provides one RCI value for every observed difference score, 
-#' essentially intended to be interpreted as Z-scores.
+#' Reliable Change Index (RCI)
 #'
-#' @param difference Numeric. Difference score(s). Computed from \code{t1} and \code{t2} if not provided.
-#' @param t1 Numeric. Time 1 value(s). Ignored if \code{difference} is provided.
-#' @param t2 Numeric. Time 2 value(s). Ignored if \code{difference} is provided.
-#' @param scale_rci Numeric. RCI for the scale, meaning the smallest change considered reliable.
-#' @param r1 Numeric.  First (or only) reliability coefficient to use in calculation
-#' @param r2 Numeric.  Optional second reliability coefficient to use in calculation
-#' @param sd1 Numeric. Standard deviation 1. Should be a group representative of the target group. Calculated/assumed if not provided. 
-#' @param sd2 Numeric. Optional standard deviation 2. Should be a group representative of the target group. Calculated if not provided. 
-#' @param sdiff Numeric.  Standard error of the difference score. If provided, sem, rxx, sd1 are all ignored. Calculated if not provided.
-#' @param sem Numeric. Standard error of measurement. Calculated if not provided.
-#' @param prob Numeric 0-1. Defaults to .975 to provide 95% two-sided confidence.  
-#' @param verbose Logical. If TRUE, will return additional information about the calculation. 
-#' @param rc.type Version of RCI to compute. Defaults to `"jt"`, the Jacobson &
-#' Truax (1991) standard. Also can be `"maassen"` (which requires `sd1` and 
-#' `sd2`) or `"mcnemar"` (which additionally requires `r2`). 
+#' Compute Jacobson–Truax style RCI values (and variants).
 #'
-#' @return Individual RCI value per difference score provided.
-#' @rdname rci
+#' @param difference Numeric difference(s). If NULL, computed as `t2 - t1`.
+#' @param t1,t2 Numeric vectors for time 1 and time 2.
+#' @param scale_rci Numeric. Reliable-change threshold (`qnorm(prob) * sdiff`).
+#' @param r1,r2 Numeric in \eqn{[0, 1]}. Reliabilities at time 1 and (optionally) time 2.
+#' @param sd1,sd2 Numeric (>0). Group SDs at time 1 and (optionally) time 2.
+#' @param sdiff Numeric (>0). Standard error of the difference.
+#' @param sem Numeric (>0). Standard error of measurement (single-occasion).
+#' @param prob Numeric in \eqn{(0, 1)}. Default 0.975 (≈95% two-sided).
+#' @param verbose Logical; if TRUE, return inputs/derivatives.
+#' @param rc.type One of \code{"jt"}, \code{"maassen"}, \code{"mcnemar"}
+#' @param x1,x2 Optional raw scores; used only by `rci_from_scores()` to
+#'   derive `difference = x2 - x1` when `difference` is NULL.
+#' @param sd,r Optional aliases for `sd1` and `r1` used by `rci_from_scores()`.
+#'
+#' @name rci
+#' @aliases rci rci_from_scores
 #' @export
-#' 
-#' @details 
-#' While the Jacobson & Truax (1991) definition (which is actually the Christensen & Mendoza, 
-#' 1986 correction) has become the dominant version of providing statistical tests to the
-#' difference between two scores from one person, it is merely the simplest possible
-#' version of this estimand. To achieve simplicity, it relies on assumptions that will not
-#' generally be true, but you may be able to relax by including more information. 
-#' 
-#' For instance, it is possible that the SD among a group of individuals at time 1 is different
-#' than the SD at time 2, for instance because treatment will de-homogenize individuals or
-#' induce greater heterogeneity depending on the circumstance. Additionally, the reliability
-#' coefficient may be meaningfully different at the two timepoints. Accommodating these
-#' possibilities is not difficult when computing the RCI, and will only serve to make
-#' the assumptions less wildly unjustified. 
-#'
-#' @examples jt_rci_calc(difference = 15, sdiff = 4.74)
-#' jt_rci_calc(difference = 1, sdiff = .707)
-rci <- function(difference = NULL,
-                t1 = NULL, 
-                t2 = NULL,
-                scale_rci = NULL, 
-                r1 = NULL, 
-                r2 = NULL,
-                sd1 = NULL, 
-                sd2 = NULL,
-                sdiff = NULL, 
-                sem = NULL, 
-                prob = .975,
-                verbose = FALSE, 
-                rc.type = "jt"){
-  # check for the correct type of data presented
-  # if there is t1, there needs to be t2 and can set diff
+rci <- function(difference = NULL, t1 = NULL, t2 = NULL,
+                scale_rci = NULL, r1 = NULL, r2 = NULL,
+                sd1 = NULL, sd2 = NULL, sdiff = NULL, sem = NULL,
+                prob = 0.975, verbose = FALSE, rc.type = "jt") {
   
-
-  
-  # if there is no RCI provided for the scale, need to compute it. 
-  if(is.null(scale_rci)){
-    scale_rci <- scale_rci_calc(sdiff = sdiff, 
-                                rxx = r1,
-                                sd1 = sd1,
-                                sem = sem,
-                                prob = prob, 
-                                verbose = FALSE)
+  # ---- basic checks ----
+  if (!is.numeric(prob) || length(prob) != 1L || !is.finite(prob) || prob <= 0 || prob >= 1) {
+    stop("`prob` must be a single number in (0, 1).", call. = FALSE)
   }
-  # should have scale_rci now
+  rc.type <- match.arg(rc.type, c("jt", "maassen", "mcnemar"))
   
-  #testing Maassen formula
-  if(rc.type == "maassen"){
-    sdiff = sqrt((sd1^2 + sd2^2) * (1 - r1))
-  }
-  
-  if(rc.type == "mcnemar"){
-    sdiff = sqrt(sd1^2 * (1 - r1) + sd2^2 * (1 - r2))
-  }
-  
-  # if only the scale_rci is provided, need to compute sdiff
-  # uses J&T method
-  if(!is.null(scale_rci) & is.null(sdiff)){
-    sdiff <- scale_rci / qnorm(prob)
-  }
-  # need to compute difference if not provided
-  if(is.null(difference)){
-    if(length(t1) != length(t2)){
-      warning("t1 and t2 not the same length. Values recycled if possible. Check data entry.")
+  # ---- difference from t1/t2 if needed ----
+  if (is.null(difference)) {
+    if (is.null(t1) || is.null(t2)) {
+      stop("Provide either `difference` or both `t1` and `t2`.", call. = FALSE)
     }
-    difference = t2 - t1
+    if (!is.numeric(t1) || !is.numeric(t2)) stop("`t1` and `t2` must be numeric.", call. = FALSE)
+    if (length(t1) != length(t2)) {
+      warning("`t1` and `t2` lengths differ; recycling will be applied.", call. = FALSE)
+    }
+    difference <- t2 - t1
   }
-  # now can calculate score-based RCIs. 
-  RCI <- difference/sdiff
-  if(verbose == FALSE){
-    return(RCI)
+  if (!is.numeric(difference)) stop("`difference` must be numeric.", call. = FALSE)
+  
+  # ---- determine sdiff (core) ----
+  # precedence: explicit sdiff > (rc.type-specific derivations) > sem > sd1,r1 > scale_rci
+  # Note: we do NOT overwrite a provided `sdiff`.
+  if (is.null(sdiff)) {
+    if (rc.type == "maassen") {
+      # heteroscedastic SDs, equal reliability r1 for both times
+      if (any(is.null(c(sd1, sd2, r1)))) {
+        stop("rc.type = 'maassen' requires `sd1`, `sd2`, and `r1`.", call. = FALSE)
+      }
+      if (!is.numeric(sd1) || !is.numeric(sd2) || !is.numeric(r1))
+        stop("`sd1`, `sd2`, and `r1` must be numeric.", call. = FALSE)
+      sdiff <- sqrt((sd1^2 + sd2^2) * (1 - r1))
+    } else if (rc.type == "mcnemar") {
+      # heteroscedastic SDs and reliabilities
+      if (any(is.null(c(sd1, sd2, r1, r2)))) {
+        stop("rc.type = 'mcnemar' requires `sd1`, `sd2`, `r1`, and `r2`.", call. = FALSE)
+      }
+      if (!is.numeric(sd1) || !is.numeric(sd2) || !is.numeric(r1) || !is.numeric(r2))
+        stop("`sd1`, `sd2`, `r1`, and `r2` must be numeric.", call. = FALSE)
+      sdiff <- sqrt(sd1^2 * (1 - r1) + sd2^2 * (1 - r2))
+    }
   }
-  if(verbose){
-    # print(RCI)
-    return(list(RCI = RCI, 
-                difference = difference,
-                scale_rci = scale_rci,
-                sdiff = sdiff, 
-                sem = sem, 
-                r1 = r1, 
-                r2 = r2, 
-                sd1 = sd1, 
-                sd2 = sd2, 
-                prob = prob, 
-                rc.type = rc.type))
+  
+  if (is.null(sdiff)) {
+    # JT-style via sem or sd1+r1
+    if (!is.null(sem)) {
+      if (!is.numeric(sem) || any(!is.finite(sem)) || any(sem <= 0))
+        stop("`sem` must be positive numeric.", call. = FALSE)
+      sdiff <- sqrt(2) * sem
+    } else if (!is.null(sd1) && !is.null(r1)) {
+      if (!is.numeric(sd1) || !is.numeric(r1)) stop("`sd1` and `r1` must be numeric.", call. = FALSE)
+      if (any(r1 < 0 | r1 > 1)) stop("`r1` must be in [0, 1].", call. = FALSE)
+      sem <- sd1 * sqrt(1 - r1)
+      sdiff <- sqrt(2) * sem
+    }
   }
+  
+  # fallback: derive sdiff from a provided scale_rci
+  if (is.null(sdiff) && !is.null(scale_rci)) {
+    if (!is.numeric(scale_rci) || !is.finite(scale_rci) || scale_rci <= 0)
+      stop("`scale_rci` must be a single positive number.", call. = FALSE)
+    sdiff <- scale_rci / stats::qnorm(prob)
+  }
+  
+  # if still missing, try user-defined helper if present (keeps prior behavior)
+  if (is.null(sdiff) && is.null(scale_rci)) {
+    if (exists("scale_rci_calc", mode = "function")) {
+      scale_rci <- scale_rci_calc(sdiff = sdiff, rxx = r1, sd1 = sd1, sem = sem, prob = prob, verbose = FALSE)
+    }
+  }
+  
+  # ensure we now have sdiff (or derive from now-known scale_rci)
+  if (is.null(sdiff)) {
+    if (!is.null(scale_rci)) {
+      sdiff <- scale_rci / stats::qnorm(prob)
+    } else {
+      stop("Unable to compute `sdiff`. Provide one of: `sdiff`, `sem`, `sd1`+`r1`, or `scale_rci` (with `prob`).", call. = FALSE)
+    }
+  }
+  
+  if (!is.numeric(sdiff) || !is.finite(sdiff) || sdiff <= 0) {
+    stop("`sdiff` must be a positive numeric value.", call. = FALSE)
+  }
+  
+  # fill scale_rci if absent
+  if (is.null(scale_rci)) {
+    scale_rci <- stats::qnorm(prob) * sdiff
+  }
+  
+  # ---- compute RCI ----
+  RCI <- difference / sdiff
+  
+  if (!isTRUE(verbose)) return(RCI)
+  
+  list(
+    RCI        = RCI,
+    difference = difference,
+    scale_rci  = scale_rci,
+    sdiff      = sdiff,
+    sem        = sem,
+    r1         = r1,
+    r2         = r2,
+    sd1        = sd1,
+    sd2        = sd2,
+    prob       = prob,
+    rc.type    = rc.type
+  )
 }
-

@@ -11,7 +11,7 @@ se_slope_reliability(n, sd, r, spacing = c("equal", "custom"), t = NULL)
 
 \item{sd}{Positive numeric. Single-occasion standard deviation (same scale as \code{y}).}
 
-\item{r}{Numeric in \link{0, 1}. Reliability of the single-occasion measure.}
+\item{r}{Numeric in \eqn{\eqn{\eqn{[0, 1]}}}. Reliability of the single-occasion measure.}
 
 \item{spacing}{Character. Either \code{"equal"} (default; uses closed-form \eqn{S_{xx}})
 or \code{"custom"} (uses \code{t} to compute \eqn{S_{xx}} directly).}

@@ -9,7 +9,7 @@ slope_se_reliability(y, r, time = NULL, sd_single = NULL, p = 0.05)
 \arguments{
 \item{y}{Numeric vector of observations for one person (length \eqn{n \ge 2}).}
 
-\item{r}{Reliability coefficient in \code{[0, 1]} (treated as known).}
+\item{r}{Reliability coefficient in \eqn{\eqn{\eqn{[0, 1]}}} (treated as known).}
 
 \item{time}{Optional numeric vector of the same length as \code{y}. If
 \code{NULL}, time is set to \code{1:length(y)} (equally spaced).}

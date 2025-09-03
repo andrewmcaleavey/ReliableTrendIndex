@@ -42,8 +42,8 @@
 #'   
 #'   if(is.null(compare_lm_model)) {
 #'     ggplot2::ggplot(xdat, 
-#'                     ggplot2::aes(x = dplyr::case_when(ncol(data.frame(x$X)) > 1 ~ data.frame(x$X) %>% pull(predictor), 
-#'                              TRUE ~ data.frame(x$X) %>% 
+#'                     ggplot2::aes(x = dplyr::case_when(ncol(data.frame(x$X)) > 1 ~ data.frame(x$X) |> pull(predictor), 
+#'                              TRUE ~ data.frame(x$X) |> 
 #'                                pull(predictor)), 
 #'                y = pred)) + 
 #'       ggplot2::geom_ribbon(ggplot2::aes(ymin = pred - 1.96*se, 
@@ -62,7 +62,7 @@
 #'   else {
 #'     compare_lm_predict <- predict(compare_lm_model, se.fit =  TRUE)
 #'     ggplot2::ggplot(xdat, 
-#'                     ggplot2::aes(x = data.frame(x$X) %>% pull(as.name(predictor)), 
+#'                     ggplot2::aes(x = data.frame(x$X) |> pull(as.name(predictor)), 
 #'                y = pred)) + 
 #'       ggplot2::geom_ribbon(ggplot2::aes(ymin = pred - 1.96*se, 
 #'                       ymax = pred + 1.96*se), 

@@ -12,7 +12,7 @@
 #'
 #' @param n Integer (>= 2). Number of observations.
 #' @param sd Positive numeric. Single-occasion standard deviation (same scale as \code{y}).
-#' @param r Numeric in [0, 1]. Reliability of the single-occasion measure.
+#' @param r Numeric in \eqn{\eqn{\eqn{[0, 1]}}}. Reliability of the single-occasion measure.
 #' @param spacing Character. Either \code{"equal"} (default; uses closed-form \eqn{S_{xx}})
 #'   or \code{"custom"} (uses \code{t} to compute \eqn{S_{xx}} directly).
 #' @param t Optional numeric vector of time points (length \code{n}) used when

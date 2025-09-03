@@ -9,7 +9,7 @@ sem_from_sd_r(sd, r)
 \arguments{
 \item{sd}{single-occasion SD}
 
-\item{r}{reliability in \link{0,1}}
+\item{r}{reliability in \eqn{\eqn{\eqn{[0, 1]}}}}
 }
 \value{
 SEM = sd * sqrt(1 - r)

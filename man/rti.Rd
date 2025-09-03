@@ -22,7 +22,7 @@ rti(
 
 \item{sd}{Positive numeric. Single-occasion standard deviation (external).}
 
-\item{r}{Numeric in \link{0, 1}. Reliability (external).}
+\item{r}{Numeric in \eqn{\eqn{\eqn{[0, 1]}}}. Reliability (external).}
 
 \item{t, time}{Optional numeric vector of time indices (same length as \code{y}).
 \code{time} is a legacy alias for \code{t}. If both are missing, uses \code{t = 1:n}.}
