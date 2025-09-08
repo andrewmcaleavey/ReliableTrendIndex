@@ -2,14 +2,20 @@
 #'
 #' Compute a reliability-based test of within-person linear trend.
 #' Backward compatible with older code that passed \code{values}/\code{time}
-#' and/or \code{sem} instead of \code{sd}/\code{r}.
+#' and/or \code{sem} instead of \code{sd}/\code{r}. You can also pass
+#' \code{sdiff}, the standard error of the difference (RCI SE); if provided,
+#' it takes precedence over \code{sem} and \code{sd}/\code{r}.
 #'
-#' @param y,values Numeric vector of within-person observations (length \eqn{n\ge2}).
+#' @param y,values Numeric vector of within-person observations (length \eqn{n \ge 2}).
 #'   \code{values} is a legacy alias for \code{y}; if both are supplied, \code{y} is used.
 #' @param sd Positive numeric. Single-occasion standard deviation (external).
-#' @param r Numeric in \eqn{\eqn{\eqn{[0, 1]}}}. Reliability (external).
+#' @param r Numeric in \eqn{[0, 1]}. Reliability (external).
 #' @param sem Optional positive numeric. Standard error of measurement (external).
-#'   If provided, it takes precedence and sets \eqn{\sigma^2 = \mathrm{sem}^2}.
+#'   If provided (and \code{sdiff} is not), it takes precedence and sets
+#'   \eqn{\sigma^2 = \mathrm{sem}^2}.
+#' @param sdiff Optional positive numeric. \emph{Standard error of the difference}
+#'   used in the RCI: \eqn{\mathrm{sdiff} = SD\sqrt{2(1-r)} = \sqrt{2}\,\mathrm{sem}}.
+#'   If provided, it takes precedence and the slope SE is \eqn{\mathrm{sdiff}/\sqrt{2 S_{xx}}}.
 #' @param t,time Optional numeric vector of time indices (same length as \code{y}).
 #'   \code{time} is a legacy alias for \code{t}. If both are missing, uses \code{t = 1:n}.
 #' @param na.rm Logical. Drop incomplete \code{(y, t)} pairs? Default \code{FALSE}.
@@ -19,17 +25,21 @@
 #' \itemize{
 #'   \item \code{estimate}, \code{intercept}, \code{se}, \code{z}, \code{p}, \code{ci}
 #'   \item \code{sigma2}, \code{t}, \code{t_centered}, \code{y}, \code{Sxx}, \code{n}
-#'   \item \code{sd}, \code{r}, \code{sem}, \code{level}, \code{call}
+#'   \item \code{sd}, \code{r}, \code{sem}, \code{sdiff}, \code{level}, \code{call}
 #' }
 #' @examples
 #' # New style (sd & r)
 #' rti(y = c(12, 11, 13, 16), sd = 8, r = 0.85)
+#'
 #' # Legacy style (values & sem)
 #' rti(values = c(12, 11, 13, 16), sem = 3)
+#'
+#' # Provide sdiff directly (takes precedence over sem and sd/r)
+#' rti(y = c(12, 11, 13, 16), sdiff = 8 * sqrt(2 * (1 - 0.85)))
 #' @export
 rti <- function(y = NULL, sd = NULL, r = NULL,
                 t = NULL, na.rm = FALSE, level = 0.95,
-                values = NULL, time = NULL, sem = NULL) {
+                values = NULL, time = NULL, sem = NULL, sdiff = NULL) {
   cl <- match.call()
   
   # ---- legacy aliases ----
@@ -65,23 +75,29 @@ rti <- function(y = NULL, sd = NULL, r = NULL,
   beta1 <- sum(tc * y) / Sxx
   beta0 <- mean(y)
   
-  # ---- error variance: prefer SEM if given; else sd/r ----
-  if (!is.null(sem)) {
+  # ---- variance choice with precedence: sdiff > sem > sd/r ----
+  if (!is.null(sdiff)) {
+    if (!is.numeric(sdiff) || length(sdiff) != 1L || !is.finite(sdiff) || sdiff <= 0)
+      stop("`sdiff` must be a single positive, finite number.", call. = FALSE)
+    # sdiff = sqrt(2) * sem = SD * sqrt{2(1 - r)}; thus sigma2 (per-occasion) = sem^2 = sdiff^2 / 2
+    sigma2 <- (sdiff^2) / 2
+    sd_out <- NA_real_; r_out <- NA_real_; sem_out <- NA_real_; sdiff_out <- sdiff
+  } else if (!is.null(sem)) {
     if (!is.numeric(sem) || length(sem) != 1L || !is.finite(sem) || sem <= 0)
       stop("`sem` must be a single positive, finite number.", call. = FALSE)
     sigma2 <- sem^2
-    sd_out <- NA_real_; r_out <- NA_real_; sem_out <- sem
+    sd_out <- NA_real_; r_out <- NA_real_; sem_out <- sem; sdiff_out <- NA_real_
   } else {
     if (!is.numeric(sd) || length(sd) != 1L || !is.finite(sd) || sd <= 0)
-      stop("`sd` must be a single positive, finite number (or supply `sem`).", call. = FALSE)
+      stop("`sd` must be a single positive, finite number (or supply `sem`/`sdiff`).", call. = FALSE)
     if (!is.numeric(r) || length(r) != 1L || !is.finite(r) || r < 0 || r > 1)
-      stop("`r` must be a single number in [0, 1] (or supply `sem`).", call. = FALSE)
+      stop("`r` must be a single number in [0, 1] (or supply `sem`/`sdiff`).", call. = FALSE)
     sigma2 <- sd^2 * (1 - r)
-    sd_out <- sd; r_out <- r; sem_out <- NA_real_
+    sd_out <- sd; r_out <- r; sem_out <- NA_real_; sdiff_out <- NA_real_
   }
   
-  # Slope SE and test
-  se_beta1 <- sqrt(sigma2 / Sxx)
+  # Slope SE and test (z-based)
+  se_beta1 <- sqrt(sigma2 / Sxx)              # equals sdiff / sqrt(2*Sxx) if sdiff provided
   z <- beta1 / se_beta1
   p <- 2 * stats::pnorm(-abs(z))
   zcrit <- stats::qnorm(1 - (1 - level) / 2)
@@ -103,10 +119,10 @@ rti <- function(y = NULL, sd = NULL, r = NULL,
     sd = sd_out,
     r = r_out,
     sem = sem_out,
+    sdiff = sdiff_out,
     level = level,
     call = cl
   )
   class(out) <- "reliableTrend"
   out
 }
-
