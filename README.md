@@ -285,17 +285,6 @@ of observations, the RTI will be defined differently:
 
 ``` r
 library(ReliableTrendIndex)
-#> Loading required package: dplyr
-#> 
-#> Attaching package: 'dplyr'
-#> The following objects are masked from 'package:stats':
-#> 
-#>     filter, lag
-#> The following objects are masked from 'package:base':
-#> 
-#>     intersect, setdiff, setequal, union
-#> Loading required package: ggplot2
-#> Loading required package: magrittr
 ```
 
 ### One person RCI
@@ -321,6 +310,8 @@ authors, is `4.74`.
 
 ``` r
 jt_rci_calc(difference = 15, sdiff = 4.74)
+#> Warning in jt_rci_calc(difference = 15, sdiff = 4.74): jt_rci_calc() is
+#> deprecated; use rci().
 #> [1] 3.164557
 ```
 
@@ -359,7 +350,9 @@ and last observations, which is commonly done in routine care and
 clinical trials analysis of clinically significant change:
 
 ``` r
-jt_rci_calc(difference = 1, sdiff = .7071068)
+jt_rci_calc(difference = 1, sdiff = .7071068) 
+#> Warning in jt_rci_calc(difference = 1, sdiff = 0.7071068): jt_rci_calc() is
+#> deprecated; use rci().
 #> [1] 1.414214
 ```
 
@@ -383,7 +376,6 @@ RCI and/or RTI - is `rti()`.
 
 ``` r
 mac_rti <- rti(mac_height$obs, sdiff = .707)
-#> More than two values provided, assuming they are evenly spaced in time.
 ```
 
 Note that it gave us this message on screen:
@@ -398,84 +390,34 @@ also called by just the object name):
 
 ``` r
 print(mac_rti)
-#> $RCI
-#> [1] 1.414427
-#> 
-#> $RTI
-#> [1] 2.151736
-#> 
-#> $pd.RCI
-#> [1] 0.9213817
-#> 
-#> $pd.RTI
-#> [1] 0.9842909
-#> 
-#> $category.RTI
-#> [1] "Reliable Increase"
-#> 
-#> $category.RCI
-#> [1] "Less than reliable"
-#> 
-#> $sign.RTI
-#> [1] "Increase"
-#> 
-#> $sign.difference
-#> [1] "Increase"
-#> 
-#> $values
-#> [1] 98 98 98 99 99 99
-#> 
-#> $values.prepost
-#> [1] 98 99
-#> 
-#> $error_var
-#> [1] 0.4999245
-#> 
-#> $cutpoint
-#> [1] 1.96
-#> 
-#> $observed
-#> [1] "obs_score"
-#> 
-#> $scale_RCI
-#> [1] 1.38572
-#> 
-#> $rmaObj
-#> 
-#> Fixed-Effects with Moderators Model (k = 6)
-#> 
-#> I^2 (residual heterogeneity / unaccounted variability): 0.00%
-#> H^2 (unaccounted variability / sampling variability):   0.34
-#> R^2 (amount of heterogeneity accounted for):            71.43%
-#> 
-#> Test for Residual Heterogeneity:
-#> QE(df = 4) = 1.3718, p-val = 0.8491
-#> 
-#> Test of Moderators (coefficient 2):
-#> QM(df = 1) = 4.6300, p-val = 0.0314
-#> 
-#> Model Results:
-#> 
-#>              estimate      se      zval    pval    ci.lb    ci.ub      
-#> intrcpt       97.6000  0.4654  209.7101  <.0001  96.6878  98.5122  *** 
-#> time_linear    0.2571  0.1195    2.1517  0.0314   0.0229   0.4914    * 
-#> 
-#> ---
-#> Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+#> Reliable Trend Index (reliableTrend)
+#> n = 6  | sd = NA  | r = NA  | sem = NA 
+#> Slope (beta1): 0.2571 SE: 0.1195 Z: 2.152 p: 0.03142
 ```
 
 An additional text summary can be found using `summary()`.
 
 ``` r
 summary(mac_rti)
-#> 
-#> Reliable Trend Analysis:
-#> 
-#> This sequence of 6 values has a Reliable Increase using the RTI.
-#> The likelihood of an overall Increase in true score is 0.98429 using the RTI.
-#> 
-#> A pre-post analysis would have a Less than reliable change using the RCI.
-#> The likelihood of Increase given just the pre-post values is 0.92138.
+#>            Length Class  Mode   
+#> estimate   1      -none- numeric
+#> intercept  1      -none- numeric
+#> se         1      -none- numeric
+#> z          1      -none- numeric
+#> p          1      -none- numeric
+#> ci         2      -none- numeric
+#> sigma2     1      -none- numeric
+#> t          6      -none- numeric
+#> t_centered 6      -none- numeric
+#> y          6      -none- numeric
+#> Sxx        1      -none- numeric
+#> n          1      -none- numeric
+#> sd         1      -none- numeric
+#> r          1      -none- numeric
+#> sem        1      -none- numeric
+#> sdiff      1      -none- numeric
+#> level      1      -none- numeric
+#> call       3      -none- call
 ```
 
 So now we can clearly see that the RCI, by ignoring the interim

@@ -209,7 +209,7 @@ That data shows a difference score of `1` cm. From the example text, we know tha
 We could simply compute the RCI for this individual by using their first and last observations, which is commonly done in routine care and clinical trials analysis of clinically significant change:  
 
 ```{r}
-jt_rci_calc(difference = 1, sdiff = .7071068)
+jt_rci_calc(difference = 1, sdiff = .7071068) 
 ```
 
 That value, 1.414, is not greater than 1.96, so we would conclude that the change from pre-post is not reliable. The `ReliableTrendIndex` term for this is `Less than reliable` as opposed to `No Change` in order to indicate that the method could not specifically identify the change score. 
