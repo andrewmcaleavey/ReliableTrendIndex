@@ -1,0 +1,11 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+inst/doc
+*.icloud
+/doc/
+/Meta/
+.Rdata
+.httr-oauth
+.DS_Store

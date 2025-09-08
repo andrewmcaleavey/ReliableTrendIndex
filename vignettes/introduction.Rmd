@@ -1,0 +1,131 @@
+---
+title: "Introduction to the Reliable Trend Index (RTI)"
+output:
+  rmarkdown::html_vignette:
+    fig_width: 7
+    fig_height: 5
+vignette: >
+  %\VignetteIndexEntry{Introduction to the Reliable Trend Index (RTI)}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5,
+  dpi = 120
+)
+set.seed(2025)
+```
+
+```{r setup}
+library(ReliableTrendIndex)
+library(ggplot2)
+```
+
+## What is RTI?
+
+The **Reliable Trend Index (RTI)** is a reliability-based test of *within-person* linear change.  
+Given a series \(y_1,\dots,y_n\) observed at times \(t_1,\dots,t_n\) and external single-occasion standard deviation `sd` and reliability `r`, RTI tests whether the slope \(\beta_1\) differs from 0.
+
+Under
+\[
+y_t = \beta_0 + \beta_1\,t + \varepsilon_t,\quad \varepsilon_t \sim (0,\sigma^2),\quad \sigma^2 = \texttt{sd}^2(1-r),
+\]
+the slope standard error is \(\mathrm{SE}(\hat\beta_1)=\sqrt{\sigma^2/S_{xx}}\) with \(S_{xx}=\sum (t-\bar t)^2\).  
+For equally spaced \(t=1,\dots,n\), \(S_{xx}=n(n^2-1)/12\). The RTI statistic is \(Z=\hat\beta_1/\mathrm{SE}(\hat\beta_1)\).
+
+When \(n=2\), RTI reduces to the classical **RCI** logic (a difference test based on reliability).
+
+## Quick single-person example
+
+```{r}
+n <- 8
+t <- 1:n
+tc <- t - mean(t)
+y <- 10 + 0.6 * tc + rnorm(n, 0, 2.5)
+
+sd_ext <- 8
+r_ext  <- 0.85
+
+fit <- rti(y, sd = sd_ext, r = r_ext, t = t)
+fit
+plot(fit, band = "mean", include_intercept_uncertainty = TRUE)
+```
+
+## Multi-person workflow (panel data)
+
+Here’s a small, self-contained simulation: 30 people, 6 sessions each, with varying true slopes.
+
+```{r}
+set.seed(2)
+ids   <- sprintf("P%02d", 1:30)
+times <- 1:6
+
+sim <- do.call(rbind, lapply(ids, function(id) {
+  beta1 <- rnorm(1, mean = 0.25, sd = 0.35)   # true slope
+  beta0 <- rnorm(1, mean = 10,   sd = 2)      # true intercept at mean time
+  t  <- times
+  tc <- t - mean(t)
+  y_true <- beta0 + beta1 * tc
+  y_obs  <- y_true + rnorm(length(t), 0, 2.5) # observed (measurement error)
+  data.frame(id = id, time = t, y = y_obs)
+}))
+
+head(sim, 8)
+```
+
+Compute per-id RTI using scalars for `sd` and `r`:
+
+```{r}
+by <- rti_by(sim, id, time, y, sd = sd_ext, r = r_ext)
+head(by, 5)
+```
+
+Classify direction using the slope CI:
+
+```{r}
+by$category <- ifelse(by$ci_lower > 0, "Reliable Increase",
+                 ifelse(by$ci_upper < 0, "Reliable Decrease",
+                        "Less than reliable"))
+table(by$category)
+```
+
+Caterpillar plot (per-id slope with 95% CI):
+
+```{r}
+ord <- order(by$estimate)
+ggplot(by[ord,], aes(x = factor(id, levels = id[ord]), y = estimate,
+                     ymin = ci_lower, ymax = ci_upper, color = category)) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_pointrange() +
+  coord_flip() +
+  labs(x = "Person", y = "Slope (per unit time)", title = "RTI slopes with 95% CI") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+## RTI vs. RCI: conceptual contrast
+
+- **RCI**: tests a *difference* between two occasions; asks “are the two scores consistent with the same true score?”.  
+- **RTI**: tests a *trend* over many occasions; asks “is the person’s true mean constant over time?”.
+
+They can disagree:
+- Reliable trend but not reliable change → change is present across sessions, but a single pre–post contrast isn’t conclusive.  
+- Reliable change but not reliable trend → a large two-point difference, but the broader series doesn’t support a consistent slope (often due to noise or nonlinearity).
+
+When you want to use all available observations and believe each carries information about the underlying process, prefer **RTI**.
+
+## Backends
+
+The default backend used here is **base R** (closed-form slope/SE from reliability).  
+A more flexible backend using `{metafor}` (e.g., custom weights/variance structures) is also supported and will be covered in a separate vignette: *“RTI with the metafor backend.”*
+
+## References
+
+- Jacobson, N. S., & Truax, P. (1991). *Clinical significance: A statistical approach to defining meaningful change in psychotherapy research.* **Journal of Consulting and Clinical Psychology, 59**(1), 12–19.  
+- McAleavey, A. A. (2024). *When (not) to rely on the reliable change index: A critical appraisal and alternatives to consider in clinical psychology.* **Clinical Psychology: Science and Practice, 31**(3), 351–366. https://doi.org/10.1037/cps0000203
+

@@ -1,0 +1,34 @@
+Package: ReliableTrendIndex
+Title: Utilities for (More Reliable) Reliable Change Analysis
+Version: 0.2.0
+Authors@R: 
+    person("Andrew", "McAleavey", , "andrew.mcaleavey@gmail.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0001-5986-2033"))
+Description: You should not use this package because it makes RCI easy.
+    The package enables simple calculations in a safe and consistent
+    format, with the intent to encourage users to opt for increasingly
+    reliable change analysis.
+License: AGPL (>= 3)
+Depends: 
+    R (>= 4.1.0)
+Imports: 
+    broom,
+    ggplot2,
+    metafor,
+    stats,
+    tidyr
+Suggests: 
+    dplyr,
+    knitr,
+    purrr,
+    rmarkdown,
+    testthat (>= 3.0.0),
+    tibble,
+    tidyselect
+VignetteBuilder: 
+    knitr
+Config/testthat/edition: 3
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
