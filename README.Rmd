@@ -157,11 +157,27 @@ The RCI is thus a special case of the RTI for two timepoints. The RTI generalize
 
 ## Definition  
 
-Jacobson & Truax defined the RCI as $$RC = \frac{x_2 - x_1}{S_{diff}}$$ The term $x_2 - x_1$ is the observed change, which is treated as an unbiased estimate of true change. $S_{diff}$ is the standard error of the difference score, the appropriate error term for a difference score if the assumptions of the model are accurate. Notably, this is based on data external to the person in question. 
+Jacobson & Truax defined the RCI as:  
 
-The RTI is defined most basically as $$RT = \frac{b}{s_{e}}$$ Here, $b$ is the linear time effect (slope) estimate from a regression of all available data points and $s_{e}$ is the appropriate standard error for that slope, estimated from external data and using the same assumptions as the RCI. However, $s_{e}$ will be smaller than $S_{diff}$ as a function of the number of observations. The logic of this is that the more observations of a series, the less likely a random series is to have a notably increasing or decreasing linear trend so the plausible error decreases.     
+$$RC = \frac{x_2 - x_1}{S_{diff}}$$   
 
-There are currently two operationalizations of RTI definitions. The first version of this package used [`metafor`](https://cran.r-project.org/package=metafor) as a backend, which is a flexible approach. The second uses a simpler dependency-free approach to extend the RCI to multiple time points, but lacks some flexibility. Current plan is to use the simpler model for most functions, but this is not implemented yet. The text below only applies to the {`metafor`} approach.
+where:  
+
+  - The term $x_2 - x_1$ is the observed change score from pre- to post-treatment, which is assumed to be an unbiased estimate of true change.  
+  - $S_{diff}$ is the standard error of the difference score.  
+
+The RTI is defined most basically as:  
+
+$$RT = \frac{b}{s_{e}}$$  
+where: 
+  - $b$ is the linear time effect (slope) estimate from a regression of all available data points. 
+  - $s_{e}$ is the standard error for that slope estimate.  
+  
+While both the RCI and RTI are similar, there are two main differences. First, the RCI includes only two observations while the RTI includes any number of observations per person. Second, though they can be based on the same data (*i.e.*, a reliability estimate and population standard deviation), the standard error terms are different. The difference is that, $s_{e}$ will be smaller than $S_{diff}$ as a function of the number of observations (with two observations, they are equal). The logic of this is that the more observations in a series, the less likely a random series is to have a notably increasing or decreasing linear trend so the standard error decreases.     
+
+### Operationalizations
+
+There are currently two operationalizations of RTI in this package. The first version of this package used [`metafor`](https://cran.r-project.org/package=metafor) as a backend, which is a flexible approach. The second uses a simpler dependency-free approach to extend the RCI to multiple time points, but lacks some flexibility. The current recommendation is to use the simpler model for most applications as it is faster and requires fewer dependencies. However, at this time, some complex examples are only available with the original implementation. The text below only applies to the {`metafor`} approach.
 
 Note that the definition of the RTI is also more obviously model-sensitive than the RCI, because more data points means more options for models (the RCI is model-dependent as well, but its model makes intuitive sense given a difference score). Depending on the number of observations, the RTI will be defined differently:  
 
