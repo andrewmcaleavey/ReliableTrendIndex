@@ -30,7 +30,7 @@ generate_data(
 \item{meas_err}{Measurement error. SEm. SD of the error component at each time point.}
 }
 \value{
-A tibble. Side effects: creates variables in the parent environment for RCI and Sdiff.
+A tibble with simulated data and RCI-related variables.
 }
 \description{
 Generate 2 timepoint data for RCI analysis

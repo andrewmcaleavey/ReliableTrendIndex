@@ -12,7 +12,7 @@
 #' @param delta_sd SD of change. Each person gets a value from this SD between time 0 and time 1. 
 #' @param meas_err Measurement error. SEm. SD of the error component at each time point. 
 #'
-#' @return A tibble. Side effects: creates variables in the parent environment for RCI and Sdiff. 
+#' @return A tibble with simulated data and RCI-related variables.
 #' @export
 #'
 #' @examples 
@@ -23,7 +23,7 @@ generate_data <- function(n_sims = 1,
                           m_bl_tot = 0, 
                           delta = -0.5, 
                           delta_sd = 1, 
-                          meas_err = 0.5){
+                          meas_err = 0.5) {
   
   t0_true <- rnorm(n    = n_ppl, 
                    mean = m_bl_tot, 
@@ -31,81 +31,103 @@ generate_data <- function(n_sims = 1,
   t1_true <- t0_true + rnorm(n    = n_ppl, 
                              mean = delta, 
                              sd   = delta_sd)
-  t0_obs <- t0_true + rnorm(n    = n_ppl, 
-                            mean = 0, 
-                            sd   = meas_err)
-  t1_obs <- t1_true + rnorm(n    = n_ppl, 
-                            mean = 0, 
-                            sd   = meas_err)
-  sim_dat1 <- dplyr::bind_cols(id = rep(seq(1:n_ppl), each = 2), 
-                        time    = rep(c(0, 1), n_ppl))
+  t0_obs <- rnorm(n    = n_ppl,
+                  mean = t0_true,
+                  sd   = meas_err)
+  t1_obs <- rnorm(n    = n_ppl,
+                  mean = t1_true,
+                  sd   = meas_err)
   
-  t0 <- tibble::tibble(id = 1:n_ppl, 
-               time = 0,
-               obs = t0_obs, 
-               tru = t0_true)
-  t1 <- tibble::tibble(id = 1:n_ppl, 
-               time = 1, 
-               obs = t1_obs, 
-               tru = t1_true)
+  sim_dat1 <- dplyr::bind_cols(
+    id   = rep(seq_len(n_ppl), each = 2),
+    time = rep(c(0, 1), n_ppl)
+  )
   
-  simdat2 <- dplyr::bind_rows(t0, t1) |> 
-    dplyr::arrange(id, time) |> 
-    dplyr::group_by(id) |> 
-    dplyr::mutate(obs_diff = obs - dplyr::first(obs), 
-           true_diff = tru - dplyr::first(tru)) |> 
+  t0 <- tibble::tibble(
+    id   = seq_len(n_ppl), 
+    time = 0,
+    obs  = t0_obs, 
+    tru  = t0_true
+  )
+  t1 <- tibble::tibble(
+    id   = seq_len(n_ppl), 
+    time = 1, 
+    obs  = t1_obs, 
+    tru  = t1_true
+  )
+  
+  simdat2 <- dplyr::bind_rows(t0, t1) |>
+    dplyr::arrange(id, time) |>
+    dplyr::group_by(id) |>
+    dplyr::mutate(
+      obs_diff  = obs - dplyr::first(obs), 
+      true_diff = tru - dplyr::first(tru)
+    ) |>
     dplyr::ungroup()
   
   # RCI
-  SEm <- sd(simdat2 |> 
-              dplyr::filter(time == 0) |> 
-              dplyr::pull(obs)) * sqrt(1 - (sd_tot^2 / (sd_tot^2 + meas_err^2)))
+  SEm <- sd(
+    simdat2 |>
+      dplyr::filter(time == 0) |>
+      dplyr::pull(obs)
+  ) * sqrt(1 - (sd_tot^2 / (sd_tot^2 + meas_err^2)))
   
-  Sdiff <<- sqrt(2) * SEm
+  Sdiff <- sqrt(2) * SEm
+  RCI   <- 1.96 * Sdiff
   
-  RCI <<- 1.96 * Sdiff
+  simdat3 <- simdat2 |>
+    dplyr::group_by(id) |>
+    dplyr::mutate(
+      ReliableChange = ifelse(dplyr::last(obs_diff) >  RCI, "RelDet",
+                              ifelse(dplyr::last(obs_diff) < -RCI, "RelImp", "NoRel")),
+      TrueChange = ifelse(dplyr::last(true_diff) >  0, "TrueDet",
+                          ifelse(dplyr::last(true_diff) <  0, "TrueImp", "TrueNo")),
+      obsChange = ifelse(dplyr::last(obs_diff) >  0, "ObsDet",
+                         ifelse(dplyr::last(obs_diff) <  0, "ObsImp", "ObsNo"))
+    ) |>
+    dplyr::ungroup() |>
+    dplyr::mutate(
+      wrongRCI = dplyr::case_when(
+        ReliableChange == "RelDet" & TrueChange == "TrueDet" ~ 0, 
+        ReliableChange == "RelImp" & TrueChange == "TrueImp" ~ 0, 
+        ReliableChange == "NoRel"  & TrueChange == "TrueNo"  ~ 0,
+        TRUE ~ 1
+      ),
+      trueRCI = dplyr::case_when(
+        true_diff < -RCI ~ "TrueRCIImp", 
+        true_diff >  RCI ~ "TrueRCIDet", 
+        TRUE ~ "TrueNotSure"
+      ),
+      borderMisclassified = dplyr::case_when(
+        ReliableChange == "RelDet" & trueRCI == "TrueNotSure" ~ 1, 
+        ReliableChange == "NoRel"  & trueRCI == "TrueRCIDet"  ~ 1,
+        ReliableChange == "NoRel"  & trueRCI == "TrueRCIImp"  ~ 1,
+        ReliableChange == "RelImp" & trueRCI == "TrueNotSure" ~ 1, 
+        TRUE ~ 0
+      ),
+      delta_err = obs_diff - true_diff
+    ) |>
+    dplyr::mutate(
+      obsCorrect = dplyr::case_when(
+        true_diff > 0 & obs_diff > 0 ~ TRUE, 
+        true_diff < 0 & obs_diff < 0 ~ TRUE, 
+        TRUE ~ FALSE
+      ),
+      RCICorrect = dplyr::case_when(
+        wrongRCI == 1 ~ FALSE, 
+        TRUE ~ TRUE
+      )
+    ) |>
+    dplyr::mutate(
+      nullTile = pnorm(
+        q    = obs_diff,  # observed change score
+        mean = 0,         # assume no change
+        sd   = Sdiff      # SD is Sdiff (measurement-error-related distribution)
+      ),
+      delta = delta
+    )
   
-  simdat3 <- simdat2 |> 
-    dplyr::group_by(id) |> 
-    dplyr::mutate(ReliableChange = ifelse(dplyr::last(obs_diff) > RCI, 
-                                   "RelDet", 
-                                   ifelse(dplyr::last(obs_diff) < -1*RCI, 
-                                          "RelImp", 
-                                          "NoRel")), 
-           TrueChange = ifelse(dplyr::last(true_diff) > 0, 
-                               "TrueDet", 
-                               ifelse(dplyr::last(true_diff) < 0, 
-                                      "TrueImp", 
-                                      "TrueNo")), 
-           obsChange = ifelse(dplyr::last(obs_diff) > 0, 
-                              "ObsDet", 
-                              ifelse(dplyr::last(obs_diff) < 0, 
-                                     "ObsImp", 
-                                     "ObsNo"))) |> 
-    dplyr::ungroup() |> 
-    dplyr::mutate(wrongRCI = dplyr::case_when(ReliableChange == "RelDet" & TrueChange == "TrueDet" ~ 0, 
-                                ReliableChange == "RelImp" & TrueChange == "TrueImp" ~ 0, 
-                                ReliableChange == "NoRel"  & TrueChange == "TrueNo" ~ 0,
-                                TRUE ~ 1), 
-           trueRCI = dplyr::case_when(true_diff < -RCI ~ "TrueRCIImp", 
-                               true_diff > RCI  ~ "TrueRCIDet", 
-                               TRUE ~ "TrueNotSure"), 
-           borderMisclassified = dplyr::case_when(ReliableChange == "RelDet" & trueRCI == "TrueNotSure" ~ 1, 
-                                           ReliableChange == "NoRel" & trueRCI == "TrueRCIDet" ~ 1,
-                                           ReliableChange == "NoRel" & trueRCI == "TrueRCIImp" ~ 1,
-                                           ReliableChange == "RelImp" & trueRCI == "TrueNotSure" ~ 1, 
-                                           TRUE ~ 0), 
-           delta_err = obs_diff - true_diff) |> 
-    dplyr::mutate(obsCorrect = dplyr::case_when(true_diff > 0 & obs_diff > 0 ~ TRUE, 
-                                  true_diff < 0 & obs_diff < 0 ~ TRUE, 
-                                  TRUE ~ FALSE), 
-           RCICorrect = dplyr::case_when(wrongRCI == 1 ~ FALSE, 
-                                  TRUE ~ TRUE)) |> 
-    dplyr::mutate(nullTile = pnorm(q = obs_diff,  # observed change score
-                            mean = 0,  # assume no change
-                            sd = Sdiff), # assume SD is Sdiff, which is the measurement-error related distribution
-           delta = delta)  
-  return(simdat3)
+  simdat3
 }
 
 
@@ -116,11 +138,11 @@ generate_data <- function(n_sims = 1,
 #' @param sd_tot Standard deviation of the true scores at baseline
 #' @param m_bl_tot Mean of the true scores at baseline
 #' @param delta Mean change per unit time, applied to all individuals uniformly.
-#' @param delta_sd SD of change per unit time. Each person gets a value from this SD between time 0 and time 1. 
-#' @param meas_err Measurement error. SEm. SD of the error component at each time point. 
+#' @param delta_sd SD of change per unit time.
+#' @param meas_err Measurement error (SEm). SD of the error component at each time point. 
 #' @param n_obs Number of observations per person
 #'
-#' @return A tibble. Side effects: creates variables in the parent environment for RCI and Sdiff. 
+#' @return A tibble with simulated longitudinal data and RCI-related variables.
 #' @export
 #'
 #' @examples 
@@ -132,81 +154,98 @@ generate_xt_data <- function(n_sims = 1,
                              delta = -0.5, 
                              delta_sd = 1, 
                              meas_err = 0.5, 
-                             n_obs){
+                             n_obs) {
   
   t0_true <- rnorm(n    = n_ppl, 
                    mean = m_bl_tot, 
                    sd   = sd_tot)
   slope_true <- rnorm(n = n_ppl, 
-                      m = delta, 
-                      sd = delta_sd)
+                      mean = delta, 
+                      sd   = delta_sd)
   t1_true <- t0_true + slope_true
   
-  data_1 <- tibble::tibble(id = rep(1:n_ppl, each = n_obs), 
-                   time = rep(seq(0, 1, by = 1/(n_obs-1)), n_ppl),
-                   true_t0 = rep(t0_true, each = n_obs),
-                   true_slope = rep(slope_true, each = n_obs)) |> 
-    dplyr::mutate(true_value = true_t0 + (true_slope * time), 
-           obs = true_value + rnorm(n_obs * n_ppl, 
-                                    mean = 0, 
-                                    sd = meas_err)) |> 
-    dplyr::group_by(id) |> 
-    dplyr::mutate(obs_diff = obs - dplyr::first(obs), 
-           true_diff = true_value - dplyr::first(true_t0)) |> 
+  data_1 <- tibble::tibble(
+    id        = rep(seq_len(n_ppl), each = n_obs), 
+    time      = rep(seq(0, 1, by = 1 / (n_obs - 1)), n_ppl),
+    true_t0   = rep(t0_true,   each = n_obs),
+    true_slope= rep(slope_true, each = n_obs)
+  ) |>
+    dplyr::mutate(
+      true_value = true_t0 + (true_slope * time), 
+      obs        = true_value + rnorm(n_obs * n_ppl, mean = 0, sd = meas_err)
+    ) |>
+    dplyr::group_by(id) |>
+    dplyr::mutate(
+      obs_diff  = obs - dplyr::first(obs), 
+      true_diff = true_value - dplyr::first(true_t0)
+    ) |>
     dplyr::ungroup()
   
   # RCI
-  SEm <- sd(data_1 |> 
-              dplyr::filter(time == 0) |> 
-              dplyr::pull(obs)) * sqrt(1 - (sd_tot^2 / (sd_tot^2 + meas_err^2)))
+  SEm <- sd(
+    data_1 |>
+      dplyr::filter(time == 0) |>
+      dplyr::pull(obs)
+  ) * sqrt(1 - (sd_tot^2 / (sd_tot^2 + meas_err^2)))
   
-  Sdiff <<- sqrt(2) * SEm
+  Sdiff <- sqrt(2) * SEm
+  RCI   <- 1.96 * Sdiff
   
-  RCI <<- 1.96 * Sdiff
-  
-  data_2 <- data_1 |> 
-    dplyr::group_by(id) |> 
-    dplyr::mutate(ReliableChange = ifelse(dplyr::last(obs_diff) > RCI, 
-                                   "RelDet", 
-                                   ifelse(dplyr::last(obs_diff) < -1*RCI, 
-                                          "RelImp", 
-                                          "NoRel")), 
-           TrueChange = ifelse(dplyr::last(true_diff) > 0, 
-                               "TrueDet", 
-                               ifelse(dplyr::last(true_diff) < 0, 
-                                      "TrueImp", 
-                                      "TrueNo")), 
-           obsChange = ifelse(dplyr::last(obs_diff) > 0, 
-                              "ObsDet", 
-                              ifelse(dplyr::last(obs_diff) < 0, 
-                                     "ObsImp", 
-                                     "ObsNo"))) |> 
-    dplyr::ungroup() |> 
-    dplyr::mutate(wrongRCI = dplyr::case_when(ReliableChange == "RelDet" & TrueChange == "TrueDet" ~ 0, 
-                                ReliableChange == "RelImp" & TrueChange == "TrueImp" ~ 0, 
-                                ReliableChange == "NoRel"  & TrueChange == "TrueNo" ~ 0,
-                                TRUE ~ 1), 
-           trueRCI = dplyr::case_when(true_diff < -RCI ~ "TrueRCIImp", 
-                               true_diff > RCI  ~ "TrueRCIDet", 
-                               TRUE ~ "TrueNotSure"), 
-           borderMisclassified = dplyr::case_when(ReliableChange == "RelDet" & trueRCI == "TrueNotSure" ~ 1, 
-                                           ReliableChange == "NoRel" & trueRCI == "TrueRCIDet" ~ 1,
-                                           ReliableChange == "NoRel" & trueRCI == "TrueRCIImp" ~ 1,
-                                           ReliableChange == "RelImp" & trueRCI == "TrueNotSure" ~ 1, 
-                                           TRUE ~ 0), 
-           delta_err = obs_diff - true_diff) |> 
-    dplyr::group_by(id) |> 
-    dplyr::mutate(obsCorrect = dplyr::case_when(true_slope > 0 & dplyr::last(obs_diff) > 0 ~ TRUE, 
-                                  true_slope < 0 & dplyr::last(obs_diff) < 0 ~ TRUE, 
-                                  TRUE ~ FALSE), 
-           RCICorrect = dplyr::case_when(wrongRCI == 1 ~ FALSE, 
-                                  TRUE ~ TRUE)) |> 
-    dplyr::mutate(nullTile = pnorm(q = obs_diff,  # observed change score
-                            mean = 0,  # assume no change
-                            sd = Sdiff), # assume SD is Sdiff, which is the measurement-error related distribution
-           delta = delta)  |> 
+  data_2 <- data_1 |>
+    dplyr::group_by(id) |>
+    dplyr::mutate(
+      ReliableChange = ifelse(dplyr::last(obs_diff) >  RCI, "RelDet",
+                              ifelse(dplyr::last(obs_diff) < -RCI, "RelImp", "NoRel")), 
+      TrueChange = ifelse(dplyr::last(true_diff) >  0, "TrueDet",
+                          ifelse(dplyr::last(true_diff) <  0, "TrueImp", "TrueNo")), 
+      obsChange = ifelse(dplyr::last(obs_diff) >  0, "ObsDet",
+                         ifelse(dplyr::last(obs_diff) <  0, "ObsImp", "ObsNo"))
+    ) |>
+    dplyr::ungroup() |>
+    dplyr::mutate(
+      wrongRCI = dplyr::case_when(
+        ReliableChange == "RelDet" & TrueChange == "TrueDet" ~ 0, 
+        ReliableChange == "RelImp" & TrueChange == "TrueImp" ~ 0, 
+        ReliableChange == "NoRel"  & TrueChange == "TrueNo"  ~ 0,
+        TRUE ~ 1
+      ), 
+      trueRCI = dplyr::case_when(
+        true_diff < -RCI ~ "TrueRCIImp", 
+        true_diff >  RCI ~ "TrueRCIDet", 
+        TRUE ~ "TrueNotSure"
+      ), 
+      borderMisclassified = dplyr::case_when(
+        ReliableChange == "RelDet" & trueRCI == "TrueNotSure" ~ 1, 
+        ReliableChange == "NoRel"  & trueRCI == "TrueRCIDet"  ~ 1,
+        ReliableChange == "NoRel"  & trueRCI == "TrueRCIImp"  ~ 1,
+        ReliableChange == "RelImp" & trueRCI == "TrueNotSure" ~ 1, 
+        TRUE ~ 0
+      ), 
+      delta_err = obs_diff - true_diff
+    ) |>
+    dplyr::group_by(id) |>
+    dplyr::mutate(
+      obsCorrect = dplyr::case_when(
+        true_slope > 0 & dplyr::last(obs_diff) > 0 ~ TRUE, 
+        true_slope < 0 & dplyr::last(obs_diff) < 0 ~ TRUE, 
+        TRUE ~ FALSE
+      ), 
+      RCICorrect = dplyr::case_when(
+        wrongRCI == 1 ~ FALSE, 
+        TRUE ~ TRUE
+      )
+    ) |>
+    dplyr::mutate(
+      nullTile = pnorm(
+        q    = obs_diff,  # observed change score
+        mean = 0,         # assume no change
+        sd   = Sdiff      # SD is Sdiff, measurement-error-related distribution
+      ),
+      delta = delta
+    ) |>
     dplyr::ungroup()
-  return(data_2)
+  
+  data_2
 }
 
 RCIfunc <- function(rxx, s1 = 1, cut = 1.96){

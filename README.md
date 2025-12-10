@@ -253,7 +253,7 @@ logic of this is that the more observations in a series, the less likely
 a random series is to have a notably increasing or decreasing linear
 trend so the standard error decreases.
 
-### Operationalizations
+### Operationalizations/Backends
 
 There are currently two operationalizations of RTI in this package. The
 first version of this package used
@@ -263,14 +263,15 @@ approach to extend the RCI to multiple time points, but lacks some
 flexibility. The current recommendation is to use the simpler model for
 most applications as it is faster and requires fewer dependencies.
 However, at this time, some complex examples are only available with the
-original implementation. The text below only applies to the {`metafor`}
-approach.
+original implementation.
 
-Note that the definition of the RTI is also more obviously
-model-sensitive than the RCI, because more data points means more
-options for models (the RCI is model-dependent as well, but its model
-makes intuitive sense given a difference score). Depending on the number
-of observations, the RTI will be defined differently:
+The text below only applies to the {`metafor`} approach.
+
+Note that the RTI is potentially more model-sensitive than the RCI,
+because more data points means more options for models (the RCI is
+model-dependent as well, but its model makes intuitive sense if only two
+observations are available). Depending on the number of observations,
+the RTI will be defined differently:
 
 - **For 2 observations**, the RTI is the same as the RCI. To compute a
   linear regression, the RTI as implemented here treats both
@@ -280,15 +281,16 @@ of observations, the RTI will be defined differently:
   simply $x_2 - x_1$. The standard error of a difference score
   ($S_{diff}$) is the appropriate standard error for this case. Thus,
   the entire model simplifies to the RCI.  
-- **For 3 observations**, there are two options. We could treat all
-  three observations as fixed, but this means that there is no gain from
-  the RTI compared to the RCI. The model will simply take the first and
-  last observation, which is equivalent to the RCI. Instead, by default,
-  the RTI treats the intercept as fixed but estimates a slope using the
-  other observations. This allows for uncertainty in the slope
-  estimation, though it implies that slope comes from an
-  unrealistically-accurately measured first observation. The slope will
-  not differ if a different point were chosen as the fixed point.  
+- **For 3 observations**, there are two options. Treating all three
+  observations as fixed means that there is no gain from the RTI
+  compared to the RCI with the {`metafor`} backend. The model will
+  simply take the first and last observation, which is equivalent to the
+  RCI. Instead, by default, the RTI treats the intercept as fixed but
+  estimates a slope using the other observations. This allows for
+  uncertainty in the slope estimation, though it implies that slope
+  comes from an unrealistically-accurately measured first observation.
+  The slope will not differ if a different point were chosen as the
+  fixed point.  
 - **For 4 or more observations**, the RTI estimates both a slope and
   intercept. This should be the most generalizable method for trend
   identification. It does not prioritize any given observation(s),
@@ -325,16 +327,14 @@ The scale’s standard error of the difference score, as computed by the
 authors, is `4.74`.
 
 ``` r
-jt_rci_calc(difference = 15, sdiff = 4.74)
-#> Warning in jt_rci_calc(difference = 15, sdiff = 4.74): jt_rci_calc() is
-#> deprecated; use rci().
+rci(difference = 15, sdiff = 4.74)
 #> [1] 3.164557
 ```
 
-That value, 3.16, is the person’s RCI, according to Jacobson & Truax.
-Since it is greater than their suggested cutpoint of 1.96 (which conveys
-5% chance of Type I error under the assumptions of the RCI), we would
-conclude that this change is “reliable.”
+That value, 3.16, is the person’s RCI, per Jacobson & Truax. Since it is
+greater than the cutpoint of 1.96 (which conveys 5% chance of Type I
+error under the assumptions of the RCI), we would conclude that this
+change is “reliable.”
 
 ### One person RTI
 
@@ -366,9 +366,7 @@ and last observations, which is commonly done in routine care and
 clinical trials analysis of clinically significant change:
 
 ``` r
-jt_rci_calc(difference = 1, sdiff = .7071068) 
-#> Warning in jt_rci_calc(difference = 1, sdiff = 0.7071068): jt_rci_calc() is
-#> deprecated; use rci().
+rci(difference = 1, sdiff = .7071068) 
 #> [1] 1.414214
 ```
 
@@ -376,7 +374,7 @@ That value, 1.414, is not greater than 1.96, so we would conclude that
 the change from pre-post is not reliable. The `ReliableTrendIndex` term
 for this is `Less than reliable` as opposed to `No Change` in order to
 indicate that the method could not specifically identify the change
-score.
+score as reliable or not.
 
 However, the RTI would incorporate all six measurements. It is a waste
 to ignore two-thirds of our information here.
@@ -407,33 +405,30 @@ also called by just the object name):
 ``` r
 print(mac_rti)
 #> Reliable Trend Index (reliableTrend)
-#> n = 6  | sd = NA  | r = NA  | sem = NA 
-#> Slope (beta1): 0.2571 SE: 0.1195 Z: 2.152 p: 0.03142
+#> n = 6 | sd = NA | r = NA | sem = 0.4999 | sdiff = 0.707 
+#> Slope: 0.2571 | SE: 0.1195 | z: 2.152 | p: 0.03142 
+#> 95% CI for slope: (0.02292, 0.4914)
 ```
 
 An additional text summary can be found using `summary()`.
 
 ``` r
 summary(mac_rti)
-#>            Length Class  Mode   
-#> estimate   1      -none- numeric
-#> intercept  1      -none- numeric
-#> se         1      -none- numeric
-#> z          1      -none- numeric
-#> p          1      -none- numeric
-#> ci         2      -none- numeric
-#> sigma2     1      -none- numeric
-#> t          6      -none- numeric
-#> t_centered 6      -none- numeric
-#> y          6      -none- numeric
-#> Sxx        1      -none- numeric
-#> n          1      -none- numeric
-#> sd         1      -none- numeric
-#> r          1      -none- numeric
-#> sem        1      -none- numeric
-#> sdiff      1      -none- numeric
-#> level      1      -none- numeric
-#> call       3      -none- call
+#> 
+#> Reliable Trend Analysis
+#> -----------------------
+#> Sequence length (n): 6
+#> 
+#> RTI (trend across all time points):
+#>   z = 2.152, z_crit = 1.960
+#>   Decision: Reliable Increase
+#>   One-sided probability of Increase: 0.98429
+#> 
+#> RCI (pre–post, first vs last time point):
+#>   Difference (last - first): 1.000
+#>   z = 1.414, z_crit = 1.960
+#>   Decision: Less than reliable change
+#>   One-sided probability of Increase: 0.92138
 ```
 
 So now we can clearly see that the RCI, by ignoring the interim

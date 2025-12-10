@@ -15,6 +15,7 @@ Imports:
     broom,
     ggplot2,
     metafor,
+    rlang,
     stats,
     tidyr
 Suggests: 

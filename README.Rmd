@@ -175,14 +175,16 @@ where:
   
 While both the RCI and RTI are similar, there are two main differences. First, the RCI includes only two observations while the RTI includes any number of observations per person. Second, though they can be based on the same data (*i.e.*, a reliability estimate and population standard deviation), the standard error terms are different. The difference is that, $s_{e}$ will be smaller than $S_{diff}$ as a function of the number of observations (with two observations, they are equal). The logic of this is that the more observations in a series, the less likely a random series is to have a notably increasing or decreasing linear trend so the standard error decreases.     
 
-### Operationalizations
+### Operationalizations/Backends
 
-There are currently two operationalizations of RTI in this package. The first version of this package used [`metafor`](https://cran.r-project.org/package=metafor) as a backend, which is a flexible approach. The second uses a simpler dependency-free approach to extend the RCI to multiple time points, but lacks some flexibility. The current recommendation is to use the simpler model for most applications as it is faster and requires fewer dependencies. However, at this time, some complex examples are only available with the original implementation. The text below only applies to the {`metafor`} approach.
+There are currently two operationalizations of RTI in this package. The first version of this package used [`metafor`](https://cran.r-project.org/package=metafor) as a backend, which is a flexible approach. The second uses a simpler dependency-free approach to extend the RCI to multiple time points, but lacks some flexibility. The current recommendation is to use the simpler model for most applications as it is faster and requires fewer dependencies. However, at this time, some complex examples are only available with the original implementation. 
 
-Note that the definition of the RTI is also more obviously model-sensitive than the RCI, because more data points means more options for models (the RCI is model-dependent as well, but its model makes intuitive sense given a difference score). Depending on the number of observations, the RTI will be defined differently:  
+The text below only applies to the {`metafor`} approach.
+
+Note that the RTI is potentially more model-sensitive than the RCI, because more data points means more options for models (the RCI is model-dependent as well, but its model makes intuitive sense if only two observations are available). Depending on the number of observations, the RTI will be defined differently:  
 
   - **For 2 observations**, the RTI is the same as the RCI. To compute a linear regression, the RTI as implemented here treats both observations and the difference score as fixed values. This means that the slope of the best fitting line must cross through both observations. Put differently, the best available estimate of $b$ is simply $x_2 - x_1$. The standard error of a difference score ($S_{diff}$) is the appropriate standard error for this case. Thus, the entire model simplifies to the RCI.   
-  - **For 3 observations**, there are two options. We could treat all three observations as fixed, but this means that there is no gain from the RTI compared to the RCI. The model will simply take the first and last observation, which is equivalent to the RCI. Instead, by default, the RTI treats the intercept as fixed but estimates a slope using the other observations. This allows for uncertainty in the slope estimation, though it implies that slope comes from an unrealistically-accurately measured first observation. The slope will not differ if a different point were chosen as the fixed point.     
+  - **For 3 observations**, there are two options. Treating all three observations as fixed means that there is no gain from the RTI compared to the RCI with the {`metafor`} backend. The model will simply take the first and last observation, which is equivalent to the RCI. Instead, by default, the RTI treats the intercept as fixed but estimates a slope using the other observations. This allows for uncertainty in the slope estimation, though it implies that slope comes from an unrealistically-accurately measured first observation. The slope will not differ if a different point were chosen as the fixed point.     
   - **For 4 or more observations**, the RTI estimates both a slope and intercept. This should be the most generalizable method for trend identification. It does not prioritize any given observation(s), treating them all with equal potential error. This does mean that the slope will likely not pass directly through any specific observations: the most likely true state will be estimated to not coincide with the observations, because those observations have error.  
 
 ## Example
@@ -207,10 +209,10 @@ The difference score for this person is `47.5 - 32.5`, or `15`.
 The scale's standard error of the difference score, as computed by the authors, is `4.74`. 
 
 ```{r}
-jt_rci_calc(difference = 15, sdiff = 4.74)
+rci(difference = 15, sdiff = 4.74)
 ```
 
-That value, 3.16, is the person's RCI, according to Jacobson & Truax. Since it is greater than their suggested cutpoint of 1.96 (which conveys 5% chance of Type I error under the assumptions of the RCI), we would conclude that this change is "reliable."
+That value, 3.16, is the person's RCI, per Jacobson & Truax. Since it is greater than the cutpoint of 1.96 (which conveys 5% chance of Type I error under the assumptions of the RCI), we would conclude that this change is "reliable."
 
 ### One person RTI  
 
@@ -225,10 +227,10 @@ That data shows a difference score of `1` cm. From the example text, we know tha
 We could simply compute the RCI for this individual by using their first and last observations, which is commonly done in routine care and clinical trials analysis of clinically significant change:  
 
 ```{r}
-jt_rci_calc(difference = 1, sdiff = .7071068) 
+rci(difference = 1, sdiff = .7071068) 
 ```
 
-That value, 1.414, is not greater than 1.96, so we would conclude that the change from pre-post is not reliable. The `ReliableTrendIndex` term for this is `Less than reliable` as opposed to `No Change` in order to indicate that the method could not specifically identify the change score. 
+That value, 1.414, is not greater than 1.96, so we would conclude that the change from pre-post is not reliable. The `ReliableTrendIndex` term for this is `Less than reliable` as opposed to `No Change` in order to indicate that the method could not specifically identify the change score as reliable or not. 
 
 However, the RTI would incorporate all six measurements. It is a waste to ignore two-thirds of our information here.  
 

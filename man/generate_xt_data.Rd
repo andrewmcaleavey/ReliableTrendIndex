@@ -26,14 +26,14 @@ generate_xt_data(
 
 \item{delta}{Mean change per unit time, applied to all individuals uniformly.}
 
-\item{delta_sd}{SD of change per unit time. Each person gets a value from this SD between time 0 and time 1.}
+\item{delta_sd}{SD of change per unit time.}
 
-\item{meas_err}{Measurement error. SEm. SD of the error component at each time point.}
+\item{meas_err}{Measurement error (SEm). SD of the error component at each time point.}
 
 \item{n_obs}{Number of observations per person}
 }
 \value{
-A tibble. Side effects: creates variables in the parent environment for RCI and Sdiff.
+A tibble with simulated longitudinal data and RCI-related variables.
 }
 \description{
 Generate X timepoint data for RCI analysis

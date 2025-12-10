@@ -7,7 +7,7 @@
 \method{print}{reliableTrend}(x, digits = max(3L, getOption("digits") - 3L), ...)
 }
 \arguments{
-\item{x}{A \code{reliableTrend} object (from \code{rti()} or \code{reliableTrend()}).}
+\item{x}{A \code{reliableTrend} object (from \code{rti()}).}
 
 \item{digits}{Number of significant digits to show.}
 

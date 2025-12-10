@@ -6,16 +6,20 @@
 \usage{
 \method{plot}{reliableTrend}(
   x,
+  y = NULL,
   band = c("slope", "mean", "prediction"),
   include_intercept_uncertainty = TRUE,
   level = x$level \%||\% 0.95,
   show_points = TRUE,
   show_line = TRUE,
+  ribbon_alpha = 0.15,
   ...
 )
 }
 \arguments{
 \item{x}{A \code{reliableTrend} object from \code{\link{rti}}.}
+
+\item{y}{Ignored. Included for consistency with base \code{\link[graphics]{plot}}.}
 
 \item{band}{One of \code{c("slope","mean","prediction")}. Default \code{"slope"}.}
 
@@ -25,6 +29,8 @@ include the \eqn{1/n} term (default \code{TRUE}). Ignored otherwise.}
 \item{level}{Confidence level (default taken from object if not supplied).}
 
 \item{show_points, show_line}{Logical. Toggle observed points and fitted line.}
+
+\item{ribbon_alpha}{Numeric alpha transparency for the ribbon band (default \code{0.15}).}
 
 \item{...}{Passed to \code{ggplot2::geom_line()} for the fitted line (e.g., linewidth).}
 }
