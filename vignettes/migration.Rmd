@@ -1,0 +1,60 @@
+---
+title: "Migrating to the supported ReliableTrendIndex API"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Migrating to the supported ReliableTrendIndex API}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+## Supported API
+
+New analyses should use three functions:
+
+- `rti()` for one series of repeated scores;
+- `rci()` for a two-occasion change score; and
+- `rti_by()` for long-format data with one result per person or group.
+
+Each RTI workflow requires externally justified measurement-error information.
+The preferred RTI inputs are `sd` and `r`; `rti()` also accepts externally
+derived `sem` or `sdiff`.
+
+## Replacing historical helpers
+
+| Historical call | Replacement |
+| --- | --- |
+| `reliableTrend(values, time, sem)` | `rti(y = values, t = time, sem = sem)` |
+| `slope_se_reliability(y, r, time, sd_single)` | `rti(y, t = time, sd = sd_single, r = r)` |
+| `rti_by_person(...)` | `rti_by(data, id, time, y, sd, r)` |
+| `jt_rci_calc(...)` or `rci_from_scores(...)` | `rci(...)` |
+| `rti_calc_simple(values, sem)` | `rti(y = values, sem = sem)` |
+
+The historical helpers remain functional but issue a deprecation warning. They
+are planned to remain available until at least version 1.0.0.
+
+## Example
+
+```{r}
+library(ReliableTrendIndex)
+
+scores <- c(10, 12, 11, 15)
+times <- c(0, 1, 3, 4)
+
+fit <- rti(y = scores, t = times, sd = 8, r = 0.85)
+fit
+
+rci(difference = scores[length(scores)] - scores[1],
+    sdiff = 8 * sqrt(2 * (1 - 0.85)))
+```
+
+## Preserved legacy output
+
+Compatibility wrappers retain their historical return classes and fields. For
+example, `slope_se_reliability()` still returns a `slopeSErel` object and
+`rti_calc_simple()` still returns its `rmaObj`, `error_var`, and `fit` fields.
+Use the supported API for new scripts so that code remains valid after the
+planned 1.0.0 lifecycle transition.

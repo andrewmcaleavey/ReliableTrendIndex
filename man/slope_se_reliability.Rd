@@ -51,6 +51,11 @@ slope, and the corresponding z-like statistic (the Reliable Trend Index; RTI).
 It also provides a two-sided \code{z} critical value, a p-value, and a simple
 categorical interpretation using the \code{z}-criterion.
 }
+\section{Lifecycle}{
+Deprecated since version 0.3.0; use \code{\link[=rti]{rti()}} with externally
+supplied \code{sd} and \code{r}. This wrapper retains its \code{slopeSErel}
+result class until at least version 1.0.0.
+}
 \details{
 Within-person slope SE using reliability (RTI components for one series)
 

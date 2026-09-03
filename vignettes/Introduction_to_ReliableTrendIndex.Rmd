@@ -1,5 +1,5 @@
 ---
-title: "Introduction_to_ReliableTrendIndex"
+title: "Historical RTI workflows"
 output: 
   rmarkdown::html_vignette: 
     fig_width: 7 
@@ -27,7 +27,12 @@ library(purrr)
 
 ```
 
-The package `{ReliableTrendIndex}` is a way to contain a large group of disorganized analysis functions related to the concept of reliable change. There are a few key functions.  
+This article preserves older workflows for reproducibility. For new analyses,
+use `rti()` for one series, `rci()` for two-occasion change, and `rti_by()`
+for long-format grouped data. See `vignette("migration")` for replacements.
+
+The functions illustrated below remain functional but are deprecated and may
+emit warnings. They are planned to remain available until at least version 1.0.0.
 
 ### `reliableTrend()` and the `reliableTrend` class  
 
@@ -311,4 +316,3 @@ ggplot(sim_data_3 |>
 
 
 ```
-

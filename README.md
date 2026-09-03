@@ -93,6 +93,15 @@ New analyses should use these three functions:
 `r` are not available. Historical helpers remain available during the
 transition, but they are not the recommended interface for new work.
 
+## Migration from historical helpers
+
+New analyses should use `rti()`, `rci()`, and `rti_by()`. Historical helpers
+such as `reliableTrend()`, `slope_se_reliability()`, `rti_by_person()`,
+`rti_calc_simple()`, `jt_rci_calc()`, and `rci_from_scores()` remain
+functional but now issue deprecation warnings. They are planned to remain
+available until at least version 1.0.0. See `vignette("migration")` for
+call-by-call replacements.
+
 ## Installation
 
 I am providing this package publicly because it should be available to

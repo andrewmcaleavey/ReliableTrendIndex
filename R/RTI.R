@@ -45,8 +45,15 @@ rti <- function(y = NULL, sd = NULL, r = NULL,
                 t = NULL, na.rm = FALSE, level = 0.95,
                 values = NULL, time = NULL, sem = NULL, sdiff = NULL) {
   cl <- match.call()
-  if (!is.null(values) && is.null(y)) y <- values
+  used_values_alias <- !is.null(values) && is.null(y)
+  if (used_values_alias) y <- values
   if (!is.null(time)   && is.null(t)) t <- time
+  # Older workflows interpreted a scalar values argument as a change from a
+  # zero baseline. Keep that behavior only for the legacy alias.
+  if (used_values_alias && is.numeric(y) && length(y) == 1L) {
+    y <- c(0, y)
+    cl$values <- as.call(list(as.name("c"), 0, y[2L]))
+  }
   .rti_compute(y = y, sd = sd, r = r, t = t, na.rm = na.rm, level = level,
                sem = sem, sdiff = sdiff, call = cl)
 }

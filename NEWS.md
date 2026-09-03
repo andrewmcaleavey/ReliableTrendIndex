@@ -1,3 +1,11 @@
+# ReliableTrendIndex 0.3.0
+
+* Established rti(), rci(), and rti_by() as the supported analysis API.
+* Added shared internal calculation helpers and regression tests for the
+  supported API.
+* Deprecated historical wrappers, which remain functional until at least
+  version 1.0.0. See the new migration vignette for replacements.
+
 # ReliableTrendIndex 0.2.0
 
 The purpose of this update is to reduce reliance on `{metafor}` and better-document the RTI itself.  

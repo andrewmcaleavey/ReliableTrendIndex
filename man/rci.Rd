@@ -4,7 +4,7 @@
 \alias{jt_rci_calc}
 \alias{rci_from_scores}
 \alias{rci}
-\title{RCI convenience wrapper}
+\title{Reliable Change Index (RCI)}
 \usage{
 jt_rci_calc(
   difference = NULL,
@@ -98,4 +98,9 @@ Compute Jacobson–Truax style RCI values (and variants).
 This is the supported RCI interface. For the simplest and preferred path,
 provide \code{difference} and externally derived \code{sdiff}. The other
 arguments retain supported formula variants and input derivations.
+}
+\section{Lifecycle}{
+\code{rci()} is supported. The aliases \code{jt_rci_calc()} and
+\code{rci_from_scores()} are deprecated since version 0.3.0 and retained until
+at least version 1.0.0.
 }

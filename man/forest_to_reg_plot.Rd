@@ -23,6 +23,10 @@ A \code{ggplot} object.
 Works with either a \strong{metafor} \code{rma*} object (if metafor is installed)
 or a \code{reliableTrend} object (from \code{rti()} / \code{reliableTrend()}).
 }
+\section{Lifecycle}{
+Deprecated since version 0.3.0. Use \code{\link[=plot.reliableTrend]{plot()}}
+for an RTI result.
+}
 \examples{
 test <- rti_calc_simple(c(47.5, 32.5), 3.35)
 forest_to_reg_plot(test$rmaObj, StError = sqrt(test$error_var))

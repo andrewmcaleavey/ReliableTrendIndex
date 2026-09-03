@@ -39,9 +39,8 @@ rti_by_person <- function(data, id, y, time = NULL, r,
                           p = 0.05,
                           verbose = FALSE,
                           na_rm = TRUE) {
-  .Deprecated("rti_by",
-              package = "ReliableTrendIndex",
-              msg = "rti_by_person() is deprecated; use rti_by() (filter to one id or run by group).")
+  .legacy_deprecate("rti_by_person", "rti_by",
+                    "Filter the result to one id when a single-person result is needed.")
 
   stopifnot(is.data.frame(data))
   # NSE capture
@@ -199,11 +198,11 @@ rti_by_person <- function(data, id, y, time = NULL, r,
       ))
     }
 
-    sigma_e <- sd_use * sqrt(1 - r)
-    if (!is.finite(sigma_e) || sigma_e < 0) sigma_e <- NA_real_
-
-    SE_rel <- if (is.na(sigma_e)) NA_real_ else sigma_e / sqrt(S_xx)
-    RTI    <- if (is.na(SE_rel) || SE_rel == 0) NA_real_ else slope_hat / SE_rel
+    fit_core <- rti(y = y_i, t = t_i, sd = sd_use, r = r, level = 1 - p)
+    slope_hat <- fit_core$estimate
+    sigma_e <- sqrt(fit_core$sigma2)
+    SE_rel <- fit_core$se
+    RTI <- if (is.na(SE_rel) || SE_rel == 0) NA_real_ else fit_core$z
 
     crit <- stats::qnorm(1 - p/2)
     RTI_cat <- if (is.na(RTI)) {

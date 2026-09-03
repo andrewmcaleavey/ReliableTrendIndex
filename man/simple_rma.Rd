@@ -22,3 +22,6 @@ the \code{metafor::rma} fit object
 Provided for legacy workflows that expected a simple rma frontend.
 This function only runs if the \strong{metafor} package is available.
 }
+\section{Lifecycle}{
+Deprecated since version 0.3.0; call \code{metafor::rma()} directly.
+}

@@ -130,6 +130,8 @@
 #' @importFrom stats lm coef sd qnorm pnorm
 #' @export
 slope_se_reliability <- function(y, r, time = NULL, sd_single = NULL, p = 0.05) {
+  cl <- match.call()
+  .legacy_deprecate("slope_se_reliability", "rti")
   stopifnot(is.numeric(y), length(y) >= 2)
   if (is.null(time)) time <- seq_along(y)
   stopifnot(length(time) == length(y))
@@ -163,19 +165,12 @@ slope_se_reliability <- function(y, r, time = NULL, sd_single = NULL, p = 0.05) 
     sd_source <- "sd_single (provided)"
   }
   
-  # Measurement-error SD per occasion (in the same units as y)
-  sigma_e <- sd_single * sqrt(1 - r)
-  
-  # SE of slope using reliability plug-in: SE(beta1) = sigma_e / sqrt(S_xx)
+  fit_core <- rti(y = y, t = time, sd = sd_single, r = r, level = 1 - p)
+  sigma_e <- sqrt(fit_core$sigma2)
   SE_factor <- 1 / sqrt_S_xx
-  SE_reliability <- sigma_e * SE_factor
-  
-  # OLS slope for reference (using standard lm)
-  fit <- stats::lm(y ~ time)
-  slope_hat <- unname(stats::coef(fit)[["time"]])
-  
-  # RTI (z-like index) and z inference
-  RTI <- slope_hat / SE_reliability
+  SE_reliability <- fit_core$se
+  slope_hat <- fit_core$estimate
+  RTI <- if (SE_reliability == 0) NA_real_ else fit_core$z
   crit <- stats::qnorm(1 - p/2)
   p_value <- 2 * (1 - stats::pnorm(abs(RTI)))
   
@@ -213,8 +208,8 @@ slope_se_reliability <- function(y, r, time = NULL, sd_single = NULL, p = 0.05) 
     # store raw series and intercept for plotting
     y = as.numeric(y),
     time_vec = as.numeric(time),
-    intercept_hat = unname(stats::coef(fit)[1L]),
-    call = match.call()
+    intercept_hat = fit_core$intercept,
+    call = cl
   )
   class(out) <- "slopeSErel"
   out

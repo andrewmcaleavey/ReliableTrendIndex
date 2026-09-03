@@ -62,8 +62,7 @@ jt_rci_calc <- function(difference = NULL, t1 = NULL, t2 = NULL,
                         scale_rci = NULL, r1 = NULL, r2 = NULL,
                         sd1 = NULL, sd2 = NULL, sdiff = NULL, sem = NULL,
                         prob = 0.975, verbose = FALSE, rc.type = "jt") {
-  .Deprecated("rci", package = "ReliableTrendIndex",
-              msg = "jt_rci_calc() is deprecated; use rci().")
+  .legacy_deprecate("jt_rci_calc", "rci")
   rci(difference = difference, t1 = t1, t2 = t2,
       scale_rci = scale_rci, r1 = r1, r2 = r2,
       sd1 = sd1, sd2 = sd2, sdiff = sdiff, sem = sem,
@@ -76,6 +75,7 @@ jt_rci_calc <- function(difference = NULL, t1 = NULL, t2 = NULL,
 rci_from_scores <- function(x1 = NULL, x2 = NULL, difference = NULL,
                             sd = NULL, r = NULL, sem = NULL, sdiff = NULL,
                             prob = 0.975, verbose = FALSE, rc.type = "jt") {
+  .legacy_deprecate("rci_from_scores", "rci")
   if (is.null(difference) && !is.null(x1) && !is.null(x2)) difference <- x2 - x1
   rci(difference = difference,
       t1 = x1, t2 = x2,
@@ -114,8 +114,18 @@ rci <- function(x1 = NULL, x2 = NULL, difference = NULL,
 reliableTrend <- function(values = NULL, y = NULL, time = NULL, t = NULL,
                           sd = NULL, r = NULL, sem = NULL,
                           na.rm = FALSE, level = 0.95) {
+  cl <- match.call()
+  .legacy_deprecate("reliableTrend", "rti")
   if (!is.null(values) && is.null(y)) y <- values
   if (!is.null(time)   && is.null(t)) t <- time
+  if (!is.null(y)) {
+    out <- rti(y = y, t = t, sd = sd, r = r, sem = sem, na.rm = na.rm,
+               level = level)
+    out$sem <- NULL
+    out$sdiff <- NULL
+    out$call <- cl
+    return(out)
+  }
   if (is.null(y)) stop("Provide `values` or `y`.", call. = FALSE)
   if (is.null(t)) t <- seq_along(y)
   
@@ -191,6 +201,8 @@ reliableTrend <- function(values = NULL, y = NULL, time = NULL, t = NULL,
 #' @return data.frame with slope estimate, CI, test stats and legacy fields
 #' @export
 rti_to_df <- function(x) {
+  .legacy_deprecate("rti_to_df", "rti_by",
+                    "For a single fit, access the fields of rti() directly.")
   if (!inherits(x, "reliableTrend")) stop("`x` must be a reliableTrend.", call. = FALSE)
   
   # RTI pieces
@@ -266,13 +278,29 @@ rti_to_df <- function(x) {
 #' @return the \code{metafor::rma} fit object
 #' @export
 simple_rma <- function(yi, vi = NULL, sei = NULL, method = "FE", ...) {
+  .legacy_deprecate("simple_rma", "metafor::rma")
+  dots <- list(...)
+  if (is.data.frame(yi)) {
+    observed <- dots$observed
+    error_var <- dots$error_var
+    if (is.null(observed) || !is.character(observed) || length(observed) != 1L ||
+        !observed %in% names(yi)) {
+      stop("For data-frame input, provide an observed column name.", call. = FALSE)
+    }
+    yi <- yi[[observed]]
+    if (is.null(vi) && is.null(sei) && !is.null(error_var)) {
+      vi <- rep(error_var, length(yi))
+    }
+    dots$observed <- NULL
+    dots$error_var <- NULL
+  }
   if (!requireNamespace("metafor", quietly = TRUE)) {
     stop("`metafor` is not installed. Install it to use `simple_rma()`.", call. = FALSE)
   }
   if (is.null(vi) && is.null(sei)) stop("Provide either `vi` or `sei`.", call. = FALSE)
   if (!is.null(vi) && !is.null(sei)) stop("Provide only one of `vi` or `sei` (not both).", call. = FALSE)
   if (!is.null(sei)) vi <- sei^2
-  metafor::rma(yi = yi, vi = vi, method = method, ...)
+  do.call(metafor::rma, c(list(yi = yi, vi = vi, method = method), dots))
 }
 
 
@@ -315,8 +343,9 @@ simple_rma <- function(yi, vi = NULL, sei = NULL, method = "FE", ...) {
 #' rti_calc_simple(c(47.5, 32.5), sem = 3.35)
 #' @export
 rti_calc_simple <- function(values, sem, time = NULL, level = 0.95, na.rm = FALSE) {
+  .legacy_deprecate("rti_calc_simple", "rti")
   if (is.null(time)) time <- seq_along(values)
-  fit <- rti(values = values, time = time, sem = sem, level = level, na.rm = na.rm)
+  fit <- rti(y = values, t = time, sem = sem, level = level, na.rm = na.rm)
   out <- list(
     rmaObj    = fit,            # legacy name expected by examples
     error_var = fit$sigma2,     # sem^2
@@ -342,6 +371,7 @@ rti_calc_simple <- function(values, sem, time = NULL, level = 0.95, na.rm = FALS
 #' forest_to_reg_plot(test$rmaObj, StError = sqrt(test$error_var))
 #' @export
 forest_to_reg_plot <- function(x, StError = NULL, level = 0.95, ...) {
+  .legacy_deprecate("forest_to_reg_plot", "plot")
   # reliableTrend path (new backend; predict.reliableTrend handles intervals)
   if (inherits(x, "reliableTrend")) {
     preds <- predict(x, interval = "mean", level = level, include_intercept_uncertainty = TRUE)

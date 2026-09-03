@@ -55,6 +55,9 @@ returns additional diagnostics as in prior releases.
 single person or run \code{rti_by()} on the whole data and slice that person's row).
 This remains for backward compatibility and mirrors the legacy logic.
 }
+\section{Lifecycle}{
+Deprecated since version 0.3.0; retained until at least version 1.0.0.
+}
 \details{
 Per person, fits \code{y ~ time} via OLS and computes an RTI z-statistic using
 \code{SE = (sd * sqrt(1 - r)) / sqrt(S_xx)}, where \code{sd} comes from \code{sd_single} or

@@ -167,3 +167,10 @@
   }
   unique_values[[1L]]
 }
+
+.legacy_deprecate <- function(old, replacement, details = NULL) {
+  msg <- paste0(old, "() is deprecated since ReliableTrendIndex 0.3.0; use ",
+                replacement, " instead. It will remain available until at least 1.0.0.")
+  if (!is.null(details)) msg <- paste(msg, details)
+  .Deprecated(new = replacement, package = "ReliableTrendIndex", msg = msg)
+}
