@@ -4,12 +4,36 @@
 \name{ReliableTrendIndex-package}
 \alias{ReliableTrendIndex}
 \alias{ReliableTrendIndex-package}
-\title{ReliableTrendIndex: Utilities for (More Reliable) Reliable Change Analysis}
+\title{ReliableTrendIndex: reliability-based change and trend analyses}
 \description{
-You should not use this package because it makes RCI easy. The package enables simple calculations in a safe and consistent format, with the intent to encourage users to opt for increasingly reliable change analysis.
+The supported analysis interface is deliberately small:
+\itemize{
+\item \code{rti()} computes a single-series Reliable Trend Index.
+\item \code{rci()} computes a Reliable Change Index.
+\item \code{rti_by()} applies \code{rti()} to long-format grouped data.
 }
+}
+\details{
+All three functions use externally supplied measurement-error information.
+For \code{rti()} and \code{rti_by()}, the primary parameterization is a
+single-occasion standard deviation (\code{sd}) and reliability (\code{r}).
+\code{rti()} also accepts \code{sem} or \code{sdiff} when those quantities
+are the directly available external inputs.
+}
+\section{API lifecycle}{
+
+These functions are the supported API. Historical helpers remain available
+for compatibility during the transition, but new analyses should use
+\code{rti()}, \code{rci()}, and \code{rti_by()}.
+}
+
 \author{
 \strong{Maintainer}: Andrew McAleavey \email{andrew.mcaleavey@gmail.com} (\href{https://orcid.org/0000-0001-5986-2033}{ORCID})
+
+Authors:
+\itemize{
+  \item Andrew McAleavey \email{andrew.mcaleavey@gmail.com} (\href{https://orcid.org/0000-0001-5986-2033}{ORCID})
+}
 
 }
 \keyword{internal}

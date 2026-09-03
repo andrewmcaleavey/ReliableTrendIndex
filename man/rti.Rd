@@ -50,6 +50,10 @@ An object of class \code{"reliableTrend"} with elements:
 }
 \description{
 Compute a reliability-based test of within-person linear trend.
+This is the supported single-series RTI interface. New code should use
+\code{y}, \code{t}, and either \code{sd}/\code{r}, \code{sem}, or
+\code{sdiff}; the older \code{values} and \code{time} aliases remain for
+compatibility.
 Backward compatible with older code that passed \code{values}/\code{time}
 and/or \code{sem} instead of \code{sd}/\code{r}. You can also pass
 \code{sdiff}, the standard error of the difference (RCI SE); if provided,

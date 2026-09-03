@@ -95,4 +95,7 @@ derive \code{difference = x2 - x1} when \code{difference} is NULL.}
 }
 \description{
 Compute Jacobson–Truax style RCI values (and variants).
+This is the supported RCI interface. For the simplest and preferred path,
+provide \code{difference} and externally derived \code{sdiff}. The other
+arguments retain supported formula variants and input derivations.
 }

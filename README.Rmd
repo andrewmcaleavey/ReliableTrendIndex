@@ -45,6 +45,21 @@ Nonlinearity of the true change process will make the RTI less sensitive, but st
 
 In general, it is not my opinion that the RTI solves all of the RCI's problems. There are many reasons not to be interested in reliable changes at all. But if you are, the RTI should be a usable solution.  
 
+## Supported API
+
+New analyses should use these three functions:
+
+* `rti()` for one person's repeated scores. Supply the observed scores as `y`,
+  external single-occasion standard deviation as `sd`, reliability as `r`, and
+  optional observation times as `t`.
+* `rci()` for a two-occasion change score. Its primary inputs are `difference`
+  and the external standard error of the difference, `sdiff`.
+* `rti_by()` for long-format data with one RTI result per person or group.
+
+`rti()` also accepts externally derived `sem` or `sdiff` when `sd` and `r` are
+not available. Historical helpers remain available during the transition, but
+they are not the recommended interface for new work.
+
 ## Installation  
 
 I am providing this package publicly because it should be available to everyone who is interested in these issues, to discover strengths and weaknesses of this framework. Not because I think it is perfect. That is, errors might be present.  

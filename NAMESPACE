@@ -34,9 +34,11 @@ export(simple_rma)
 export(slope_se_reliability)
 importFrom(metafor,rma)
 importFrom(rlang,.data)
-importFrom(stats,coef)
-importFrom(stats,lm)
-importFrom(stats,pnorm)
-importFrom(stats,predict)
-importFrom(stats,qnorm)
-importFrom(stats,sd)
+importFrom(stats,
+  coef,
+  lm,
+  pnorm,
+  predict,
+  qnorm,
+  sd
+)

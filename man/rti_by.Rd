@@ -34,6 +34,8 @@ and a list column \code{fit} holding each group's \code{reliableTrend} object.
 \description{
 Compute the Reliable Trend Index within groups (e.g., per person) from a
 long-format data frame.
+This is the supported grouped-analysis interface and delegates each group
+to \code{rti()}, so its estimates and inference use the same calculation.
 }
 \examples{
 set.seed(1)

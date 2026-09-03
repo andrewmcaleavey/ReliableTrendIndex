@@ -1,6 +1,10 @@
 #' Reliable Trend Index (RTI)
 #'
 #' Compute a reliability-based test of within-person linear trend.
+#' This is the supported single-series RTI interface. New code should use
+#' \code{y}, \code{t}, and either \code{sd}/\code{r}, \code{sem}, or
+#' \code{sdiff}; the older \code{values} and \code{time} aliases remain for
+#' compatibility.
 #' Backward compatible with older code that passed \code{values}/\code{time}
 #' and/or \code{sem} instead of \code{sd}/\code{r}. You can also pass
 #' \code{sdiff}, the standard error of the difference (RCI SE); if provided,
@@ -41,88 +45,8 @@ rti <- function(y = NULL, sd = NULL, r = NULL,
                 t = NULL, na.rm = FALSE, level = 0.95,
                 values = NULL, time = NULL, sem = NULL, sdiff = NULL) {
   cl <- match.call()
-  
-  # ---- legacy aliases ----
   if (!is.null(values) && is.null(y)) y <- values
   if (!is.null(time)   && is.null(t)) t <- time
-  
-  if (is.null(y) || !is.numeric(y) || length(y) < 2L)
-    stop("`y` (or legacy `values`) must be numeric with length >= 2.", call. = FALSE)
-  
-  # default time if missing
-  if (is.null(t)) t <- seq_along(y)
-  
-  if (!is.numeric(t) || length(t) != length(y))
-    stop("`t` (or legacy `time`) must be numeric and the same length as `y`.", call. = FALSE)
-  
-  # Handle missingness
-  keep <- is.finite(y) & is.finite(t)
-  if (!all(keep)) {
-    if (!na.rm) stop("Missing or non-finite values in `y`/`t`. Set `na.rm = TRUE` to drop.", call. = FALSE)
-    y <- y[keep]; t <- t[keep]
-    warning("Dropped ", sum(!keep), " non-finite observations.", call. = FALSE)
-  }
-  n <- length(y)
-  if (n < 2L) stop("Need at least 2 finite observations after dropping.", call. = FALSE)
-  
-  # Center time; intercept = mean(y)
-  tbar <- mean(t)
-  tc   <- t - tbar
-  Sxx  <- sum(tc^2)
-  if (Sxx <= 0) stop("Degenerate time vector: Sxx = 0. Time points must vary.", call. = FALSE)
-  
-  # OLS slope (centered time)
-  beta1 <- sum(tc * y) / Sxx
-  beta0 <- mean(y)
-  
-  # ---- variance choice with precedence: sdiff > sem > sd/r ----
-  if (!is.null(sdiff)) {
-    if (!is.numeric(sdiff) || length(sdiff) != 1L || !is.finite(sdiff) || sdiff <= 0)
-      stop("`sdiff` must be a single positive, finite number.", call. = FALSE)
-    # sdiff = sqrt(2) * sem = SD * sqrt{2(1 - r)}; thus sigma2 (per-occasion) = sem^2 = sdiff^2 / 2
-    sigma2 <- (sdiff^2) / 2
-    sd_out <- NA_real_; r_out <- NA_real_; sem_out <- NA_real_; sdiff_out <- sdiff
-  } else if (!is.null(sem)) {
-    if (!is.numeric(sem) || length(sem) != 1L || !is.finite(sem) || sem <= 0)
-      stop("`sem` must be a single positive, finite number.", call. = FALSE)
-    sigma2 <- sem^2
-    sd_out <- NA_real_; r_out <- NA_real_; sem_out <- sem; sdiff_out <- NA_real_
-  } else {
-    if (!is.numeric(sd) || length(sd) != 1L || !is.finite(sd) || sd <= 0)
-      stop("`sd` must be a single positive, finite number (or supply `sem`/`sdiff`).", call. = FALSE)
-    if (!is.numeric(r) || length(r) != 1L || !is.finite(r) || r < 0 || r > 1)
-      stop("`r` must be a single number in [0, 1] (or supply `sem`/`sdiff`).", call. = FALSE)
-    sigma2 <- sd^2 * (1 - r)
-    sd_out <- sd; r_out <- r; sem_out <- NA_real_; sdiff_out <- NA_real_
-  }
-  
-  # Slope SE and test (z-based)
-  se_beta1 <- sqrt(sigma2 / Sxx)              # equals sdiff / sqrt(2*Sxx) if sdiff provided
-  z <- beta1 / se_beta1
-  p <- 2 * stats::pnorm(-abs(z))
-  zcrit <- stats::qnorm(1 - (1 - level) / 2)
-  ci <- c(beta1 - zcrit * se_beta1, beta1 + zcrit * se_beta1)
-  
-  out <- list(
-    estimate = beta1,
-    intercept = beta0,
-    se = se_beta1,
-    z = z,
-    p = p,
-    ci = ci,
-    sigma2 = sigma2,
-    t = as.numeric(t),
-    t_centered = as.numeric(tc),
-    y = as.numeric(y),
-    Sxx = Sxx,
-    n = n,
-    sd = sd_out,
-    r = r_out,
-    sem = sem_out,
-    sdiff = sdiff_out,
-    level = level,
-    call = cl
-  )
-  class(out) <- "reliableTrend"
-  out
+  .rti_compute(y = y, sd = sd, r = r, t = t, na.rm = na.rm, level = level,
+               sem = sem, sdiff = sdiff, call = cl)
 }

@@ -2,6 +2,8 @@
 #'
 #' Compute the Reliable Trend Index within groups (e.g., per person) from a
 #' long-format data frame.
+#' This is the supported grouped-analysis interface and delegates each group
+#' to \code{rti()}, so its estimates and inference use the same calculation.
 #'
 #' @param data A data frame in long format.
 #' @param id Grouping variable (column) identifying units (e.g., person id).
@@ -57,27 +59,8 @@ rti_by <- function(data, id, time, y, sd, r, na.rm = FALSE, level = 0.95) {
     t_i <- time_vec[idx]
     
     # Determine sd and r for this group
-    sd_i <- if (is.list(sd_input) && identical(sd_input$type, "column")) {
-      vals <- sd_input$values[idx]
-      u <- unique(vals[is.finite(vals)])
-      if (length(u) != 1L) {
-        stop("`sd` must be constant within id '", ids[i], "' when provided as a column.", call. = FALSE)
-      }
-      u[[1L]]
-    } else {
-      sd_input$value
-    }
-    
-    r_i <- if (is.list(r_input) && identical(r_input$type, "column")) {
-      vals <- r_input$values[idx]
-      u <- unique(vals[is.finite(vals)])
-      if (length(u) != 1L) {
-        stop("`r` must be constant within id '", ids[i], "' when provided as a column.", call. = FALSE)
-      }
-      u[[1L]]
-    } else {
-      r_input$value
-    }
+    sd_i <- .rti_group_parameter(sd_input, idx, "sd", ids[i])
+    r_i <- .rti_group_parameter(r_input, idx, "r", ids[i])
     
     fit_i <- rti(y = y_i, sd = sd_i, r = r_i, t = t_i, na.rm = na.rm, level = level)
     

@@ -76,6 +76,23 @@ In general, it is not my opinion that the RTI solves all of the RCI’s
 problems. There are many reasons not to be interested in reliable
 changes at all. But if you are, the RTI should be a usable solution.
 
+## Supported API
+
+New analyses should use these three functions:
+
+- `rti()` for one person’s repeated scores. Supply the observed scores
+  as `y`, external single-occasion standard deviation as `sd`,
+  reliability as `r`, and optional observation times as `t`.
+- `rci()` for a two-occasion change score. Its primary inputs are
+  `difference` and the external standard error of the difference,
+  `sdiff`.
+- `rti_by()` for long-format data with one RTI result per person or
+  group.
+
+`rti()` also accepts externally derived `sem` or `sdiff` when `sd` and
+`r` are not available. Historical helpers remain available during the
+transition, but they are not the recommended interface for new work.
+
 ## Installation
 
 I am providing this package publicly because it should be available to
@@ -232,12 +249,12 @@ where:
 
 - The term $x_2 - x_1$ is the observed change score from pre- to
   post-treatment, which is assumed to be an unbiased estimate of true
-  change.  
+  change.\
 - $S_{diff}$ is the standard error of the difference score.
 
 The RTI is defined most basically as:
 
-$$RT = \frac{b}{s_{e}}$$  
+$$RT = \frac{b}{s_{e}}$$\
 where: - $b$ is the linear time effect (slope) estimate from a
 regression of all available data points. - $s_{e}$ is the standard error
 for that slope estimate.
@@ -280,7 +297,7 @@ the RTI will be defined differently:
   observations. Put differently, the best available estimate of $b$ is
   simply $x_2 - x_1$. The standard error of a difference score
   ($S_{diff}$) is the appropriate standard error for this case. Thus,
-  the entire model simplifies to the RCI.  
+  the entire model simplifies to the RCI.\
 - **For 3 observations**, there are two options. Treating all three
   observations as fixed means that there is no gain from the RTI
   compared to the RCI with the {`metafor`} backend. The model will
@@ -290,7 +307,7 @@ the RTI will be defined differently:
   uncertainty in the slope estimation, though it implies that slope
   comes from an unrealistically-accurately measured first observation.
   The slope will not differ if a different point were chosen as the
-  fixed point.  
+  fixed point.\
 - **For 4 or more observations**, the RTI estimates both a slope and
   intercept. This should be the most generalizable method for trend
   identification. It does not prioritize any given observation(s),
@@ -424,7 +441,7 @@ summary(mac_rti)
 #>   Decision: Reliable Increase
 #>   One-sided probability of Increase: 0.98429
 #> 
-#> RCI (pre–post, first vs last time point):
+#> RCI (pre-post, first vs last time point):
 #>   Difference (last - first): 1.000
 #>   z = 1.414, z_crit = 1.960
 #>   Decision: Less than reliable change
@@ -445,7 +462,7 @@ You might want to visualize this to see what it’s doing. Try
 plot(mac_rti) 
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" alt="" width="100%" />
 
 Notice that the trend line is going up, and the 95% CI for the RTI
 (shaded region) is more precise than the 95% CI for individual
@@ -462,7 +479,7 @@ plot(mac_rti) +
   ggplot2::theme_dark()
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-9-1.png" alt="" width="100%" />
 
 ## Analysis of complete data sets
 
