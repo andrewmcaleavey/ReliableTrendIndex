@@ -38,3 +38,8 @@ Backwards-compatible wrapper that accepts either \code{sd} & \code{r} \emph{or} 
 (standard error of measurement). Returns a \code{"reliableTrend"} object shaped
 like \code{\link[=rti]{rti()}}, so new methods (plot/predict/print) will work.
 }
+\section{Lifecycle}{
+
+\code{reliableTrend()} is deprecated since version 0.3.0; use \code{\link[=rti]{rti()}} instead.
+}
+

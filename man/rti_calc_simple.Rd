@@ -31,6 +31,11 @@ Returns a list containing fields older examples expect:
 \item error_var: sigma^2 used (i.e., sem^2)
 }
 }
+\section{Lifecycle}{
+
+\code{rti_calc_simple()} is deprecated since version 0.3.0; use \code{\link[=rti]{rti()}} directly.
+}
+
 \examples{
 rti_calc_simple(c(47.5, 32.5), sem = 3.35)
 }

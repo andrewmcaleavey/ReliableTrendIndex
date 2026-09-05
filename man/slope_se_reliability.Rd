@@ -91,6 +91,11 @@ The function returns the p-value \eqn{2(1-\Phi(|\mathrm{RTI}|))} and a label:
 \item \code{"No reliable trend"} otherwise.
 }
 }
+\section{Lifecycle}{
+
+\code{slope_se_reliability()} is deprecated since version 0.3.0; use \code{\link[=rti]{rti()}} instead.
+}
+
 \examples{
 # Five equally spaced observations with r = 0.90
 y <- c(20, 18, 17, 16, 15)

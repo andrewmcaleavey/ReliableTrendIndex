@@ -59,6 +59,9 @@
 #'   baseline or population SD). If \code{NULL}, uses \code{sd(y)} as a proxy.
 #' @param p Two-sided significance level for z-based inference (default \code{0.05}).
 #'
+#' @section Lifecycle:
+#' `slope_se_reliability()` is deprecated since version 0.3.0; use [rti()] instead.
+#'
 #' @return
 #' An object of class \code{"slopeSErel"}: a named \code{list} with elements
 #' \describe{

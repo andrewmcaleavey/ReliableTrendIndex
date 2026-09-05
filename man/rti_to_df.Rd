@@ -20,3 +20,9 @@ Adds legacy fields expected by older vignettes:
 \item pd.RTI, pd.RCI (simple "confidence in either change" = 1 - p_two_sided)
 }
 }
+\section{Lifecycle}{
+
+\code{rti_to_df()} is deprecated since version 0.3.0; use \code{\link[=rti_by]{rti_by()}} for grouped
+analyses or access fields directly from an \code{\link[=rti]{rti()}} result.
+}
+

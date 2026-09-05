@@ -60,6 +60,11 @@ Per person, fits \code{y ~ time} via OLS and computes an RTI z-statistic using
 \code{SE = (sd * sqrt(1 - r)) / sqrt(S_xx)}, where \code{sd} comes from \code{sd_single} or
 \code{sd_method}, and \code{S_xx = sum((t - mean(t))^2)}.
 }
+\section{Lifecycle}{
+
+\code{rti_by_person()} is deprecated since version 0.3.0; use \code{\link[=rti_by]{rti_by()}} instead.
+}
+
 \seealso{
 \code{\link[=rti_by]{rti_by()}}
 }

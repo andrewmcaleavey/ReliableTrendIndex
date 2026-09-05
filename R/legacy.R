@@ -57,6 +57,8 @@ sdiff_from_sd_r <- function(sd, r) {
 }
 
 #' @name rci
+#' @section Lifecycle:
+#' `jt_rci_calc()` is deprecated since version 0.3.0; use [rci()] instead.
 #' @export
 jt_rci_calc <- function(difference = NULL, t1 = NULL, t2 = NULL,
                         scale_rci = NULL, r1 = NULL, r2 = NULL,
@@ -71,6 +73,8 @@ jt_rci_calc <- function(difference = NULL, t1 = NULL, t2 = NULL,
 
 
 #' @name rci
+#' @section Lifecycle:
+#' `rci_from_scores()` is deprecated since version 0.3.0; use [rci()] instead.
 #' @export
 rci_from_scores <- function(x1 = NULL, x2 = NULL, difference = NULL,
                             sd = NULL, r = NULL, sem = NULL, sdiff = NULL,
@@ -101,6 +105,8 @@ rci_from_scores <- function(x1 = NULL, x2 = NULL, difference = NULL,
 #' @param na.rm drop non-finite pairs?
 #' @param level confidence level for slope intervals
 #' @return object of class `"reliableTrend"`
+#' @section Lifecycle:
+#' `reliableTrend()` is deprecated since version 0.3.0; use [rti()] instead.
 #' @export
 reliableTrend <- function(values = NULL, y = NULL, time = NULL, t = NULL,
                           sd = NULL, r = NULL, sem = NULL,
@@ -190,6 +196,9 @@ reliableTrend <- function(values = NULL, y = NULL, time = NULL, t = NULL,
 #'
 #' @param x reliableTrend object
 #' @return data.frame with slope estimate, CI, test stats and legacy fields
+#' @section Lifecycle:
+#' `rti_to_df()` is deprecated since version 0.3.0; use [rti_by()] for grouped
+#' analyses or access fields directly from an [rti()] result.
 #' @export
 rti_to_df <- function(x) {
   .legacy_deprecate("rti_to_df", "rti_by",
@@ -267,6 +276,8 @@ rti_to_df <- function(x) {
 #' @param method estimation method (default "FE")
 #' @param ... passed to \code{metafor::rma()}
 #' @return the \code{metafor::rma} fit object
+#' @section Lifecycle:
+#' `simple_rma()` is deprecated since version 0.3.0; call `metafor::rma()` directly.
 #' @export
 simple_rma <- function(yi, vi = NULL, sei = NULL, method = "FE", ...) {
   .legacy_deprecate("simple_rma", "metafor::rma")
@@ -330,6 +341,8 @@ simple_rma <- function(yi, vi = NULL, sei = NULL, method = "FE", ...) {
 #'
 #' @return A list with \code{rmaObj} (the reliableTrend fit), \code{error_var} (sem^2),
 #'   and \code{fit} (alias to the reliableTrend), for legacy compatibility.
+#' @section Lifecycle:
+#' `rti_calc_simple()` is deprecated since version 0.3.0; use [rti()] directly.
 #' @examples
 #' rti_calc_simple(c(47.5, 32.5), sem = 3.35)
 #' @export
@@ -357,6 +370,9 @@ rti_calc_simple <- function(values, sem, time = NULL, level = 0.95, na.rm = FALS
 #' @param level Confidence level for intervals (default 0.95).
 #' @param ... Ignored.
 #' @return A \code{ggplot} object.
+#' @section Lifecycle:
+#' `forest_to_reg_plot()` is deprecated since version 0.3.0; use `plot()` on
+#' an [rti()] result.
 #' @examples
 #' test <- rti_calc_simple(c(47.5, 32.5), 3.35)
 #' forest_to_reg_plot(test$rmaObj, StError = sqrt(test$error_var))

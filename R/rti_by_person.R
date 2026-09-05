@@ -29,6 +29,9 @@
 #' `SE = (sd * sqrt(1 - r)) / sqrt(S_xx)`, where `sd` comes from `sd_single` or
 #' `sd_method`, and `S_xx = sum((t - mean(t))^2)`.
 #'
+#' @section Lifecycle:
+#' `rti_by_person()` is deprecated since version 0.3.0; use [rti_by()] instead.
+#'
 #' @seealso [rti_by()]
 #' @keywords internal
 #' @export

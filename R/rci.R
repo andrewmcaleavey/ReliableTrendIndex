@@ -21,6 +21,9 @@
 #'
 #' @name rci
 #' @aliases rci rci_from_scores
+#' @section Lifecycle:
+#' `rci()` is supported. The aliases `jt_rci_calc()` and
+#' `rci_from_scores()` are deprecated and retained for backward compatibility.
 #' @export
 rci <- function(difference = NULL, t1 = NULL, t2 = NULL,
                 scale_rci = NULL, r1 = NULL, r2 = NULL,

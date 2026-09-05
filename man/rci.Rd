@@ -83,3 +83,15 @@ This is the supported RCI interface. For the simplest and preferred path,
 provide \code{difference} and externally derived \code{sdiff}. The other
 arguments retain supported formula variants and input derivations.
 }
+\section{Lifecycle}{
+
+\code{jt_rci_calc()} is deprecated since version 0.3.0; use \code{\link[=rci]{rci()}} instead.
+
+
+\code{rci_from_scores()} is deprecated since version 0.3.0; use \code{\link[=rci]{rci()}} instead.
+
+
+\code{rci()} is supported. The aliases \code{jt_rci_calc()} and
+\code{rci_from_scores()} are deprecated and retained for backward compatibility.
+}
+
