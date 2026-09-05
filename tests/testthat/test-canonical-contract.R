@@ -14,7 +14,7 @@ test_that("rti has a stable hand-calculated result contract", {
   expect_s3_class(fit, "reliableTrend")
   expect_named(fit, c("estimate", "intercept", "se", "z", "p", "ci",
                       "sigma2", "t", "t_centered", "y", "Sxx", "n",
-                      "sd", "r", "sem", "sdiff", "level", "call"),
+                      "sd", "r", "sem", "sdiff", "level", "rc.type", "call"),
                ignore.order = FALSE)
   expect_equal(fit$estimate, expected_slope)
   expect_equal(fit$intercept, mean(y))
@@ -45,6 +45,44 @@ test_that("rti measurement-error parameterizations are equivalent", {
   expect_true(is.na(from_sdiff$sem))
 })
 
+test_that("rti accepts static or time-varying measurement-error definitions", {
+  y <- c(8, 10, 13)
+  t <- c(0, 2, 5)
+  fit <- rti(y, t = t, sd = 10, r = 0.8)
+
+  expect_equal(fit$sigma2, 10^2 * (1 - 0.8))
+
+  sd_i <- c(10, 12, 14)
+  r_i <- c(0.8, 0.85, 0.9)
+  varying <- rti(y, t = t, sd = sd_i, r = r_i)
+  tc <- t - mean(t)
+  expected_se <- sqrt(sum(tc^2 * sd_i^2 * (1 - r_i)) / sum(tc^2)^2)
+  expect_equal(varying$se, expected_se)
+  expect_equal(varying$sigma2, sd_i^2 * (1 - r_i))
+
+  functional <- rti(y, t = t, sem = function(time) 1 + time / 10)
+  sem_i <- 1 + t / 10
+  expect_equal(functional$se,
+               sqrt(sum(tc^2 * sem_i^2) / sum(tc^2)^2))
+})
+
+test_that("rti accepts every rc.type with variable error values", {
+  y <- c(8, 10, 13)
+  t <- c(0, 2, 5)
+  sd_i <- c(10, 12, 14)
+  r_i <- c(0.80, 0.85, 0.90)
+
+  fits <- lapply(c("jt", "maassen", "mcnemar"), function(rc.type) {
+    rti(y, t = t, sd = sd_i, r = r_i, rc.type = rc.type)
+  })
+
+  expect_equal(vapply(fits, `[[`, character(1), "rc.type"),
+               c("jt", "maassen", "mcnemar"))
+  expect_true(all(vapply(fits, function(fit) is.finite(fit$z), logical(1))))
+  expect_equal(fits[[1]]$se, fits[[2]]$se)
+  expect_equal(fits[[2]]$se, fits[[3]]$se)
+})
+
 test_that("two-point rti is the corresponding RCI statistic", {
   y <- c(21, 28)
   sd_ext <- 9
@@ -54,6 +92,39 @@ test_that("two-point rti is the corresponding RCI statistic", {
   fit <- rti(y, sd = sd_ext, r = r_ext)
   expect_equal(fit$z, rci(difference = y[2] - y[1], sdiff = sdiff))
   expect_equal(fit$se, sdiff)
+})
+
+test_that("two-point rti and mcnemar rci agree with varying errors", {
+  y <- c(21, 28)
+  difference <- y[2] - y[1]
+  sd_i <- c(9, 12)
+  r_i <- c(0.75, 0.90)
+
+  fit <- rti(y, t = c(1, 2), sd = sd_i, r = r_i)
+  rci_value <- rci(difference, sd1 = sd_i[1], sd2 = sd_i[2],
+                   r1 = r_i[1], r2 = r_i[2], rc.type = "mcnemar")
+  sdiff <- sqrt(sd_i[1]^2 * (1 - r_i[1]) +
+                sd_i[2]^2 * (1 - r_i[2]))
+
+  expect_equal(fit$estimate, difference)
+  expect_equal(fit$se, sdiff)
+  expect_equal(fit$z, rci_value)
+})
+
+test_that("two-point rti and maassen rci agree with varying SDs", {
+  y <- c(21, 28)
+  difference <- y[2] - y[1]
+  sd_i <- c(9, 12)
+  r_common <- 0.80
+
+  fit <- rti(y, t = c(1, 2), sd = sd_i, r = r_common)
+  rci_value <- rci(difference, sd1 = sd_i[1], sd2 = sd_i[2],
+                   r1 = r_common, rc.type = "maassen")
+  sdiff <- sqrt((sd_i[1]^2 + sd_i[2]^2) * (1 - r_common))
+
+  expect_equal(fit$estimate, difference)
+  expect_equal(fit$se, sdiff)
+  expect_equal(fit$z, rci_value)
 })
 
 test_that("rci has stable primary and derived input paths", {
@@ -89,6 +160,23 @@ test_that("rci preserves documented heteroscedastic formulae", {
                    rc.type = "maassen"), difference / maassen_sdiff)
   expect_equal(rci(difference, sd1 = 6, sd2 = 8, r1 = 0.75, r2 = 0.85,
                    rc.type = "mcnemar"), difference / mcnemar_sdiff)
+})
+
+test_that("rci allows different errors at the two occasions", {
+  difference <- c(-3, 4, 9)
+  sd1 <- 5
+  sd2 <- 11
+  r1 <- 0.70
+  r2 <- 0.92
+  sdiff <- sqrt(sd1^2 * (1 - r1) + sd2^2 * (1 - r2))
+
+  fit <- rci(difference, sd1 = sd1, sd2 = sd2, r1 = r1, r2 = r2,
+             rc.type = "mcnemar", verbose = TRUE)
+
+  expect_equal(fit$sdiff, sdiff)
+  expect_equal(fit$RCI, difference / sdiff)
+  expect_equal(fit[c("sd1", "sd2", "r1", "r2")],
+               list(sd1 = sd1, sd2 = sd2, r1 = r1, r2 = r2))
 })
 
 test_that("rti_by is a stable grouped wrapper around rti", {

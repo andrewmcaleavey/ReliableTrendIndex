@@ -12,18 +12,32 @@
 #'
 #' @param y,values Numeric vector of within-person observations (length \eqn{n \ge 2}).
 #'   \code{values} is a legacy alias for \code{y}; if both are supplied, \code{y} is used.
-#' @param sd Positive numeric. Single-occasion standard deviation (external).
-#' @param r Numeric in \eqn{[0, 1]}. Reliability (external).
-#' @param sem Optional positive numeric. Standard error of measurement (external).
+#' @param sd Positive numeric. Single-occasion standard deviation (external),
+#'   supplied as a scalar, length-\code{y} vector, or function of \code{t}.
+#' @param r Numeric in \eqn{[0, 1]}. Reliability (external), supplied as a
+#'   scalar, length-\code{y} vector, or function of \code{t}.
+#' @param sem Optional positive numeric. Standard error of measurement (external),
+#'   supplied as a scalar, length-code{y} vector, or function of code{t}.
 #'   If provided (and \code{sdiff} is not), it takes precedence and sets
 #'   \eqn{\sigma^2 = \mathrm{sem}^2}.
 #' @param sdiff Optional positive numeric. \emph{Standard error of the difference}
 #'   used in the RCI: \eqn{\mathrm{sdiff} = SD\sqrt{2(1-r)} = \sqrt{2}\,\mathrm{sem}}.
 #'   If provided, it takes precedence and the slope SE is \eqn{\mathrm{sdiff}/\sqrt{2 S_{xx}}}.
+#'   The error inputs may be scalars, vectors of length \code{y}, or functions
+#'   of \code{t}; scalar results are recycled. This supports static,
+#'   arbitrary per-timepoint, and functional measurement-error definitions.
 #' @param t,time Optional numeric vector of time indices (same length as \code{y}).
 #'   \code{time} is a legacy alias for \code{t}. If both are missing, uses \code{t = 1:n}.
 #' @param na.rm Logical. Drop incomplete \code{(y, t)} pairs? Default \code{FALSE}.
 #' @param level Confidence level for slope intervals (default \code{0.95}).
+#' @param rc.type Error convention: one of code{"jt"}, code{"maassen"},
+#'   or code{"mcnemar"}. Variable error inputs are accepted for all modes.
+#'
+#' @details
+#' With time-varying independent measurement-error variances \eqn{\sigma_i^2},
+#' the slope standard error is computed as
+#' \eqn{\sqrt{\sum_i (t_i-\bar{t})^2\sigma_i^2 / S_{xx}^2}}.
+#' The scalar case reduces to the original homoskedastic RTI formula.
 #'
 #' @return An object of class \code{"reliableTrend"} with elements:
 #' \itemize{
@@ -42,9 +56,10 @@
 #' rti(y = c(12, 11, 13, 16), sdiff = 8 * sqrt(2 * (1 - 0.85)))
 #' @export
 rti <- function(y = NULL, sd = NULL, r = NULL,
-                t = NULL, na.rm = FALSE, level = 0.95,
+                t = NULL, na.rm = FALSE, level = 0.95, rc.type = "jt",
                 values = NULL, time = NULL, sem = NULL, sdiff = NULL) {
   cl <- match.call()
+  rc.type <- match.arg(rc.type, c("jt", "maassen", "mcnemar"))
   used_values_alias <- !is.null(values) && is.null(y)
   if (used_values_alias) y <- values
   if (!is.null(time)   && is.null(t)) t <- time
@@ -55,5 +70,5 @@ rti <- function(y = NULL, sd = NULL, r = NULL,
     cl$values <- as.call(list(as.name("c"), 0, y[2L]))
   }
   .rti_compute(y = y, sd = sd, r = r, t = t, na.rm = na.rm, level = level,
-               sem = sem, sdiff = sdiff, call = cl)
+               sem = sem, sdiff = sdiff, rc.type = rc.type, call = cl)
 }

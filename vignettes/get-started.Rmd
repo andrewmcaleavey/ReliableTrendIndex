@@ -2,7 +2,11 @@
 title: "Get started with the Reliable Trend Index (RTI)"
 author: "Andrew A. McAleavey"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    math_method: mathjax
+    mathjax: false
+    pandoc_args: ["--math-method=mathjax"]
 vignette: >
   %\VignetteIndexEntry{Get started with the Reliable Trend Index (RTI)}
   %\VignetteEngine{knitr::rmarkdown}

@@ -20,7 +20,3 @@ Adds legacy fields expected by older vignettes:
 \item pd.RTI, pd.RCI (simple "confidence in either change" = 1 - p_two_sided)
 }
 }
-\section{Lifecycle}{
-Deprecated since version 0.3.0. Use \code{\link[=rti_by]{rti_by()}} for new
-grouped analyses, or read fields from an \code{\link[=rti]{rti()}} result.
-}

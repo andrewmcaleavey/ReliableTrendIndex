@@ -4,6 +4,9 @@ output:
   rmarkdown::html_vignette:
     fig_width: 7
     fig_height: 5
+    math_method: mathjax
+    mathjax: false
+    pandoc_args: ["--math-method=mathjax"]
 vignette: >
   %\VignetteIndexEntry{Introduction to the Reliable Trend Index (RTI)}
   %\VignetteEngine{knitr::rmarkdown}
@@ -128,4 +131,3 @@ A more flexible backend using `{metafor}` (e.g., custom weights/variance structu
 
 - Jacobson, N. S., & Truax, P. (1991). *Clinical significance: A statistical approach to defining meaningful change in psychotherapy research.* **Journal of Consulting and Clinical Psychology, 59**(1), 12–19.  
 - McAleavey, A. A. (2024). *When (not) to rely on the reliable change index: A critical appraisal and alternatives to consider in clinical psychology.* **Clinical Psychology: Science and Practice, 31**(3), 351–366. https://doi.org/10.1037/cps0000203
-

@@ -8,6 +8,7 @@
     stop("`y` (or legacy `values`) must be numeric with length >= 2.", call. = FALSE)
   }
   if (is.null(t)) t <- seq_along(y)
+  n_original <- length(y)
   if (!is.numeric(t) || length(t) != length(y)) {
     stop("`t` (or legacy `time`) must be numeric and the same length as `y`.", call. = FALSE)
   }
@@ -31,41 +32,52 @@
     stop("Degenerate time vector: Sxx = 0. Time points must vary.", call. = FALSE)
   }
 
-  list(y = as.numeric(y), t = as.numeric(t), t_centered = as.numeric(tc), Sxx = Sxx)
+  list(y = as.numeric(y), t = as.numeric(t), t_centered = as.numeric(tc),
+       Sxx = Sxx, index = which(keep), n_original = n_original)
 }
 
-.rti_measurement_variance <- function(sd, r, sem, sdiff) {
+.rti_resolve_error_input <- function(x, name, t, index, n_original) {
+  if (is.function(x)) x <- x(t)
+  if (!is.numeric(x) || !(length(x) %in% c(1L, length(t), n_original)) ||
+      any(!is.finite(x))) {
+    stop("`", name, "` must be finite numeric scalar, length-y vector, or function of `t`.",
+         call. = FALSE)
+  }
+  if (length(x) == n_original && n_original != length(t)) x <- x[index]
+  if (length(x) == 1L) x <- rep(x, length(t))
+  as.numeric(x)
+}
+
+.rti_measurement_variance <- function(sd, r, sem, sdiff, t, index, n_original) {
   # Precedence is part of the public contract: sdiff > sem > sd/r.
   if (!is.null(sdiff)) {
-    if (!is.numeric(sdiff) || length(sdiff) != 1L || !is.finite(sdiff) || sdiff <= 0) {
-      stop("`sdiff` must be a single positive, finite number.", call. = FALSE)
-    }
+    sdiff <- .rti_resolve_error_input(sdiff, "sdiff", t, index, n_original)
+    if (any(sdiff <= 0)) stop("`sdiff` must be positive.", call. = FALSE)
     return(list(sigma2 = sdiff^2 / 2, sd = NA_real_, r = NA_real_,
                 sem = NA_real_, sdiff = sdiff))
   }
   if (!is.null(sem)) {
-    if (!is.numeric(sem) || length(sem) != 1L || !is.finite(sem) || sem <= 0) {
-      stop("`sem` must be a single positive, finite number.", call. = FALSE)
-    }
+    sem <- .rti_resolve_error_input(sem, "sem", t, index, n_original)
+    if (any(sem <= 0)) stop("`sem` must be positive.", call. = FALSE)
     return(list(sigma2 = sem^2, sd = NA_real_, r = NA_real_,
                 sem = sem, sdiff = NA_real_))
   }
-  if (!is.numeric(sd) || length(sd) != 1L || !is.finite(sd) || sd <= 0) {
-    stop("`sd` must be a single positive, finite number (or supply `sem`/`sdiff`).", call. = FALSE)
-  }
-  if (!is.numeric(r) || length(r) != 1L || !is.finite(r) || r < 0 || r > 1) {
-    stop("`r` must be a single number in [0, 1] (or supply `sem`/`sdiff`).", call. = FALSE)
-  }
+  sd <- .rti_resolve_error_input(sd, "sd", t, index, n_original)
+  r <- .rti_resolve_error_input(r, "r", t, index, n_original)
+  if (any(sd <= 0)) stop("`sd` must be positive (or supply `sem`/`sdiff`).", call. = FALSE)
+  if (any(r < 0 | r > 1)) stop("`r` must be in [0, 1] (or supply `sem`/`sdiff`).", call. = FALSE)
   list(sigma2 = sd^2 * (1 - r), sd = sd, r = r,
        sem = NA_real_, sdiff = NA_real_)
 }
 
 .rti_compute <- function(y, sd = NULL, r = NULL, t = NULL, na.rm = FALSE,
-                         level = 0.95, sem = NULL, sdiff = NULL, call = NULL) {
+                         level = 0.95, sem = NULL, sdiff = NULL,
+                         rc.type = "jt", call = NULL) {
   series <- .rti_prepare_data(y, t, na.rm)
-  error <- .rti_measurement_variance(sd, r, sem, sdiff)
+  error <- .rti_measurement_variance(sd, r, sem, sdiff, series$t,
+                                     series$index, series$n_original)
   beta1 <- sum(series$t_centered * series$y) / series$Sxx
-  se_beta1 <- sqrt(error$sigma2 / series$Sxx)
+  se_beta1 <- sqrt(sum(series$t_centered^2 * error$sigma2) / series$Sxx^2)
   z <- beta1 / se_beta1
   p <- 2 * stats::pnorm(-abs(z))
   zcrit <- stats::qnorm(1 - (1 - level) / 2)
@@ -73,10 +85,14 @@
   out <- list(
     estimate = beta1, intercept = mean(series$y), se = se_beta1, z = z, p = p,
     ci = c(beta1 - zcrit * se_beta1, beta1 + zcrit * se_beta1),
-    sigma2 = error$sigma2, t = series$t, t_centered = series$t_centered,
-    y = series$y, Sxx = series$Sxx, n = length(series$y),
-    sd = error$sd, r = error$r, sem = error$sem, sdiff = error$sdiff,
-    level = level, call = call
+    sigma2 = if (length(unique(error$sigma2)) == 1L) error$sigma2[[1L]] else error$sigma2,
+    t = series$t, t_centered = series$t_centered, y = series$y,
+    Sxx = series$Sxx, n = length(series$y),
+    sd = if (all(is.na(error$sd))) NA_real_ else if (length(unique(error$sd)) == 1L) error$sd[[1L]] else error$sd,
+    r = if (all(is.na(error$r))) NA_real_ else if (length(unique(error$r)) == 1L) error$r[[1L]] else error$r,
+    sem = if (all(is.na(error$sem))) NA_real_ else if (length(unique(error$sem)) == 1L) error$sem[[1L]] else error$sem,
+    sdiff = if (all(is.na(error$sdiff))) NA_real_ else if (length(unique(error$sdiff)) == 1L) error$sdiff[[1L]] else error$sdiff,
+    level = level, rc.type = rc.type, call = call
   )
   class(out) <- "reliableTrend"
   out
@@ -101,21 +117,33 @@
 
 .rci_resolve_sdiff <- function(sdiff, sem, sd1, sd2, r1, r2, scale_rci,
                                prob, rc.type) {
+  validate_sd <- function(x, name) {
+    if (!is.numeric(x) || length(x) != 1L || !is.finite(x) || x <= 0) {
+      stop("`", name, "` must be a single positive, finite number.", call. = FALSE)
+    }
+  }
+  validate_r <- function(x, name) {
+    if (!is.numeric(x) || length(x) != 1L || !is.finite(x) || x < 0 || x > 1) {
+      stop("`", name, "` must be a single number in [0, 1].", call. = FALSE)
+    }
+  }
+
   if (is.null(sdiff) && rc.type == "maassen") {
     if (any(is.null(c(sd1, sd2, r1)))) {
       stop("rc.type = 'maassen' requires `sd1`, `sd2`, and `r1`.", call. = FALSE)
     }
-    if (!is.numeric(sd1) || !is.numeric(sd2) || !is.numeric(r1)) {
-      stop("`sd1`, `sd2`, and `r1` must be numeric.", call. = FALSE)
-    }
+    validate_sd(sd1, "sd1")
+    validate_sd(sd2, "sd2")
+    validate_r(r1, "r1")
     sdiff <- sqrt((sd1^2 + sd2^2) * (1 - r1))
   } else if (is.null(sdiff) && rc.type == "mcnemar") {
     if (any(is.null(c(sd1, sd2, r1, r2)))) {
       stop("rc.type = 'mcnemar' requires `sd1`, `sd2`, `r1`, and `r2`.", call. = FALSE)
     }
-    if (!is.numeric(sd1) || !is.numeric(sd2) || !is.numeric(r1) || !is.numeric(r2)) {
-      stop("`sd1`, `sd2`, `r1`, and `r2` must be numeric.", call. = FALSE)
-    }
+    validate_sd(sd1, "sd1")
+    validate_sd(sd2, "sd2")
+    validate_r(r1, "r1")
+    validate_r(r2, "r2")
     sdiff <- sqrt(sd1^2 * (1 - r1) + sd2^2 * (1 - r2))
   }
 
@@ -126,8 +154,8 @@
       }
       sdiff <- sqrt(2) * sem
     } else if (!is.null(sd1) && !is.null(r1)) {
-      if (!is.numeric(sd1) || !is.numeric(r1)) stop("`sd1` and `r1` must be numeric.", call. = FALSE)
-      if (any(r1 < 0 | r1 > 1)) stop("`r1` must be in [0, 1].", call. = FALSE)
+      validate_sd(sd1, "sd1")
+      validate_r(r1, "r1")
       sem <- sd1 * sqrt(1 - r1)
       sdiff <- sqrt(2) * sem
     }

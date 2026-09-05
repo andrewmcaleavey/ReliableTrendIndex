@@ -38,6 +38,40 @@ test_that("n = 2 works and matches hand calculation", {
   expect_equal(fit$z, z)
 })
 
+test_that("rti handles unbalanced observations on an irregular time grid", {
+  y <- c(10, NA, 15, 18, 21)
+  t <- c(0, 1, 3, 7, 10)
+  observed <- is.finite(y) & is.finite(t)
+  y_observed <- y[observed]
+  t_observed <- t[observed]
+  tc <- t_observed - mean(t_observed)
+  Sxx <- sum(tc^2)
+  sd_ext <- 6
+  r_ext <- 0.75
+
+  expect_warning(
+    fit <- rti(y, sd = sd_ext, r = r_ext, t = t, na.rm = TRUE),
+    "Dropped 1 non-finite observations"
+  )
+
+  expect_equal(fit$n, length(y_observed))
+  expect_equal(fit$y, y_observed)
+  expect_equal(fit$t, t_observed)
+  expect_equal(fit$Sxx, Sxx)
+  expect_equal(fit$estimate, sum(tc * y_observed) / Sxx)
+  expect_equal(fit$se, sqrt(sd_ext^2 * (1 - r_ext) / Sxx))
+
+  sem <- c(1, 2, 3, 4, 5)
+  expect_warning(
+    varying_fit <- rti(y, t = t, sem = sem, na.rm = TRUE),
+    "Dropped 1 non-finite observations"
+  )
+  sem_observed <- sem[observed]
+  expect_equal(varying_fit$sem, sem_observed)
+  expect_equal(varying_fit$se,
+               sqrt(sum(tc^2 * sem_observed^2) / Sxx^2))
+})
+
 test_that("plot returns a ggplot and band options are available", {
   y <- c(12, 11, 13, 16, 17, 19)
   fit <- rti(y, sd = 8, r = 0.85)

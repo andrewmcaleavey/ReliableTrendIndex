@@ -1,11 +1,14 @@
 ---
 title: "Historical RTI workflows"
-output: 
-  rmarkdown::html_vignette: 
-    fig_width: 7 
+output:
+  rmarkdown::html_vignette:
+    fig_width: 7
     fig_height: 7
+    math_method: mathjax
+    mathjax: false
+    pandoc_args: ["--math-method=mathjax"]
 vignette: >
-  %\VignetteIndexEntry{Introduction_to_ReliableTrendIndex}
+  %\VignetteIndexEntry{Historical RTI workflows}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

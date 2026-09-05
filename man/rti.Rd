@@ -11,6 +11,7 @@ rti(
   t = NULL,
   na.rm = FALSE,
   level = 0.95,
+  rc.type = "jt",
   values = NULL,
   time = NULL,
   sem = NULL,
@@ -21,9 +22,11 @@ rti(
 \item{y, values}{Numeric vector of within-person observations (length \eqn{n \ge 2}).
 \code{values} is a legacy alias for \code{y}; if both are supplied, \code{y} is used.}
 
-\item{sd}{Positive numeric. Single-occasion standard deviation (external).}
+\item{sd}{Positive numeric. Single-occasion standard deviation (external),
+supplied as a scalar, length-\code{y} vector, or function of \code{t}.}
 
-\item{r}{Numeric in \eqn{[0, 1]}. Reliability (external).}
+\item{r}{Numeric in \eqn{[0, 1]}. Reliability (external), supplied as a
+scalar, length-\code{y} vector, or function of \code{t}.}
 
 \item{t, time}{Optional numeric vector of time indices (same length as \code{y}).
 \code{time} is a legacy alias for \code{t}. If both are missing, uses \code{t = 1:n}.}
@@ -32,13 +35,20 @@ rti(
 
 \item{level}{Confidence level for slope intervals (default \code{0.95}).}
 
-\item{sem}{Optional positive numeric. Standard error of measurement (external).
+\item{rc.type}{Error convention: one of code{"jt"}, code{"maassen"},
+or code{"mcnemar"}. Variable error inputs are accepted for all modes.}
+
+\item{sem}{Optional positive numeric. Standard error of measurement (external),
+supplied as a scalar, length-code{y} vector, or function of code{t}.
 If provided (and \code{sdiff} is not), it takes precedence and sets
 \eqn{\sigma^2 = \mathrm{sem}^2}.}
 
 \item{sdiff}{Optional positive numeric. \emph{Standard error of the difference}
 used in the RCI: \eqn{\mathrm{sdiff} = SD\sqrt{2(1-r)} = \sqrt{2}\,\mathrm{sem}}.
-If provided, it takes precedence and the slope SE is \eqn{\mathrm{sdiff}/\sqrt{2 S_{xx}}}.}
+If provided, it takes precedence and the slope SE is \eqn{\mathrm{sdiff}/\sqrt{2 S_{xx}}}.
+The error inputs may be scalars, vectors of length \code{y}, or functions
+of \code{t}; scalar results are recycled. This supports static,
+arbitrary per-timepoint, and functional measurement-error definitions.}
 }
 \value{
 An object of class \code{"reliableTrend"} with elements:
@@ -58,6 +68,12 @@ Backward compatible with older code that passed \code{values}/\code{time}
 and/or \code{sem} instead of \code{sd}/\code{r}. You can also pass
 \code{sdiff}, the standard error of the difference (RCI SE); if provided,
 it takes precedence over \code{sem} and \code{sd}/\code{r}.
+}
+\details{
+With time-varying independent measurement-error variances \eqn{\sigma_i^2},
+the slope standard error is computed as
+\eqn{\sqrt{\sum_i (t_i-\bar{t})^2\sigma_i^2 / S_{xx}^2}}.
+The scalar case reduces to the original homoskedastic RTI formula.
 }
 \examples{
 # New style (sd & r)

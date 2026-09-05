@@ -56,7 +56,7 @@ sdiff_from_sd_r <- function(sd, r) {
   sd * sqrt(2 * (1 - r))
 }
 
-#' @rdname rci
+#' @name rci
 #' @export
 jt_rci_calc <- function(difference = NULL, t1 = NULL, t2 = NULL,
                         scale_rci = NULL, r1 = NULL, r2 = NULL,
@@ -70,7 +70,7 @@ jt_rci_calc <- function(difference = NULL, t1 = NULL, t2 = NULL,
 }
 
 
-#' @rdname rci
+#' @name rci
 #' @export
 rci_from_scores <- function(x1 = NULL, x2 = NULL, difference = NULL,
                             sd = NULL, r = NULL, sem = NULL, sdiff = NULL,
@@ -84,15 +84,6 @@ rci_from_scores <- function(x1 = NULL, x2 = NULL, difference = NULL,
       prob = prob, verbose = verbose, rc.type = rc.type)
 }
 
-
-#' RCI convenience wrapper
-#'
-#' @rdname rci
-#' @export
-rci <- function(x1 = NULL, x2 = NULL, difference = NULL,
-                sd = NULL, r = NULL, sem = NULL, sdiff = NULL) {
-  rci_from_scores(x1 = x1, x2 = x2, difference = difference, sd = sd, r = r, sem = sem, sdiff = sdiff)
-}
 
 # ---- Legacy reliableTrend() wrapper (supports `sem=`) -------------------------
 

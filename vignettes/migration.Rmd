@@ -1,6 +1,10 @@
 ---
 title: "Migrating to the supported ReliableTrendIndex API"
-output: rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette:
+    math_method: mathjax
+    mathjax: false
+    pandoc_args: ["--math-method=mathjax"]
 vignette: >
   %\VignetteIndexEntry{Migrating to the supported ReliableTrendIndex API}
   %\VignetteEngine{knitr::rmarkdown}
