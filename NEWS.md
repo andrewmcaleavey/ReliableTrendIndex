@@ -1,3 +1,16 @@
+# ReliableTrendIndex 0.3.1
+
+* Extended `rti()` to accept static, per-timepoint, or function-valued
+  measurement-error definitions and compute heteroskedastic slope standard
+  errors.
+* Added `rc.type = "jt"`, `"maassen"`, or `"mcnemar"` to `rti()`, including
+  support for variable error inputs in each mode.
+* Added tests confirming two-timepoint equivalence between `rti()` and `rci()`
+  under Maassen and McNemar error specifications.
+* Restored lifecycle/deprecation documentation for legacy wrappers and fixed
+  `?rci` to use `rci()` as the primary documented function.
+* Fixed vignette title metadata and replaced deprecated Pandoc MathJax options.
+
 # ReliableTrendIndex 0.3.0
 
 * Established rti(), rci(), and rti_by() as the supported analysis API.
